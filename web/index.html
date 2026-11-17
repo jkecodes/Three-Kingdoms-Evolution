@@ -2339,7 +2339,7 @@ function openSetup() {
             art.append(pre);
           };
           pre.onerror = () => tryNext(i + 1);
-          pre.src = ART + names[i] + ".webp";
+          pre.src = ART + names[i] + ".webp?v=3";
         };
         tryNext(0);
       };
