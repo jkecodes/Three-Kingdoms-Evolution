@@ -1237,9 +1237,9 @@ function syncAnims(root) {   // 牌桌每次重畫都會重建元素,循環動�
 function renderTable(snap) {
   renderTable0(snap); syncAnims($("#table"));
   try {   // 動畫第二批: 和上一次比,體力變少 → 座位震一下;回血 → 綠光;換回合 → 發光淡入
-    const pv = S.pvHp || {}, nx = {};
+    const pv = S.pvHp || {}, nx = {}, pm = S.pvMax || {}, nm = {};   // 體力上限變了 (開局身分重新分配: 主公 +1 血) 不算受傷 / 回血
     for (const p of snap.players) {
-      nx[p.idx] = p.hp;
+      nx[p.idx] = p.hp; nm[p.idx] = p.maxhp; if (pm[p.idx] != null && pm[p.idx] !== p.maxhp) pv[p.idx] = null;
       const el = $(`#table .pl[data-idx="${p.idx}"]`); if (!el) continue;
       const f = S.pfx || (S.pfx = {}), now = Date.now();
       if (pv[p.idx] != null && p.hp < pv[p.idx]) f[p.idx] = ["hit", now];
@@ -1248,7 +1248,7 @@ function renderTable(snap) {
       const e = f[p.idx];   // 畫面常常重畫 (點牌 / 輪詢): 用負的 delay 接著播,動畫才不會被切掉
       if (e && now - e[1] < 800) { el.classList.add(e[0]); el.style.animationDelay = `-${now - e[1]}ms`; }
     }
-    S.pvHp = nx; S.pvCur = snap.cur;
+    S.pvHp = nx; S.pvMax = nm; S.pvCur = snap.cur;
   } catch (e) {}
 }
 (() => {   // 成員列表 / 聊天室等任何重畫都一樣: 循環動畫 (頭貼特效) 對齊文件時間軸,不會被重置

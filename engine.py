@@ -1468,6 +1468,8 @@ class Game:
                 return False
         if card.name == "出" and (tgt[2].char.immune_delayed or "出" in tgt[2].char.block_names):
             return False
+        if card.name == "出" and tgt[2] is not p and tgt[2].char.blocks_target(self, tgt[2], card):   # 關興這類「不能成為錦囊對象」的人,也不能當出其不意的新主人
+            return False
         if isinstance(tgt, tuple) and card.name in ("聲", "借", "轉"):   # 兩個對象的錦囊: 關興這類「不能成為錦囊對象」的人,不能被指定 (聲: 兩個人都算;借 / 轉: 第一個人)
             for t in (tgt[:2] if card.name == "聲" else tgt[:1]):
                 if isinstance(t, Player) and t is not p and t.char.blocks_target(self, t, card):
