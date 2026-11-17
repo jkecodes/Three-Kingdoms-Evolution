@@ -1115,12 +1115,12 @@ ${S} input[type=range]::-moz-range-thumb{width:${round ? 18 : 12}px;height:${rou
         const artRow = false ? h("div", { style: { display: "flex", gap: "6px", marginBottom: "8px", flexWrap: "wrap", alignItems: "center" } }, h("span", { class: "meta", text: "卡圖:" }), ...[["", "新"], ["svg", "舊"]].map(([v, n]) => h("button", {
           class: "tile" + ((sel.cardart || "") === v ? " sel" : ""), "aria-pressed": (sel.cardart || "") === v ? "true" : "false", style: { padding: "6px 12px" },
           onclick: async () => { await post({ cardart: v }); render(); if (typeof poll === "function") poll(true); setTimeout(() => { try { const cd = document.getElementById("cd"); if (cd && cd.classList.contains("on") && window.SGS_I18N) SGS_I18N.renderCardPane(); } catch (e) {} }, 700); } }, h("span", { class: "tn", text: n })))) : null;
-        const genRow = isBg ? h("div", { style: { display: "flex", gap: "6px", marginBottom: "8px", flexWrap: "wrap", alignItems: "center" } }, h("span", { class: "meta", text: "武將圖:" }), ...[["", "新"], ["old", "舊"]].map(([v, n]) => h("button", {
+        const genRow = false ? h("div", { style: { display: "flex", gap: "6px", marginBottom: "8px", flexWrap: "wrap", alignItems: "center" } }, h("span", { class: "meta", text: "武將圖:" }), ...[["", "新"], ["old", "舊"]].map(([v, n]) => h("button", {
           class: "tile" + ((sel.genart || "") === v ? " sel" : ""), "aria-pressed": (sel.genart || "") === v ? "true" : "false", style: { padding: "6px 12px" },
           onclick: async () => { await post({ genart: v }); if (typeof setRosterArt === "function") setRosterArt(v); render(); } }, h("span", { class: "tn", text: n })))) : null;
         const pvRow = isBg ? h("div", { style: { display: "flex", gap: "14px", alignItems: "flex-end", justifyContent: "center", marginBottom: "10px", padding: "8px", borderRadius: "10px", background: "rgba(120,160,200,.08)" } },
           h("img", { src: "/cards/" + encodeURIComponent("殺") + ".svg?bg=" + curv + art + "&t=" + ARTT, alt: "卡牌預覽", style: { height: "150px", borderRadius: "6px" } }),
-          h("img", { src: "/thumb/char/" + encodeURIComponent("關羽") + "?v=ink2" + (sel.genart === "old" ? "&art=old" : ""), alt: "武將預覽", style: { height: "150px", borderRadius: "6px" } })) : null;
+          h("img", { src: "/thumb/char/" + encodeURIComponent("關羽") + "?v=ink2" + "", alt: "武將預覽", style: { height: "150px", borderRadius: "6px" } })) : null;
         body = h("div", {}, pvRow, artRow, genRow, h("div", { class: "meta", style: { marginBottom: "6px" }, text: `已擁有 ${L.filter(x => has(kind, x.id)).length} / ${L.length}` }), h("div", { class: "grid" }, ...sw),
           h("div", { class: "meta", style: { marginTop: "10px" }, text: isBg ? "卡面是你的手牌和你打出的牌的底色風格,其他玩家看到你的牌時也是這個風格。" : "卡背會顯示在你座位的手牌數旁邊,所有玩家都看得到。" }));
       } else if (tab === "ach") {

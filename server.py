@@ -361,7 +361,7 @@ class Profiles:
         bk = sel.get("cardback", "") if ok("cardbacks", sel.get("cardback", "")) else ""
         ca = ""   # 卡圖外觀: 舊的手繪向量圖 (svg) 已關閉,一律用水墨圖;等新卡牌做好再接上
         an = sel.get("anim", "") if ok("anims", sel.get("anim", "")) else ""
-        return {"fr": fr, "fx": fx, "bx": bx, "cb": cb, "bk": bk, "an": an, "ca": ca, "ga": "old" if sel.get("genart") == "old" else ""}
+        return {"fr": fr, "fx": fx, "bx": bx, "cb": cb, "bk": bk, "an": an, "ca": ca, "ga": ""}   # 舊武將圖已關閉
 
     def set_style(self, tok, frame, fx, theme=None, box=None, cardbg=None, cardback=None, cardart=None, genart=None, anim=None):
         p = self.get(tok)
@@ -381,7 +381,7 @@ class Profiles:
             if cardart in ("", "svg", "ink"):
                 sel["cardart"] = ""   # 手繪向量圖已關閉
             if genart in ("", "old", "ink"):
-                sel["genart"] = "old" if genart == "old" else ""
+                sel["genart"] = ""   # 舊武將圖已關閉
             if cardback is not None and ok("cardbacks", cardback):
                 sel["cardback"] = cardback
             if theme is not None:
