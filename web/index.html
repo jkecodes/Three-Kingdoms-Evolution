@@ -2158,7 +2158,7 @@ function openSetup() {
   const mkSeat = (i, n) => {   // 一個座位: 武將 / 電腦難度 / 開放玩家 / 把這個武將複製到別的座位
     const open0 = h("div", {class: "open"}, toggle("開放玩家", false));
     const sel = h("select", {"data-seat": i}, charOpts()); if (keep[i]) sel.value = keep[i];
-    const dsel = h("select", {"data-dseat": i, title: "這個座位的電腦難度"}, diffLabels().map((t, k) => h("option", {value: k + 1, text: "🤖 " + t}))); dsel.disabled = st.ranked === "ranked"; dsel.value = keepD[i] || String(st.diff);
+    const dsel = h("select", {"data-dseat": i, title: "這個座位的電腦難度"}, diffLabels().map((t, k) => h("option", {value: k + 1, text: "🤖 " + t}))); dsel.disabled = st.ranked === "ranked"; if (st.ranked === "ranked") dsel.style.display = "none"; dsel.value = keepD[i] || String(st.diff);
     const cp = h("select", {class: "cpy", title: "把這個座位的武將複製到另一個座位 (兩個座位會用同一位武將)"},
       h("option", {value: "", text: "⧉ 複製到…"}), h("option", {value: "all", text: "全部其他座位"}), ...Array.from({length: n}, (_, k) => k).filter(k => k !== i).map(k => h("option", {value: k, text: "座位 " + k})));
     cp.onchange = () => {
@@ -2234,8 +2234,8 @@ function openSetup() {
     if (st.ranked === "newbie") { st.mode = "normal"; st.hp = 4; st.lord = "random"; st.rm = "normal"; if (st.n > 5) st.n = 4; if (st.diff > 2) st.diff = 1; }   // 新手入門: 固定一般規則、電腦弱
     if (on) { if (st.human === "spectate") st.human = "0"; st.mode = "normal"; st.hp = 4; st.lord = "random"; st.rm = "normal"; if (st.n < 4) st.n = 4; Object.keys(keep).forEach(k => keep[k] = ""); }
     drawMode(); hpDraw(); rebuild();
-    seatBox.querySelectorAll("select[data-dseat]").forEach(x => { x.disabled = on; });
-    if (diffSeg) { diffSeg.style.opacity = on ? ".45" : ""; diffSeg.style.pointerEvents = on ? "none" : ""; }
+    seatBox.querySelectorAll("select[data-dseat]").forEach(x => { x.disabled = on; x.style.display = on ? "none" : ""; });   // 段位模式: 電腦難度跟著段位走,整個藏起來不給選
+    if (diffSeg) { const ds = diffSeg.closest("section.sec"); if (ds) ds.style.display = on ? "none" : ""; }
     specAll.disabled = on; if (on) specAll.checked = false;   // 旁觀者可看全部: 段位模式不能開
     { const f = specAll.closest(".fld"); if (f) f.style.opacity = on ? ".45" : ""; }
     [modeBox, hpBox, lordBox, rmBox].forEach(b => { const s = b.closest(".sec"); if (s) { s.classList.toggle("lk", on); } });
