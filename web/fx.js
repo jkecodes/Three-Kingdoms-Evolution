@@ -104,7 +104,7 @@
     const el = document.querySelector(`#table .pl[data-idx="${i}"]`), L = layer();
     if (!el || !L) return null;
     const a = el.getBoundingClientRect(), b = L.getBoundingClientRect();
-    return [a.left - b.left + a.width / 2, a.top - b.top + a.height / 2];
+    const z = parseFloat(getComputedStyle(document.documentElement).zoom) || 1; return [(a.left - b.left + a.width / 2) / z, (a.top - b.top + a.height / 2) / z];
   };
 
   let budget = { snd: 0, fly: 0 }, lastFly = { key: "", t: 0 };

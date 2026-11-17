@@ -34,7 +34,11 @@ html input[type=checkbox]:not([hidden]):not(.sw input):checked{background:color-
 html input[type=checkbox]:not([hidden]):not(.sw input):checked::before{transform:translateX(18px);background:var(--accent)}
 html input[type=checkbox]:not([hidden]):not(.sw input):disabled{opacity:.45;cursor:default}
 html input[type=checkbox]:not([hidden]):not(.sw input):focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-#app{display:grid;grid-template-rows:auto minmax(0,1fr) auto;height:100vh;height:100dvh}
+/* 介面 110%: 桌面寬度 (>820px) 整個放大;手機維持原尺寸。vh / vw 會跟著 zoom 放大,所以都除以 --uz 還原 */
+:root{--uz:1}
+@media (min-width:821px){:root{--uz:1.1}}
+html{zoom:var(--uz)}
+#app{display:grid;grid-template-rows:auto minmax(0,1fr) auto;height:calc(100vh / var(--uz));height:calc(100dvh / var(--uz))}
 #top{display:flex;gap:10px;align-items:center;padding:9px 16px;background:rgba(24,33,43,.92);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);flex-wrap:wrap;box-shadow:0 2px 12px rgba(0,0,0,.35);z-index:3}
 #bMenu{display:none}
 #top .title{font-weight:800;font-size:18px;letter-spacing:.15em;color:var(--accent);margin-right:10px;text-shadow:0 0 12px rgba(233,191,98,.35)}
@@ -127,18 +131,18 @@ html body .pl.tm-lord:not(.waiting):not(.sel){outline:3px double #ffd24a;outline
 #bottom{background:linear-gradient(180deg,rgba(24,33,43,.95),#10161d);border-top:1px solid var(--line);padding:6px 16px 10px;min-height:200px;box-shadow:0 -6px 18px rgba(0,0,0,.35)}
 #hand{display:flex;justify-content:safe center;gap:12px;align-items:flex-end;min-height:176px;overflow-x:auto;padding:24px 4px 6px}
 #bar{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;align-items:center;margin-top:6px;min-height:36px}
-.skwrap{position:relative;display:inline-block}.skmenu{position:absolute;left:50%;bottom:calc(100% + 8px);transform:translateX(-50%);display:flex;flex-wrap:wrap;gap:6px;justify-content:center;width:max-content;max-width:min(88vw,560px);padding:8px;background:rgba(5,11,23,.97);border:1px solid #3a4f73;border-radius:8px;box-shadow:0 6px 22px rgba(0,0,0,.65);z-index:40}.skwrap>button.on{border-color:var(--green)}
+.skwrap{position:relative;display:inline-block}.skmenu{position:absolute;left:50%;bottom:calc(100% + 8px);transform:translateX(-50%);display:flex;flex-wrap:wrap;gap:6px;justify-content:center;width:max-content;max-width:min(calc(88vw / var(--uz)),560px);padding:8px;background:rgba(5,11,23,.97);border:1px solid #3a4f73;border-radius:8px;box-shadow:0 6px 22px rgba(0,0,0,.65);z-index:40}.skwrap>button.on{border-color:var(--green)}
 #bar .pr{color:var(--gold);margin-right:8px;font-weight:600}
 #cardinfo .modal{z-index:40;align-items:center}
-.ci{background:linear-gradient(160deg,var(--panel2),var(--panel));border:1px solid var(--accent);color:var(--text);border-radius:14px;padding:16px;display:flex;gap:16px;max-width:min(94vw,560px);align-items:flex-start;box-shadow:0 12px 40px rgba(0,0,0,.6)}
+.ci{background:linear-gradient(160deg,var(--panel2),var(--panel));border:1px solid var(--accent);color:var(--text);border-radius:14px;padding:16px;display:flex;gap:16px;max-width:min(calc(94vw / var(--uz)),560px);align-items:flex-start;box-shadow:0 12px 40px rgba(0,0,0,.6)}
 .ci img{width:200px;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,.6)}
 .ci h3{margin:0 0 6px;color:var(--accent);font-size:18px}.ci p{margin:0;line-height:1.7;font-size:15px}
 #modal2 .modal{z-index:7600}
 .modal{position:fixed;inset:0;background:rgba(5,8,12,.7);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;z-index:20}
 .modal.soft{background:rgba(0,0,0,.15);backdrop-filter:none;align-items:flex-end;padding-bottom:240px}
-.dlg{background:linear-gradient(160deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:16px;padding:18px;max-width:900px;max-height:90vh;overflow:auto;width:min(900px,94vw);box-shadow:0 18px 50px rgba(0,0,0,.6)}
+.dlg{background:linear-gradient(160deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:16px;padding:18px;max-width:900px;max-height:calc(90vh / var(--uz));overflow:auto;width:min(900px,calc(94vw / var(--uz)));box-shadow:0 18px 50px rgba(0,0,0,.6)}
 .dlg h3{margin:0 0 10px;color:var(--accent)}
-.modal.soft .dlg{max-height:calc(100vh - 320px);max-height:calc(100dvh - 320px);overflow-y:auto;pointer-events:auto;overscroll-behavior:contain}
+.modal.soft .dlg{max-height:calc(calc(100vh / var(--uz)) - 320px);max-height:calc(calc(100dvh / var(--uz)) - 320px);overflow-y:auto;pointer-events:auto;overscroll-behavior:contain}
 .row{display:flex;gap:10px;align-items:center;margin:6px 0;flex-wrap:wrap}
 .opts{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
 .seatgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px}
@@ -220,13 +224,13 @@ button.primary{background:linear-gradient(180deg,#52dcff,#1a9bd0);color:#02202e;
 .dlg,.ci{border-radius:3px;background:linear-gradient(160deg,#13264a,#0a152b);border:1px solid #2f6f9c;box-shadow:0 0 40px rgba(63,210,255,.2),0 18px 50px rgba(0,0,0,.7)}
 .dlg h3,.ci h3{color:var(--accent)}
 .modal{background:rgba(2,6,14,.75)}
-#prev{position:fixed;left:14px;top:66px;width:230px;background:linear-gradient(160deg,rgba(19,38,74,.97),rgba(8,18,36,.97));border:1px solid #2f6f9c;box-shadow:var(--glow),0 12px 30px rgba(0,0,0,.6);padding:10px;z-index:22;display:none;pointer-events:none;max-height:calc(100vh - 80px);overflow:hidden}
+#prev{position:fixed;left:14px;top:66px;width:230px;background:linear-gradient(160deg,rgba(19,38,74,.97),rgba(8,18,36,.97));border:1px solid #2f6f9c;box-shadow:var(--glow),0 12px 30px rgba(0,0,0,.6);padding:10px;z-index:22;display:none;pointer-events:none;max-height:calc(calc(100vh / var(--uz)) - 80px);overflow:hidden}
 #prev img{width:100%;border-radius:4px;display:block}
 #prev h4{margin:8px 0 4px;color:var(--accent);font-size:15px}
 #prev p{margin:0;white-space:pre-line;font-size:13px;line-height:1.55;color:var(--text)}
 
 /* ===== 開局設定 / 大廳 (現代風) ===== */
-.dlg.setup{padding:0;width:min(920px,95vw);max-height:92vh;max-height:min(92vh,calc(100dvh - var(--toph,48px) - 12px));display:flex;flex-direction:column;overflow:hidden;border-radius:14px}
+.dlg.setup{padding:0;width:min(920px,calc(95vw / var(--uz)));max-height:calc(92vh / var(--uz));max-height:min(calc(92vh / var(--uz)),calc(calc(100dvh / var(--uz)) - var(--toph,48px) - 12px));display:flex;flex-direction:column;overflow:hidden;border-radius:14px}
 .dh{display:flex;justify-content:space-between;align-items:flex-start;padding:18px 22px 14px;border-bottom:1px solid #1b3a5a;background:linear-gradient(180deg,rgba(63,210,255,.08),transparent)}
 .dh h3{margin:0;font-size:22px;letter-spacing:.08em}
 .dh .x{clip-path:none;width:34px;height:34px;padding:0;background:#122440;box-shadow:inset 0 0 0 1px #2a5a85}
@@ -237,8 +241,103 @@ button.big{font-size:16px;font-weight:800;padding:10px 38px}
 .sec{margin:16px 0 4px}
 .sh{display:flex;align-items:baseline;gap:10px;margin-bottom:8px}
 .sec.lk .seg,.sec.lk .row{pointer-events:none;opacity:.45}.sec.lk .sh b::after{content:" 🔒 " var(--t-lock,"段位模式固定");font-size:11px;color:var(--dim);letter-spacing:0}
-.rkside{display:none;position:fixed;right:calc(50vw + 470px);top:90px;width:190px;background:#0e2442;border:1px solid #24496f;border-radius:12px;padding:12px 14px;z-index:5}.rkbar{height:8px;border-radius:4px;background:#17304f;margin:6px 0;overflow:hidden}.rkbar i{display:block;height:100%;background:var(--accent)}.rkin{display:none;margin-top:10px;padding:12px 14px;background:#0e2442;border:1px solid #24496f;border-radius:12px;font-size:13px;color:var(--dim)}.rkin.on{display:block}.rkside{display:none!important}   /* 新遊戲: 段位卡直接放在「對戰模式」下面 (原本貼在視窗外側,平板 / 窄螢幕會被擠掉) */
-.shi{font-size:14px;padding:0 4px;color:var(--dim);cursor:help;opacity:.7}#shtip{position:fixed;z-index:9999;display:none;max-width:340px;background:#16324a;color:#fff;border:1px solid #3fd2ff;border-radius:8px;padding:8px 12px;font-size:13px;line-height:1.5;box-shadow:0 4px 18px rgba(0,0,0,.5);pointer-events:none}
+.rkside{display:none;position:fixed;right:calc(calc(50vw / var(--uz)) + 470px);top:90px;width:190px;background:#0e2442;border:1px solid #24496f;border-radius:12px;padding:12px 14px;z-index:5}.rkbar{height:8px;border-radius:4px;background:#17304f;margin:6px 0;overflow:hidden}.rkbar i{display:block;height:100%;background:var(--accent)}.rkin{display:none;margin-top:10px;padding:12px 14px;background:#0e2442;border:1px solid #24496f;border-radius:12px;font-size:13px;color:var(--dim)}.rkin.on{display:block}.rkside{display:none!important}   /* 新遊戲: 段位卡直接放在「對戰模式」下面 (原本貼在視窗外側,平板 / 窄螢幕會被擠掉) */
+.shi{font-size:14px;padding:0 4px;color:var(--dim);cursor:pointer;opacity:.7}.shi.on,.shi:focus-visible{opacity:1;color:var(--text)}
+@media (pointer:coarse){.shi{font-size:16px;padding:8px 12px;margin:-8px -6px}}   /* 手機: ⓘ 要點得到 (觸控目標不能太小) */
+.shx{font-size:13px;line-height:1.6;color:var(--dim);margin:-2px 0 10px;padding:8px 12px;background:rgba(255,255,255,.04);border-radius:8px;max-width:62ch}
+.dlg.setup .seg button,.dlg.setup .mini-btn,.dlg.setup .df button{min-height:38px;font-size:14px;line-height:1.2;display:inline-flex;align-items:center;justify-content:center;padding-top:0;padding-bottom:0}   /* 新遊戲視窗: 所有按鈕同一個高度 / 字級 */
+.dlg.setup .mini-btn{margin-top:0;padding-left:16px!important;padding-right:16px!important}
+.dlg.setup .df button{min-height:44px;white-space:nowrap}
+.shx.rich{display:flex;flex-direction:column;gap:8px}.rh-note{font-size:12.5px;opacity:.85}
+.rh-row{display:flex;align-items:center;gap:12px}.rh-row>b{min-width:42px}
+.rh-row .pips{display:inline-flex;gap:4px}.rh-row .pips i{width:18px;height:8px;border-radius:2px;background:rgba(255,255,255,.14)}.rh-row .pips i.on{background:hsl(38,70%,58%)}
+.rh-row .pt{margin-left:auto;font-variant-numeric:tabular-nums;font-size:13px}
+.rh-row.m{align-items:flex-start}.rh-row.m .ic{font-size:22px;width:30px;text-align:center;line-height:1.2}.rh-row.m b{display:block;margin-bottom:1px}.rh-row.m div>div{font-size:13px;opacity:.9}
+.rkg{max-height:calc(90vh / var(--uz));overflow:auto}.rkg-sec{margin:14px 0 0}.rkg-t{font-weight:700;margin-bottom:6px}.rkg-n{font-size:12.5px;opacity:.85;margin:4px 0}
+.rkg-lad{display:flex;flex-wrap:wrap;gap:6px 4px}.rkg-lad .st{display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 6px;border-radius:6px;background:rgba(255,255,255,.05)}
+.rkg-g{display:flex;flex-direction:column;gap:6px;margin:4px 0}.rkg .rh-row .pips{display:inline-flex;gap:4px}.rkg .rh-row .pips i{width:18px;height:8px;border-radius:2px;background:rgba(255,255,255,.14)}.rkg .rh-row .pips i.on{background:hsl(38,70%,58%)}
+.rkg .rh-row{display:flex;align-items:center;gap:12px}.rkg .rh-row>b{min-width:42px}.rkg .rh-row .pt{margin-left:auto;font-variant-numeric:tabular-nums;font-size:13px}.rkg .rh-row .arrow{opacity:.6}
+.rkg .bar{flex:1;height:8px;border-radius:2px;background:rgba(255,255,255,.1);overflow:hidden;max-width:240px}.rkg .bar i{display:block;height:100%;background:hsl(8,60%,52%)}
+.rkg .m2 .ic{width:24px;text-align:center}.rkg .m2 .pt{font-weight:600;text-align:right}
+.rkg-chips{display:flex;flex-wrap:wrap;gap:6px}.rkg-chips span{padding:5px 10px;border-radius:14px;background:rgba(255,255,255,.07);font-size:13px}
+.rset-dlg{width:min(360px,calc(92vw / var(--uz)))}.rset-list{display:flex;flex-direction:column;gap:8px;padding:14px 18px 18px}.rset-list button{width:100%;min-height:44px;justify-content:flex-start;text-align:left}
+
+.tholder .sec{display:none}.tholder .sec.cur{display:block}
+.wzs{display:flex;align-items:center;gap:8px;margin:6px 0 2px;flex-wrap:wrap}.wzs-l{font-size:13px;color:var(--dim);margin-right:2px}.wzs .rs-tab{margin-left:auto;border-radius:99px;padding:0 18px}
+.wzs button{min-height:38px;border-radius:99px;padding:0 20px;font-size:14px;background:#0e1d36;box-shadow:inset 0 0 0 1px #24496f;color:var(--dim)}
+.wzs button.on{background:linear-gradient(180deg,#46d6ff,#1b9fd6);color:#021c2a;font-weight:700}
+.tgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:12px 0 4px}
+@media (max-width:820px){.tgrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}}
+.wtile{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 10px 10px;border-radius:14px;min-height:clamp(150px,calc(22vh / var(--uz)),196px);justify-content:flex-end;overflow:hidden;text-align:center;background:linear-gradient(160deg,rgba(33,44,57,.96),rgba(20,28,37,.96));border:1px solid var(--line);box-shadow:var(--shadow)}
+.wtile.open{cursor:pointer}.wtile.open:hover,.wtile.open:focus-visible{border-color:var(--gold);outline:none}
+.wtile.lk{opacity:.45;pointer-events:none}
+.tart{position:absolute;inset:0;z-index:0;pointer-events:none}
+.tart img{width:100%;height:100%;object-fit:cover;object-position:center 20%;display:block;-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 20%,#000 30%,rgba(0,0,0,.55) 52%,transparent 80%);mask-image:linear-gradient(to bottom,transparent 0,#000 20%,#000 30%,rgba(0,0,0,.55) 52%,transparent 80%)}
+.tart.seal{font-size:34px;font-weight:800;color:#f6e9d4}
+.tart.seal{inset:auto;top:14px;left:50%;margin-left:-36px;width:72px;height:72px;display:flex;align-items:center;justify-content:center;border-radius:4px;background:#8f2a22;box-shadow:inset 0 0 0 3px #8f2a22,inset 0 0 0 5px rgba(246,233,212,.8)}
+.tn{margin-top:auto;position:relative;z-index:1;font-weight:700;font-size:15px;color:var(--text);text-shadow:0 1px 6px rgba(0,0,0,.9)}
+.tv{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;gap:4px;width:100%;margin-top:0}
+.tval{text-shadow:0 1px 6px rgba(0,0,0,.9);flex:1;min-width:0;font-weight:700;font-size:15px;line-height:1.25;color:var(--accent);overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.wtile.hintv .tval{font-weight:400;color:var(--dim)}
+.tstep{flex:none;min-width:40px;min-height:40px!important;padding:0!important;border-radius:50%!important;display:inline-flex!important;align-items:center;justify-content:center}
+.tstep .chev{width:9px;height:9px;border:solid currentColor;border-width:0 0 2.5px 2.5px;display:block}.tstep .chev.l{transform:rotate(45deg);margin-left:4px}.tstep .chev.r{transform:rotate(-135deg);margin-right:4px}
+.tv.one{min-height:40px}
+.tdesc{text-align:center;margin:10px 4px 2px;min-height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}.tdesc-t{font-size:13px;color:var(--dim);letter-spacing:.08em}.tdesc-x{font-size:18px;font-weight:600;color:var(--text);line-height:1.4;max-width:560px}
+.wtile.sel{border-color:var(--gold)}
+.tholder .sec.cur{text-align:center}.tholder .sec.cur .sh{justify-content:center}.tholder .sec.cur .seg{justify-content:center}.tholder .sec.cur .shx{margin-left:auto;margin-right:auto;width:fit-content;max-width:100%;text-align:left}.tholder .sec.cur .tbackbar{text-align:left}
+
+/* ---------- 動畫 (全站共用的時間與曲線): 進場用減速、離場短一點;只動 transform / opacity;尊重「減少動態效果」 ---------- */
+:root{--mo-fast:140ms;--mo-base:240ms;--mo-slow:360ms;--ease-out:cubic-bezier(.2,.8,.2,1)}
+@keyframes mo-fade{from{opacity:0}}
+@keyframes mo-pop{from{opacity:0;transform:translateY(10px) scale(.965)}}
+@keyframes mo-slide-l{from{opacity:0;transform:translateX(-16px)}}
+@keyframes mo-slide-r{from{opacity:0;transform:translateX(16px)}}
+@keyframes mo-rise{from{opacity:0;transform:translateY(10px)}}
+@keyframes mo-hit{0%,100%{transform:translate(-50%,-50%)}20%{transform:translate(calc(-50% - 7px),-50%)}40%{transform:translate(calc(-50% + 6px),-50%)}60%{transform:translate(calc(-50% - 4px),-50%)}80%{transform:translate(calc(-50% + 2px),-50%)}}
+@keyframes mo-hitflash{0%{box-shadow:0 0 0 3px rgba(255,93,115,.9),0 0 26px rgba(255,93,115,.8)}100%{box-shadow:0 0 0 0 rgba(255,93,115,0)}}
+@keyframes mo-heal{0%{box-shadow:0 0 0 3px rgba(70,224,160,.85),0 0 26px rgba(70,224,160,.7)}100%{box-shadow:0 0 0 0 rgba(70,224,160,0)}}
+@keyframes mo-turn{from{opacity:.55;filter:brightness(1.5)}}
+@keyframes mo-draw{from{opacity:0;transform:translateY(46px) scale(.9)}}
+#table .pl.hit{animation:mo-hit 380ms var(--ease-out),mo-hitflash 700ms var(--ease-out)}
+#table .pl.heal{animation:mo-heal 800ms var(--ease-out)}
+#table .pl.turn-in{animation:mo-turn 420ms var(--ease-out)}
+#hand .card.draw-in{animation:mo-draw 360ms var(--ease-out) both}
+@keyframes mo-art{from{opacity:0;transform:scale(1.04)}}
+.modal.mo-in{animation:mo-fade var(--mo-base) ease-out both}
+.modal.mo-in>.dlg,.modal.mo-in>.ci,.modal.mo-in>.cidual{animation:mo-pop var(--mo-base) var(--ease-out) both}
+.dlg.setup .tgrid.anim.l{animation:mo-slide-l var(--mo-base) var(--ease-out) both}
+.dlg.setup .tgrid.anim.r{animation:mo-slide-r var(--mo-base) var(--ease-out) both}
+.dlg.setup .tgrid.anim .wtile{animation:mo-rise var(--mo-base) var(--ease-out) both;animation-delay:calc(var(--i,0)*40ms)}
+#log .lg-in{animation:mo-rise 320ms var(--ease-out) both}
+.pane.on{animation:mo-fade var(--mo-base) ease-out both}
+:where(button){transition:background-color var(--mo-fast) ease,border-color var(--mo-fast) ease,color var(--mo-fast) ease,opacity var(--mo-fast) ease,transform var(--mo-fast) var(--ease-out),box-shadow var(--mo-fast) ease}
+:where(button:not(:disabled)):active{transform:scale(.97)}
+#table.enter{animation:mo-fade .6s ease-out both}
+#top button:hover,#side button:hover{filter:brightness(1.12)}
+.tholder .sec.cur{animation:mo-rise var(--mo-base) var(--ease-out) both}
+@keyframes mo-img-in-r{from{opacity:0;transform:translateX(36px)}}
+@keyframes mo-img-in-l{from{opacity:0;transform:translateX(-36px)}}
+@keyframes mo-img-out-l{to{opacity:0;transform:translateX(-36px)}}
+@keyframes mo-img-out-r{to{opacity:0;transform:translateX(36px)}}
+.tart img{position:absolute;inset:0}
+.tart img.in-r{animation:mo-img-in-r var(--mo-base) var(--ease-out) both}.tart img.in-l{animation:mo-img-in-l var(--mo-base) var(--ease-out) both}
+.tart img.out-l{animation:mo-img-out-l var(--mo-base) ease-in both}.tart img.out-r{animation:mo-img-out-r var(--mo-base) ease-in both}
+.tdesc.chg .tdesc-x{animation:mo-fade var(--mo-fast) ease-out both}
+.tart img{animation:mo-art var(--mo-slow) var(--ease-out) both}
+.dlg button,.dlg .wtile,.wzs button{transition:background-color var(--mo-fast) ease,border-color var(--mo-fast) ease,color var(--mo-fast) ease,opacity var(--mo-fast) ease,transform var(--mo-fast) var(--ease-out),box-shadow var(--mo-fast) ease}
+.dlg .wtile.open:active,.dlg .tstep:not(:disabled):active,.dlg button.primary:active,.wzs button:active{transform:scale(.97)}
+@media (prefers-reduced-motion:reduce){.tart img.in-r,.tart img.in-l,.tart img.out-l,.tart img.out-r{animation:none!important}.pane.on,#log .lg-in,#table .pl.hit,#table .pl.heal,#table .pl.turn-in,#hand .card.draw-in,#table.enter,.modal.mo-in,.modal.mo-in>.dlg,.modal.mo-in>.ci,.modal.mo-in>.cidual,.dlg.setup .tgrid.anim,.dlg.setup .tgrid.anim .wtile,.tholder .sec.cur,.tdesc.chg .tdesc-x,.tart img{animation:none!important}.dlg button,.dlg .wtile,.wzs button{transition:none}}
+.tholder .sec.cur .adv{display:flex;flex-direction:column;align-items:center;gap:18px;margin-top:8px}.tholder .sec.cur .adv .fld{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}.tholder .sec.cur .adv .rng{display:flex;align-items:center;justify-content:center;gap:12px}
+@media (max-width:820px){.wtile{min-height:clamp(128px,calc(17vh / var(--uz)),150px)}.tdesc{margin-top:6px;min-height:44px}.tdesc-x{font-size:16px}}
+
+@media (max-width:400px){.dlg.setup .df{gap:6px;padding-left:12px;padding-right:12px}.dlg.setup .df button{padding-left:10px!important;padding-right:10px!important;min-width:0}}
+@media (max-height:720px){.wtile{min-height:104px}.tart.seal{top:6px;margin-left:-19px;width:38px;height:38px;font-size:20px}.tgrid{gap:8px;margin-top:6px}.wtile{gap:2px;padding:6px 8px}.dlg.setup .dh .meta{display:none}.dlg.setup .wzs{margin-bottom:4px}}
+@media (max-width:820px){.dlg.setup .tgrid{gap:8px}.wtile{padding:8px 8px 8px;gap:4px}.wtile .tn{font-size:14px}.tstep{min-width:34px;min-height:34px!important}.tv.one{min-height:34px}.tval{font-size:14px}.dlg.setup .dh{padding:12px 16px 8px}.dlg.setup .wzs{margin-bottom:8px}}
+.tstep:disabled{opacity:.3;cursor:default}
+.tinfo{position:absolute;top:6px;right:6px;min-width:30px;min-height:30px!important;padding:0!important;border:0!important;border-radius:50%!important;background:rgba(0,0,0,.6)!important;box-shadow:none!important;color:#f6e9d4;font-size:15px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.tbackbar{margin:8px 0 0}.tback{min-height:38px;padding:0 18px;border-radius:99px;font-size:14px}
+#shtip{position:fixed;z-index:9999;display:none;max-width:340px;background:#16324a;color:#fff;border:1px solid #3fd2ff;border-radius:8px;padding:8px 12px;font-size:13px;line-height:1.5;box-shadow:0 4px 18px rgba(0,0,0,.5);pointer-events:none}
 .sh b{font-size:13px;letter-spacing:.12em;color:var(--accent)}
 .seg{display:flex;flex-wrap:wrap;gap:6px}
 .seg button{clip-path:none;border-radius:99px;padding:7px 16px;background:#0e1d36;box-shadow:inset 0 0 0 1px #24496f;color:var(--dim)}
@@ -264,7 +363,7 @@ html .seg button.on,html .seg button.on:hover{background:linear-gradient(180deg,
 .lrow{display:flex;align-items:center;justify-content:space-between;gap:12px;background:linear-gradient(160deg,rgba(18,40,72,.9),rgba(8,18,36,.9));border:1px solid #1f4468;border-radius:10px;padding:10px 14px;margin:8px 0}
 .lrow b{letter-spacing:.05em}
 
-#hv{position:fixed;left:calc((100% - 390px) / 2);top:50%;transform:translate(-50%,-50%);max-width:min(96vw,1000px);background:linear-gradient(160deg,rgba(19,38,74,.97),rgba(8,18,36,.97));border:1px solid var(--accent);box-shadow:var(--glow),0 14px 36px rgba(0,0,0,.7);padding:10px 14px;z-index:21;display:none;border-radius:4px;max-height:calc(100vh - 110px);overflow-y:auto;box-sizing:border-box;overscroll-behavior:contain}
+#hv{position:fixed;left:calc((100% - 390px) / 2);top:50%;transform:translate(-50%,-50%);max-width:min(calc(96vw / var(--uz)),1000px);background:linear-gradient(160deg,rgba(19,38,74,.97),rgba(8,18,36,.97));border:1px solid var(--accent);box-shadow:var(--glow),0 14px 36px rgba(0,0,0,.7);padding:10px 14px;z-index:21;display:none;border-radius:4px;max-height:calc(calc(100vh / var(--uz)) - 110px);overflow-y:auto;box-sizing:border-box;overscroll-behavior:contain}
 #hv .hvh{margin-bottom:6px;position:sticky;top:-10px;z-index:1;background:rgba(14,30,60,.97);padding:4px 0}   /* 手牌太多: 面板可以上下捲動,標題列固定在上面 */
 #hv .hvh b{color:var(--accent);font-size:15px}
 #hv .hvc{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
@@ -323,16 +422,16 @@ html .seg button.on,html .seg button.on:hover{background:linear-gradient(180deg,
 .pl.br .bubble{left:auto;right:0;transform:none}.pl.br .bubble::after{left:auto;right:40px}
 .pl .ph{cursor:zoom-in}
 .pl .ph.back{filter:saturate(.85) brightness(.9);border-color:#8a6a1c}
-.ci.char{max-width:min(94vw,640px);max-height:88vh;overflow:auto}
+.ci.char{max-width:min(calc(94vw / var(--uz)),640px);max-height:calc(88vh / var(--uz));overflow:auto}
 .ci.char img{width:150px}
 .ci .sk{margin:8px 0 0;font-size:14px}
 @media (max-width:820px) and (min-height:501px){   /* 手機直向: 武將 / 卡牌詳細資訊的文字寫在圖片下面 */
-  .ci,.ci.char{flex-direction:column;align-items:center;max-height:90vh;overflow:auto;padding:14px}
-  .ci img,.ci.char img{width:min(56vw,210px)}
+  .ci,.ci.char{flex-direction:column;align-items:center;max-height:calc(90vh / var(--uz));overflow:auto;padding:14px}
+  .ci img,.ci.char img{width:min(calc(56vw / var(--uz)),210px)}
   .ci>div{width:100%}
-  .cidual{flex-direction:column!important;flex-wrap:nowrap!important;align-items:stretch!important;justify-content:flex-start!important;width:min(94vw,560px)}   /* 偽裝 / 化身: 兩張卡上下排,各自圖在左文字在右,不然兩張直排太高會跑出螢幕 */
+  .cidual{flex-direction:column!important;flex-wrap:nowrap!important;align-items:stretch!important;justify-content:flex-start!important;width:min(calc(94vw / var(--uz)),560px)}   /* 偽裝 / 化身: 兩張卡上下排,各自圖在左文字在右,不然兩張直排太高會跑出螢幕 */
   .cidual .ci.char{flex-direction:row;align-items:flex-start;width:100%;box-sizing:border-box;max-height:none;overflow:visible;padding:12px;gap:12px}
-  .cidual .ci.char img{width:min(30vw,110px);flex:none}
+  .cidual .ci.char img{width:min(calc(30vw / var(--uz)),110px);flex:none}
   .cidual .ci.char>div{width:auto;min-width:0;flex:1}
 }
 .pl .nick{font-size:12px;color:var(--gold);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -382,11 +481,11 @@ html .pl.target{filter:drop-shadow(0 0 5px #46e0a0) drop-shadow(0 0 14px rgba(70
   #hand{transform:translateY(152px);transition:transform .25s ease}
   #hand:hover,#bottom.open #hand,#bottom:has(#bar:hover) #hand{transform:none}
   #hand{height:200px;min-height:0;padding:14px 12px 0;background:none;border:0;box-shadow:none;align-items:flex-start;width:max-content;max-width:100%;margin:0 auto;border-radius:6px 6px 0 0}
-  #bar{position:absolute;left:50%;bottom:68px;transform:translateX(-50%);z-index:3;margin:0;width:max-content;max-width:92vw;background:rgba(5,11,23,.92);padding:4px 12px;border-radius:4px;box-shadow:0 0 14px rgba(0,0,0,.6)}   /* 固定在手牌露出的邊上方,不隨手牌升降 */
+  #bar{position:absolute;left:50%;bottom:68px;transform:translateX(-50%);z-index:3;margin:0;width:max-content;max-width:calc(92vw / var(--uz));background:rgba(5,11,23,.92);padding:4px 12px;border-radius:4px;box-shadow:0 0 14px rgba(0,0,0,.6)}   /* 固定在手牌露出的邊上方,不隨手牌升降 */
   #bar:empty{display:none}
   #bar{z-index:30}   /* 確定 / 使用等按鈕永遠在手牌 (含滑過放大的牌) 上面 */
   .modal.soft{align-items:flex-start;padding:62px 0 0;background:none;pointer-events:none}
-  .modal.soft .dlg{pointer-events:auto;max-height:46vh;width:min(760px,70vw)}
+  .modal.soft .dlg{pointer-events:auto;max-height:calc(46vh / var(--uz));width:min(760px,calc(70vw / var(--uz)))}
 }
 .modal.soft .dlg h3{cursor:pointer}.modal.soft .dlg h3::after{content:" ▾";font-size:12px;opacity:.6}
 .modal.soft .dlg.mini h3::after{content:" ▸ " var(--t-more,"(點擊展開)")}.modal.soft .dlg.mini>*:not(h3){display:none}
@@ -412,7 +511,7 @@ body.paused #hand .card,body.paused #bar button,body.paused #modal .modal.soft .
 body:has(#modal .modal:not(.soft)) #bHand{display:none!important}   /* 新遊戲 / 等待入座 / 選武將等視窗開著時,收起手牌按鈕不要蓋在視窗上 */
 .pickbar,.modal.soft{z-index:38}.card.picked{position:relative;z-index:3}
 #modal .card.picked{transform:none;box-shadow:0 0 0 3px var(--gold),0 0 16px var(--gold)}   /* 選牌視窗: 選中的牌不要往上浮,不然會蓋住標題和上一排的牌 */   /* 選對象的提示一定在選取中的牌前面 */
-#members{position:fixed;top:44px;left:150px;z-index:9000;min-width:min(330px,92vw);max-width:min(400px,92vw);background:#0b1a30;border:1px solid #24557d;border-radius:10px;padding:8px 10px;box-shadow:0 10px 30px rgba(0,0,0,.6);display:none}
+#members{position:fixed;top:44px;left:150px;z-index:9000;min-width:min(330px,calc(92vw / var(--uz)));max-width:min(400px,calc(92vw / var(--uz)));background:#0b1a30;border:1px solid #24557d;border-radius:10px;padding:8px 10px;box-shadow:0 10px 30px rgba(0,0,0,.6);display:none}
 #members .mr.clk{cursor:pointer;border-radius:8px}#members .mr.clk:hover{background:rgba(63,210,255,.12)}#members.on{display:block}#members .mr{display:flex;align-items:center;gap:8px;padding:4px 2px;font-size:13px}#members .mr img{width:26px;height:26px;border-radius:50%;object-fit:cover}#members .mr .av0{width:26px;text-align:center}#members .mr .tg{font-size:11px;color:#7fb7dd;white-space:nowrap;min-width:46px;text-align:right}#members .mr .mn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#members .mr>*{flex:none}#members .mr>.mn{flex:1 1 auto}#members .mr .mb{padding:1px 7px;font-size:12px;min-height:0;white-space:nowrap}#members h4{margin:0 0 4px;color:#3fd2ff;font-size:13px}
 #waitbar{display:none!important}
 @media(max-width:820px),(pointer:coarse) and (max-height:500px){#bar{position:relative;z-index:30}}
@@ -444,7 +543,7 @@ body:has(#modal .modal:not(.soft)) #bHand{display:none!important}   /* 新遊戲
   button{min-height:40px;padding:6px 14px}
   select,input[type=number]{min-height:38px}
   select,textarea,input:not([type=range]):not([type=checkbox]):not([type=radio]){font-size:16px}   /* iOS: 輸入框字小於 16px 時,點進去瀏覽器會自動放大整個頁面 */
-  #app{height:100dvh;grid-template-rows:auto 1fr auto auto;grid-template-columns:minmax(0,1fr)}
+  #app{height:calc(100dvh / var(--uz));grid-template-rows:auto 1fr auto auto;grid-template-columns:minmax(0,1fr)}
   #top,#mid,#bottom{min-width:0}
   #top{flex-wrap:nowrap;overflow-x:auto;padding:6px 8px;gap:8px;white-space:nowrap}
   #top .title{display:none}
@@ -474,9 +573,9 @@ body:has(#modal .modal:not(.soft)) #bHand{display:none!important}   /* 新遊戲
   #bar button{flex:1 1 auto}
   .modal.soft{align-items:flex-end;padding-bottom:0;background:rgba(0,0,0,.35)}
   .modal{align-items:center}
-  .modal:not(.soft) .dlg{width:calc(100vw - 20px);max-width:calc(100vw - 20px);border-radius:14px}   /* 手機: 一般視窗 (暱稱 / 大廳 / 設定…) 放螢幕中間;打牌詢問 (.soft) 才貼在底部 */
-  .dlg{width:100vw;max-width:100vw;border-radius:14px 14px 0 0;max-height:78dvh;padding:12px}
-  .dlg.setup{max-height:calc(100dvh - 24px);padding:0}   /* 手機的新遊戲視窗: 高度不要靠頂端列高度算,量到怪值時會被壓到只剩標題 */
+  .modal:not(.soft) .dlg{width:calc(calc(100vw / var(--uz)) - 20px);max-width:calc(calc(100vw / var(--uz)) - 20px);border-radius:14px}   /* 手機: 一般視窗 (暱稱 / 大廳 / 設定…) 放螢幕中間;打牌詢問 (.soft) 才貼在底部 */
+  .dlg{width:calc(100vw / var(--uz));max-width:calc(100vw / var(--uz));border-radius:14px 14px 0 0;max-height:calc(78dvh / var(--uz));padding:12px}
+  .dlg.setup{max-height:calc(calc(100dvh / var(--uz)) - 24px);padding:0}   /* 手機的新遊戲視窗: 高度不要靠頂端列高度算,量到怪值時會被壓到只剩標題 */
   .opts .card{width:64px;height:92px}
   .opts .card.land{width:92px;height:64px}
   .seatgrid{grid-template-columns:1fr}
@@ -484,7 +583,7 @@ body:has(#modal .modal:not(.soft)) #bHand{display:none!important}   /* 新遊戲
   #tablewrap::before,#tablewrap::after{display:none}
   .pl{clip-path:none;border:1px solid #24557d}
   #prev{display:none!important}
-  #hv{left:2vw;right:2vw;width:auto;max-width:none;top:auto;bottom:130px;transform:none;box-sizing:border-box}   /* 手機: 面板撐滿螢幕寬,手牌排一列左右滑動 (原本 left:50% 讓面板只剩半個螢幕寬,牌被擠成直條) */
+  #hv{left:calc(2vw / var(--uz));right:calc(2vw / var(--uz));width:auto;max-width:none;top:auto;bottom:130px;transform:none;box-sizing:border-box}   /* 手機: 面板撐滿螢幕寬,手牌排一列左右滑動 (原本 left:50% 讓面板只剩半個螢幕寬,牌被擠成直條) */
   #hv .hvc{flex-wrap:nowrap;justify-content:flex-start;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px;scroll-snap-type:x proximity;overscroll-behavior-x:contain}
   #hv .hvc .card{flex:none;scroll-snap-align:start}
   #bSide{display:none}
@@ -516,7 +615,7 @@ body:has(#modal .modal:not(.soft)) #bHand{display:none!important}   /* 新遊戲
 #rooms a.dc svg{width:22px;height:22px;fill:#5865f2;stroke:none}
 .rnew{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}.rnew input{flex:1 1 180px;min-width:0}.rnew #rpw{flex:1 1 130px}.rnew #rcap{flex:0 1 auto;min-width:0}.rnew button{flex:none;white-space:nowrap}
 @media (max-width:560px){.rnew{flex-wrap:wrap}.rnew input{flex:1 1 100%;min-width:0;max-width:none!important;min-height:44px}.rnew #rpw{flex:1 1 0}.rnew #rcap{flex:none;min-height:44px}.rnew button{flex:none;white-space:nowrap;min-height:44px}}   /* 手機: 房間名稱獨佔一列,密碼和按鈕同一列 (原本按鈕被擠成直排、溢出卡片) */
-#rlist{display:flex;flex-direction:column;gap:8px;max-height:55vh;overflow:auto}
+#rlist{display:flex;flex-direction:column;gap:8px;max-height:calc(55vh / var(--uz));overflow:auto}
 .rkcoin{font-weight:700;color:#ffd24a;margin:4px 0}
 .prestbox{display:flex;gap:10px;align-items:center;justify-content:space-between;background:linear-gradient(135deg,#2a1d04,#3a2a08);border:1px solid #c99419;border-radius:10px;padding:10px 12px;margin:10px 0}
 .rk.pres{box-shadow:0 0 0 1px #ffd24a,0 0 6px rgba(255,210,74,.55)}
@@ -532,7 +631,7 @@ img.av{width:22px;height:22px;border-radius:50%;object-fit:cover;vertical-align:
 #auth.on{display:flex}
 #auth .rbox{width:min(380px,100%);background:#0b1a30;border:1px solid #24557d;border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:10px;box-shadow:0 10px 40px rgba(0,0,0,.6)}
 #auth h2{margin:0;color:#3fd2ff;text-align:center}
-.atabs{display:flex;gap:6px}.atabs button{flex:1;border-radius:8px}.atabs button.on{background:#2a7de1;color:#fff}
+.atabs{display:flex;gap:6px}.atabs button{flex:1;border-radius:8px}.atabs button.on{background:#1f6fd6;color:#fff}
 .aerr{color:#ff8b8b;min-height:18px;font-size:13px}
 #top{flex-wrap:nowrap!important;gap:6px!important;padding:7px 10px!important;white-space:nowrap;overflow:hidden}
 #top button,#top label{white-space:nowrap;flex:0 0 auto}
@@ -603,9 +702,9 @@ img.av{width:22px;height:22px;border-radius:50%;object-fit:cover;vertical-align:
   #center>.lastact{flex:1 1 0;min-width:0;align-self:flex-start;margin-top:4px}
   #center:has(#winner){display:block!important;height:auto!important}
   #table .pl{width:calc(25% - 5px)!important}
-  .toast,#toasts{max-width:60vw}
+  .toast,#toasts{max-width:calc(60vw / var(--uz))}
   .modal.soft{padding-bottom:0!important}
-  .modal.soft .dlg{padding:6px 10px!important;max-height:52dvh!important;overflow-y:auto}
+  .modal.soft .dlg{padding:6px 10px!important;max-height:calc(52dvh / var(--uz))!important;overflow-y:auto}
   .modal.soft .dlg .card{width:46px;height:66px}
   .modal.soft .dlg .card.land{width:66px;height:46px}
   .modal.soft .dlg h3{font-size:14px;margin:0 0 4px}
@@ -667,7 +766,7 @@ img.av{width:22px;height:22px;border-radius:50%;object-fit:cover;vertical-align:
   body.menu-open #top>label:has(#speed){display:flex!important;flex:1 1 100%;align-items:center;gap:10px;min-height:44px;order:6;font-size:14px}
   body.menu-open #top>label:has(#speed) input{flex:1 1 auto;width:auto;min-width:0}
   body.menu-open #top>label:has(#speed) #speedv{display:inline!important;min-width:44px;text-align:right}
-  #members{left:8px;right:8px;top:calc(var(--toph,48px) + 4px);min-width:0;max-width:none;max-height:calc(100dvh - var(--toph,48px) - 20px);overflow-y:auto}
+  #members{left:8px;right:8px;top:calc(var(--toph,48px) + 4px);min-width:0;max-width:none;max-height:calc(calc(100dvh / var(--uz)) - var(--toph,48px) - 20px);overflow-y:auto}
   .pl .nm{min-width:0}.pl .nm .who{display:flex;align-items:center;gap:3px;max-width:100%;overflow:visible!important;white-space:nowrap!important}.pl .nm .who>*{flex:0 0 auto}.pl .nm .who>.wn{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}.pl.cur::after{display:none!important}
   .role{font-size:10px;padding:0 5px}
   .hp img.o,#table.dense .hp img.o{width:13px;height:13px}
@@ -689,7 +788,7 @@ img.av{width:22px;height:22px;border-radius:50%;object-fit:cover;vertical-align:
   .card.land{width:94px;height:66px}
   #bar{margin-top:2px;gap:6px}
   #bar .pr{font-size:13px;line-height:1.35}
-  .modal.soft .dlg{max-height:55dvh}
+  .modal.soft .dlg{max-height:calc(55dvh / var(--uz))}
   #mnav button{padding:8px 2px;min-height:44px}
 }
 .rk{display:inline-block;font-size:11px;font-weight:800;padding:0 6px;border-radius:4px;line-height:1.5;white-space:nowrap;vertical-align:1px;color:#fff;background:#4a5568;box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)}
@@ -778,6 +877,7 @@ img.av{width:22px;height:22px;border-radius:50%;object-fit:cover;vertical-align:
   <h2>進化三國 · 大廳<span id="lobbycount"></span></h2>
   <div id="lobbytools" role="group" aria-label="快捷功能"></div>
   <div class="rnew"><input id="rname" type="text" maxlength="20" placeholder="房間名稱"><input id="rpw" type="password" maxlength="20" placeholder="房間密碼 (可不設)" autocomplete="new-password" style="max-width:150px"><select id="rcap" title="房間人數上限 (含觀戰的人)"><option value="0">人數不限</option><option value="2">上限 2 人</option><option value="3">上限 3 人</option><option value="4">上限 4 人</option><option value="5">上限 5 人</option><option value="6">上限 6 人</option><option value="7">上限 7 人</option><option value="8">上限 8 人</option><option value="9">上限 9 人</option><option value="10">上限 10 人</option></select><button id="rcreate" class="primary">創建房間</button></div>
+  <button id="rquick" class="primary" style="width:100%;margin:6px 0 2px;padding:12px;font-size:16px" title="一鍵建房: 4 人、你坐座位 0、電腦難度弱,馬上開打">🤖 快速開始 (和電腦練習)</button>
   <input id="rsearch" type="search" maxlength="20" placeholder="搜尋房間名稱 / 房主" aria-label="搜尋房間名稱 / 房主" style="width:100%;box-sizing:border-box;margin:8px 0">
   <div id="rlist"></div>
   <div id="rpager" style="display:flex;justify-content:center;align-items:center;gap:10px;margin-top:8px"></div>
@@ -966,7 +1066,7 @@ function showCharInfo(p) {   // 點武將頭像: 顯示技能全文與目前狀�
     const d = (S.roster || []).find(x => x.name === p.disguise);
     if (d) {
       const stt = [`體力 ${p.hp}/${p.maxhp}`, `手牌 ${p.hand_n}`]; if (p.role !== "?" && p.role !== "無") stt.push(p.role);
-      box.append(h("div", {class: "modal", onclick: () => { box.textContent = ""; }}, h("div", {class: "cidual", style: {display: "flex", gap: "14px", flexWrap: "wrap", justifyContent: "center", maxHeight: "92vh", overflow: "auto"}},
+      box.append(h("div", {class: "modal", onclick: () => { box.textContent = ""; }}, h("div", {class: "cidual", style: {display: "flex", gap: "14px", flexWrap: "wrap", justifyContent: "center", maxHeight: "calc(92vh / var(--uz))", overflow: "auto"}},
         charBody(d, p.disguise_kind === "alias" ? `化身為 · 這回合擁有他的技能` : `偽裝成 · 這回合擁有他的技能`, p.disguise_kind === "alias" ? "🌀 化身為" : "🎭 偽裝成"), charBody(c, `原本的武將 · 體力上限 ${c.maxhp} · 目前: ${stt.join(" / ")}`, "原本的武將", p))));
       return;
     }
@@ -1129,6 +1229,20 @@ function syncAnims(root) {   // 牌桌每次重畫都會重建元素,循環動�
 }
 function renderTable(snap) {
   renderTable0(snap); syncAnims($("#table"));
+  try {   // 動畫第二批: 和上一次比,體力變少 → 座位震一下;回血 → 綠光;換回合 → 發光淡入
+    const pv = S.pvHp || {}, nx = {};
+    for (const p of snap.players) {
+      nx[p.idx] = p.hp;
+      const el = $(`#table .pl[data-idx="${p.idx}"]`); if (!el) continue;
+      const f = S.pfx || (S.pfx = {}), now = Date.now();
+      if (pv[p.idx] != null && p.hp < pv[p.idx]) f[p.idx] = ["hit", now];
+      else if (pv[p.idx] != null && p.hp > pv[p.idx]) f[p.idx] = ["heal", now];
+      else if (S.pvCur !== snap.cur && snap.cur === p.idx && S.pvCur != null) f[p.idx] = ["turn-in", now];
+      const e = f[p.idx];   // 畫面常常重畫 (點牌 / 輪詢): 用負的 delay 接著播,動畫才不會被切掉
+      if (e && now - e[1] < 800) { el.classList.add(e[0]); el.style.animationDelay = `-${now - e[1]}ms`; }
+    }
+    S.pvHp = nx; S.pvCur = snap.cur;
+  } catch (e) {}
 }
 (() => {   // 成員列表 / 聊天室等任何重畫都一樣: 循環動畫 (頭貼特效) 對齊文件時間軸,不會被重置
   let q = 0; new MutationObserver(() => { if (!q) q = requestAnimationFrame(() => { q = 0; syncAnims(document.body); }); }).observe(document.body, {childList: true, subtree: true});
@@ -1224,7 +1338,7 @@ function renderTable0(snap) {
       let dy = 0;
       if (r.top < tr.top + 44) dy = tr.top + 44 - r.top;
       else if (r.bottom > tr.bottom - 4) dy = tr.bottom - 4 - r.bottom;
-      if (dy) el.style.top = `calc(${el.style.top} + ${dy}px)`;
+      if (dy) el.style.top = `calc(${el.style.top} + ${dy / UZ()}px)`;
       const r2 = el.getBoundingClientRect(), cx = (r2.left + r2.right) / 2 - tr.left, cy = (r2.top + r2.bottom) / 2 - tr.top;
       el.classList.toggle("bb", cy < tr.height * 0.45);                 // 上半部的玩家: 泡泡改放在面板下方,才不會被切掉
       el.classList.toggle("bl", cx < tr.width * 0.28);                  // 靠左/靠右: 泡泡靠邊對齊
@@ -1328,6 +1442,7 @@ function renderHand(snap) {
   $("#bottom").classList.toggle("open", !!(me && snap.pending && snap.pending.kind === "act" && S.picked != null && !S.tgtPick));
   if (!me) { B.append(h("span", {class: "meta", text: "觀戰模式: 可在左上調整速度、暫停、單步;右側 AI 思考可看每個決定的理由。"})); return; }
   const pend = snap.pending;
+  const prevHand = S.pvHand; S.pvHand = new Set((me.hand || []).map(c => c.id));
   const groups = new Map();
   if (pend && pend.kind === "act") for (const o of pend.options) { if (!groups.has(String(o.group))) groups.set(String(o.group), []); groups.get(String(o.group)).push(o); }
   const jiuBtn = opts => !(opts[0].card && opts[0].card.name === "殺" && pend && pend.options.some(x => x.card && x.card.name === "酒" && !x.target)) ? "" :
@@ -1361,6 +1476,9 @@ function renderHand(snap) {
       if (opts.length === 1) { S.tgtPick = null; return submit(pend.id, [opts[0].i]); }
       S.picked = String(c.id); S.tgtPick = null; beginTarget(opts); S.handKey = null; renderHand(S.snap); renderTable(S.snap);
     };
+    const df = S.pfd || (S.pfd = {}), nw = Date.now();
+    if (prevHand && prevHand.size && !prevHand.has(c.id)) df[c.id] = nw;
+    if (df[c.id] && nw - df[c.id] < 400) { ce.classList.add("draw-in"); ce.style.animationDelay = `-${nw - df[c.id]}ms`; }
     H.append(ce);
   });
   if (!pend) {
@@ -1414,7 +1532,7 @@ function renderHand(snap) {
 function renderDisguise(pend, M) {   // 偽裝: 搜尋 (名字 / 勢力 / 技能內容) + 推薦
   const info = Object.fromEntries((S.roster || []).map(c => [c.name, c]));
   const q = h("input", {type: "text", placeholder: "搜尋武將名稱或技能內容…", style: {width: "100%", marginBottom: "8px"}});
-  const list = h("div", {style: {maxHeight: "52vh", overflow: "auto", display: "flex", flexDirection: "column", gap: "6px"}});
+  const list = h("div", {style: {maxHeight: "calc(52vh / var(--uz))", overflow: "auto", display: "flex", flexDirection: "column", gap: "6px"}});
   const rows = pend.options.map(o => {
     const c = info[o.label] || {name: o.label, skills: [], faction: ""};
     const row = h("div", {class: "dsg" + (o.rec ? " rec" : ""), onclick: () => submit(pend.id, [o.i])},
@@ -1546,6 +1664,8 @@ function addLogs(lines) {
   const L = $("#log"), follow = $("#follow").checked;
   const quiet = lines.length > 60 || document.hidden || (Date.now() - (window.__visAt || 0) < 800 && lines.length > 6);   // 中途加入 / 一次補大量紀錄時不播音效動畫
   if (window.SGS_FX) SGS_FX.begin();
+  const slide = !quiet && L.children.length > 0 && !matchMedia("(prefers-reduced-motion: reduce)").matches;   // 對局中新出現的文字: 從下面滑上來 (剛進場一次補大量紀錄時不播)
+  let slideN = 0;
   for (const s0 of lines) {
     if (s0.charCodeAt(0) === 1) { if (window.SGS_FX) SGS_FX.hint(s0, quiet); continue; }   // 動畫用的隱藏行
     let cls = "";
@@ -1562,6 +1682,7 @@ function addLogs(lines) {
     if (!isChain && pm && pm.el.isConnected && s.trim().startsWith(pm.pl) && pm.card && s.includes(pm.card)) pm.el.remove();
     S.prevChain = null;
     const el = h("div", {class: cls.trim()}, ...logNodes(s)); el.dataset.zh = s;
+    if (slide) { el.classList.add("lg-in"); el.style.animationDelay = Math.min(slideN++, 6) * 50 + "ms"; }
     L.append(el);
     const cm = isChain && s.trim().match(/^↳+ (P\d+\([^)]*\))(?: 對 [^ ]+)? 使用 (\S+)$/);
     if (cm) S.prevChain = {el, pl: cm[1], card: cm[2].replace(/^[紅黑]/, "")};
@@ -1695,7 +1816,7 @@ function playerPos(i) {
   const el = document.querySelector(`#table .pl[data-idx="${i}"]`), w = $("#tablewrap");
   if (!el) return null;
   const a = el.getBoundingClientRect(), b = w.getBoundingClientRect();
-  return [a.left - b.left + w.scrollLeft + a.width / 2, a.top - b.top + w.scrollTop + a.height / 2];   // 手機的牌桌容器會上下捲動,箭頭 / 飛字是畫在隨內容捲動的圖層上,座標要加上捲動量
+  return [(a.left - b.left + a.width / 2) / UZ() + w.scrollLeft, (a.top - b.top + a.height / 2) / UZ() + w.scrollTop];   // 手機的牌桌容器會上下捲動,箭頭 / 飛字是畫在隨內容捲動的圖層上,座標要加上捲動量
 }
 function noteAction(s) {
   if (/^---/.test(s)) return;
@@ -1754,7 +1875,7 @@ function floatNum(i, txt, cls) {
   let L = $("#fxlayer");   // 飛字畫在特效層上: 它和牌桌一起平移,拖曳牌桌時數字才會跟著動
   if (!L) { L = h("div", {id: "fxlayer"}); w.append(L); }
   const a = el.getBoundingClientRect(), b = L.getBoundingClientRect();
-  const e = h("div", {class: "fnum " + cls, text: txt, style: {left: (a.left - b.left + a.width / 2) + "px", top: (a.top - b.top + a.height / 2) + "px"}});
+  const e = h("div", {class: "fnum " + cls, text: txt, style: {left: ((a.left - b.left + a.width / 2) / UZ()) + "px", top: ((a.top - b.top + a.height / 2) / UZ()) + "px"}});
   L.append(e); setTimeout(() => e.remove(), 1500);
 }
 function thEl(t) {
@@ -1792,22 +1913,47 @@ function toggle(label, checked) {
   w.input = i;
   return w;
 }
+const RICH_HINT = {   // 圖文說明: 有的區塊說明文字太長沒人讀,改成圖示 + 一行重點
+  "電腦難度": () => {
+    const rows = [["弱", 1, 10], ["中", 2, 18], ["強", 3, 25], ["很強", 4, 32], ["極強", 5, 40]];
+    return h("div", {class: "shx rich"},
+      h("div", {class: "rh-note", text: "段位模式贏電腦的積分 (輸了扣一樣多)"}),
+      ...rows.map(([n, k, pt]) => h("div", {class: "rh-row"}, h("b", {text: n}), h("span", {class: "pips"}, ...[1, 2, 3, 4, 5].map(i => h("i", {class: i <= k ? "on" : ""}))), h("span", {class: "pt", text: "+" + pt + " / −" + pt}))),
+      h("div", {class: "rh-note", text: "🏅 段位模式的難度不能自己調,依入座玩家的平均段位決定"}));
+  },
+  "遊戲模式": () => h("div", {class: "shx rich"},
+    ...[["⚔", "正常模式", "武將不變"], ["🎭", "百變模式", "第 2 輪起,每個回合隨機換一位武將"], ["🎯", "暗殺目標", "沒有身分,每人暗中有一個目標,先親手殺死目標者勝"], ["🕵", "抓叛徒", "藏著一個叛徒,陣亡會公布身分;叛徒死了好人勝 (4 人以上)"], ["🚩", "雙國戰", "分紅藍兩邊 (4 / 6 / 8 / 10 人),先殺死對方主公者勝"]]
+      .map(([ic, n, t]) => h("div", {class: "rh-row m"}, h("span", {class: "ic", text: ic}), h("div", {}, h("b", {text: n}), h("div", {text: t})))),
+    h("div", {class: "rh-note", text: "雙國戰 — 身分公開: 全部人的陣營都公開"}),
+    h("div", {class: "rh-note", text: "雙國戰 — 忠臣不公開: 只有兩位主公公開,靠行為判斷隊友 (陣亡才翻開)"})),
+};
 function sect(title, hint, ...body) {
-  const ic = hint ? h("span", {class: "shi", text: "ⓘ"}) : "";
+  const rich = RICH_HINT[title];   // 有圖文說明的區塊: 圖文直接顯示在標題下,不放 ⓘ
+  const ic = hint && !rich ? h("span", {class: "shi", text: "ⓘ"}) : "";
   const sh = h("div", {class: "sh"}, h("b", {text: title}), ic);
-  if (hint) {   // 說明不直接顯示: 滑鼠移到 ⓘ 上才跳出框框
+  const sec = h("section", {class: "sec", "data-t": title}, sh, rich ? rich() : "", ...body);   // data-t: 區塊標題 (中文原文),新遊戲視窗的卡片靠它找到對應的區塊
+  if (ic) {   // 說明: 滑鼠移到 ⓘ 上跳出文字框;手機沒有滑鼠,點一下 ⓘ 就在標題下面展開 / 收起
     ic.onmouseenter = ic.onmousemove = e => shTip(hint, e);
     ic.onmouseleave = shTipHide;
+    ic.setAttribute("role", "button"); ic.tabIndex = 0; ic.setAttribute("aria-expanded", "false");
+    const toggleHint = () => {
+      let x = sec.querySelector(":scope > .shx");
+      if (x) { x.remove(); ic.setAttribute("aria-expanded", "false"); ic.classList.remove("on"); return; }
+      shTipHide();
+      sh.after(h("div", {class: "shx", text: hint})); ic.setAttribute("aria-expanded", "true"); ic.classList.add("on");
+    };
+    ic.onclick = e => { e.stopPropagation(); toggleHint(); };
+    ic.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleHint(); } };
   }
-  return h("section", {class: "sec"}, sh, ...body);
+  return sec;
 }
 function shTip(text, e) {
   let el = $("#shtip");
   if (!el) { el = h("div", {id: "shtip"}); document.body.append(el); }
   el.textContent = text; el.style.display = "block";
   const w = el.offsetWidth, hh = el.offsetHeight;
-  el.style.left = Math.max(8, Math.min(innerWidth - w - 8, e.clientX + 14)) + "px";
-  el.style.top = Math.max(8, Math.min(innerHeight - hh - 8, e.clientY + 18)) + "px";
+  el.style.left = Math.max(8, Math.min(innerWidth / UZ() - w - 8, e.clientX / UZ() + 14)) + "px";
+  el.style.top = Math.max(8, Math.min(innerHeight / UZ() - hh - 8, e.clientY / UZ() + 18)) + "px";
 }
 function shTipHide() { const el = $("#shtip"); if (el) el.style.display = "none"; }
 document.addEventListener("mousedown", shTipHide);
@@ -1932,7 +2078,7 @@ async function showPlayer(key) {   // 看別人的個人資訊 (在線列表 / �
         p.chars.length ? h("div", {}, p.chars.map(([n, g, w]) => h("div", {style: {display: "flex", justifyContent: "space-between", padding: "3px 0", borderBottom: "1px solid #17304f"}},
           h("span", {text: n}), h("span", {class: "meta", text: g + " 場 · " + w + " 勝 · " + rate(w, g)})))) : h("div", {class: "meta", text: "還沒有紀錄"}))));
   document.body.append(m);
-  { const nm = m.querySelector(".pnm"); if (nm) { let fs = parseFloat(getComputedStyle(nm).fontSize); while (nm.getBoundingClientRect().height > fs * 1.4 && fs > 14) { fs -= 1; nm.style.fontSize = fs + "px"; } } }   // 名字太長就把字縮小,不換行
+  { const nm = m.querySelector(".pnm"); if (nm) { let fs = parseFloat(getComputedStyle(nm).fontSize); while (nm.getBoundingClientRect().height / UZ() > fs * 1.4 && fs > 14) { fs -= 1; nm.style.fontSize = fs + "px"; } } }   // 名字太長就把字縮小,不換行
 }
 window.showPlayer = showPlayer;
 function playerFriendRow(p) {   // 別人的玩家資訊: 名字右邊的好友按鈕 (加好友 / 接受好友請求 → 送出後變成不能按的「等待接受」;已是好友也是不能按的按鈕)
@@ -1973,7 +2119,7 @@ function openOnlineList() {
   const m = h("div", {class: "modal", id: "onlist", style: {zIndex: 7500}, onclick: e => { if (e.target === m) close(); }},
     h("div", {class: "dlg", style: {maxWidth: "420px"}},
       h("div", {class: "dh"}, h("div", {}, h("h3", {text: "👥 在線的人"})), h("button", {class: "x", text: "✕", onclick: close})),
-      h("div", {class: "dbody", id: "onlist-body", style: {maxHeight: "60vh", overflowY: "auto"}})));
+      h("div", {class: "dbody", id: "onlist-body", style: {maxHeight: "calc(60vh / var(--uz))", overflowY: "auto"}})));
   document.body.append(m);
   renderOnlineList();
 }
@@ -1983,7 +2129,7 @@ function openSetup() {
   const roster = S.roster;
   const CAS = ["hunt", "traitor", "team", "teamh"];   // 休閒玩法 (放在「遊戲模式」那排): 暗殺目標 / 抓叛徒 (4 人以上) / 雙國戰 (4 6 8 10 人)
   const casOk = (m, n) => (m === "team" || m === "teamh") ? [4, 6, 8, 10].includes(n) : n >= 4;
-  const st = {n: 4, human: "spectate", variant: 0, lord: "random", mode: "normal", diff: 3, rm: "normal", hp: 4, ranked: "casual"};
+  const st = {n: 4, human: "0", variant: 0, lord: "random", mode: "normal", diff: (S.prof && (S.prof.games || 0) < 3) ? 1 : 3, rm: "normal", hp: 4, ranked: "casual"};
   const cnt = a => { const c = {}; a.forEach(x => c[x] = (c[x] || 0) + 1); return Object.entries(c).map(([k, v]) => k + v).join(" "); };
   const speed = h("input", {type: "range", min: 0.05, max: 1.5, step: 0.05, value: $("#speed").value});
   const speedV = h("span", {class: "val", text: (+speed.value).toFixed(2) + "s"});
@@ -2100,15 +2246,22 @@ function openSetup() {
     M.textContent = ""; S.modalOpen = null; poll(true);
   };
   const close = () => { M.textContent = ""; S.modalOpen = null; S.setupOff = S.roomNow; };   // 取消後不要馬上又自動彈出
+  const roomSet = items => {   // 房間設定: 五個房間按鈕收進一個按鈕,按下去跳出小視窗
+    const list = h("div", {class: "rset-list"}, ...items.filter(Boolean));
+    const closeRs = () => { rs.remove(); };
+    const rs = h("div", {class: "modal", style: {zIndex: 7600}, onclick: e => { if (e.target === rs) closeRs(); }},
+      h("div", {class: "dlg rset-dlg", role: "dialog", "aria-label": "房間設定"}, h("div", {class: "dh"}, h("h3", {text: "房間設定"}), h("button", {class: "x", text: "✕", onclick: closeRs})), list));
+    return h("button", {type: "button", class: "mini-btn", text: "⚙ 房間設定", onclick: () => document.body.append(rs)});
+  };
   const dlg = h("div", {class: "dlg setup"},
-    h("div", {class: "dh"}, h("div", {}, h("h3", {text: "新遊戲"}), h("div", {class: "meta", text: "選好人數與座位,按下開始 (滑鼠移到各項標題旁的 ⓘ 上可看說明)"}), h("div", {id: "onl", class: "onl"}), ROOM && S.canManage ? [h("button", {type: "button", class: "mini-btn", text: "✎ 改房名", onclick: roomRename}), inviteFriendsBtn(), h("button", {type: "button", class: "mini-btn", id: "bRoomVis", text: S.roomUnlisted ? "不公開" : "公開", title: "切換房間是否顯示在大廳列表 (不公開的房間,只有知道房號或被邀請的人進得來)", onclick: roomVisibility}), h("button", {type: "button", class: "mini-btn", id: "bRoomPw", text: S.roomLocked ? "🔒 修改 / 移除密碼" : "🔓 設定密碼", onclick: roomPassword}), (S.amHost ? h("button", {type: "button", class: "mini-btn", text: "🗑 刪除房間", onclick: roomDelete}) : null)] : null), h("button", {class: "x", text: "✕", onclick: close})),
+    h("div", {class: "dh"}, h("div", {}, h("h3", {text: "新遊戲"}), h("div", {id: "onl", class: "onl"}), ROOM && S.canManage ? roomSet([h("button", {type: "button", class: "mini-btn", text: "✎ 改房名", onclick: roomRename}), inviteFriendsBtn(), h("button", {type: "button", class: "mini-btn", id: "bRoomVis", text: S.roomUnlisted ? "不公開" : "公開", title: "切換房間是否顯示在大廳列表 (不公開的房間,只有知道房號或被邀請的人進得來)", onclick: roomVisibility}), h("button", {type: "button", class: "mini-btn", id: "bRoomPw", text: S.roomLocked ? "🔒 修改 / 移除密碼" : "🔓 設定密碼", onclick: roomPassword}), (S.amHost ? h("button", {type: "button", class: "mini-btn", text: "🗑 刪除房間", onclick: roomDelete}) : null)]) : null), h("button", {class: "x", text: "✕", onclick: close})),
     h("div", {class: "dbody"},
-      sect("房主", "把房主讓給目前在線的某人", h("div", {id: "handover", class: "seg"})),
       sect("對戰模式", "休閒模式: 段位積分不變;段位模式: 贏了加分、輸了扣分 (依電腦難度,見玩家資訊)", seg([["casual", "🎮 休閒模式"], ["ranked", "🏅 段位模式"]], st.ranked, v => { st.ranked = v; lockRanked(); }), h("div", {style: {margin: "2px 0 6px"}}, rankHelpBtn()), rkIn),
       sect("人數", "", nBox),
+      sect("電腦難度", "上面一排是一次調整全部電腦;每個座位也可以在下方「座位與武將」各自調整。段位模式打贏電腦加的積分: 弱 +10 / 中 +18 / 強 +25 / 很強 +32 / 極強 +40;輸了扣的分數和同難度贏的加分一樣 (勝率超過約 50% 才會升)。同場有其他真人時,每位真人對手依他的段位當成對應難度一起取平均 (青銅 弱 … 傳說 極強),對手越強輸贏的分越多。段位模式的電腦難度不能自己調,跟著入座玩家的平均段位走: 青銅 弱 / 白銀 中 / 黃金·白金 強 / 鑽石·大師 很強 / 傳說 極強。", diffSeg = seg(diffLabels().map((t, k) => [k + 1, t]), st.diff, v => { st.diff = v; seatBox.querySelectorAll("select[data-dseat]").forEach(x => { x.value = String(v); keepD[x.dataset.dseat] = String(v); }); })),
+      sect("房主", "把房主讓給目前在線的某人", h("div", {id: "handover", class: "seg"})),
       sect("身分配置", "", varBox),
       sect("主公座位", "主公從哪個座位開始;身分會在開局時才揭曉", lordBox),
-      sect("電腦難度", "上面一排是一次調整全部電腦;每個座位也可以在下方「座位與武將」各自調整。段位模式打贏電腦加的積分: 弱 +10 / 中 +18 / 強 +25 / 很強 +32 / 極強 +40;輸了扣的分數和同難度贏的加分一樣 (勝率超過約 50% 才會升)。同場有其他真人時,每位真人對手依他的段位當成對應難度一起取平均 (青銅 弱 … 傳說 極強),對手越強輸贏的分越多。段位模式的電腦難度不能自己調,跟著入座玩家的平均段位走: 青銅 弱 / 白銀 中 / 黃金·白金 強 / 鑽石·大師 很強 / 傳說 極強。", diffSeg = seg(diffLabels().map((t, k) => [k + 1, t]), st.diff, v => { st.diff = v; seatBox.querySelectorAll("select[data-dseat]").forEach(x => { x.value = String(v); keepD[x.dataset.dseat] = String(v); }); })),
       sect("基礎體力上限", "所有武將的體力上限一起增減 (預設 4);原本就比較高或低的武將會保留差距。例如設 6,原本 4 血的武將變 6 血,原本 3 血的變 5 血", hpBox),
       sect("遊戲模式", "正常模式: 武將不變;百變模式: 第 2 輪起,每次輪到玩家的回合一開始都會隨機換成一位新武將 (已損失的體力不變);暗殺目標: 沒有身分,每人暗中拿到一個目標,先親手殺死自己目標的人獲勝 (每個人最多被一個人當目標;只要有人陣亡,全部人重新隨機分配目標);抓叛徒: 所有人裡有一個叛徒,陣亡的人會公布是不是叛徒,叛徒死了好人全體獲勝,只剩叛徒或叛徒撐過第 5 輪還活著就是叛徒獲勝 (這兩個休閒模式限 4 人以上);雙國戰: 4 / 6 / 8 / 10 人分成紅藍兩邊,各有自己的主公和忠臣,先殺死對方主公的一邊獲勝;主公誤殺自己的忠臣會棄置所有手牌與裝備。「身分公開」: 每個人屬於哪一邊都公開;「忠臣不公開」: 只有兩位主公公開,每個人只知道自己是哪一邊,要靠行為判斷誰是隊友 (陣亡時才翻開身分)", modeBox),
       sect("身分模式", "正常: 一般身分局;無身分: 沒有主公反賊,各打各的,最後活著的人贏;身分全公開: 所有人的身分一開始就公開;主公不公開: 主公不亮身分,也不加體力上限", rmBox),
@@ -2117,12 +2270,119 @@ function openSetup() {
         h("label", {class: "fld"}, h("span", {text: "每步長度 (秒,0.05 = 最快)"}), h("div", {class: "rng"}, speed, speedV)))),
       sect("座位與武將", "留「隨機武將」會從 " + roster.length + " 位武將中抽,不重複;勾「開放玩家」讓玩家入座。段位模式: 武將全部隨機,座位全部開放,按下開始後想打的人按「參戰」,沒按的自動觀戰,沒人坐的座位由電腦擔任", h("div", {}, openAll, seatBox))),
     h("div", {class: "df"}, h("button", {text: "取消", onclick: close}), h("button", {class: "primary big", text: "開始遊戲", onclick: start})));
+  /* ---- 卡片式設定 (兩頁): 每個項目一張卡片 (圖 + 名稱 + 目前的值)。選項少的在卡片上用 ‹ › 切換,選項多的點進去編輯。
+   *  不重寫原本的按鈕邏輯: ‹ › 只是去點該區塊裡原本那排按鈕,區塊本身仍在 DOM 裡 (隱藏),所以鎖定 / 重畫 / 隱藏的邏輯都照舊。 */
+  (() => {
+    const body = dlg.querySelector(".dbody"), df = dlg.querySelector(".df");
+    const D = [   // t=區塊標題 (中文原文), k=插圖檔名 (web/setup/<k>.webp), p=第幾頁, o=1 點進去編輯
+      {t: "對戰模式", k: "mode", p: 1}, {t: "人數", k: "count", p: 1}, {t: "電腦難度", k: "diff", p: 1}, {t: "基礎體力上限", k: "hp", p: 1}, {t: "遊戲模式", k: "gmode", p: 1}, {t: "身分模式", k: "rmode", p: 1},
+      {t: "主公座位", k: "lord", p: 2}, {t: "身分配置", k: "variant", p: 2}, {t: "座位與武將", k: "seats", p: 2, o: 1}, {t: "進階", k: "adv", p: 2, o: 1}, {t: "房主", k: "host", p: 2, o: 1}];
+    const holder = h("div", {class: "tholder"}), grid = h("div", {class: "tgrid"});
+    let page = 1, inDetail = false;
+    const tiles = [];
+    const DESC = {"mode": ["不影響段位積分,可以自由調整所有設定", "贏了加段位積分、輸了扣積分;武將全隨機,部分設定固定"], "diff": ["段位模式贏了 +10 分", "段位模式贏了 +18 分", "段位模式贏了 +25 分", "段位模式贏了 +32 分", "段位模式贏了 +40 分"], "hp": ["所有武將體力上限 −2 (原本 4 血的變 2 血)", "所有武將體力上限 −1", "預設值,武將維持原本的體力", "所有武將體力上限 +1", "所有武將體力上限 +2", "所有武將體力上限 +4", "所有武將體力上限 +6"], "gmode": ["武將不變", "第 2 輪起,每個回合隨機換一位武將", "沒有身分,每人暗中有一個目標,先親手殺死目標者勝", "藏著一個叛徒,陣亡會公布身分;叛徒死了好人勝 (4 人以上)", "分紅藍兩邊 (4 / 6 / 8 / 10 人),先殺死對方主公者勝;全部人的陣營都公開", "分紅藍兩邊,只有兩位主公公開,靠行為判斷隊友 (陣亡才翻開)"], "rmode": ["標準身分局: 主公、忠臣、反賊、內奸各有勝利條件", "沒有身分,各打各的", "每個人的身分一開始就公開", "不公開主公的身分,要自己判斷誰是主公"]};   // 左右切換選項時,下方顯示該選項的說明 (依第幾個選項)
+    const descOf = (t, ctx) => {
+      const k = t.d.k;
+      if (k === "count") return ctx.ai < 0 ? "" : ctx.ai <= 1 ? "2~3 人固定為無身分,各打各的" : ctx.ai <= 3 ? "有身分: 主公、忠臣、反賊、內奸" : "人多的局,反賊和忠臣更多";
+      if (k === "rmode" && ctx.fixedNoRole) return "2~3 人固定為無身分,各打各的";
+      if (k === "lord") return ctx.i <= 0 ? "開局隨機決定主公坐哪個座位" : "主公固定坐在你選的座位 (身分開局才揭曉)";
+      if (k === "variant") return "身分人數的分配 (主公 / 忠臣 / 反賊 / 內奸)";
+      if (k === "seats") return "按進去,可以逐個座位換武將或調整難度";
+      if (k === "adv") return "旁觀者可看全部身分 / 手牌,以及每步的長度";
+      if (k === "host") return "把房主讓給目前在線的某人";
+      const a = DESC[k]; return a && ctx.i >= 0 ? (a[ctx.i] || "") : "";
+    };
+    let curT = null;
+    const descT = h("div", {class: "tdesc-t"}), descX = h("div", {class: "tdesc-x"});
+    const desc = h("div", {class: "tdesc", "aria-live": "polite"}, descT, descX);
+    const showDesc = () => { if (!curT) return; const txt = curT.descText || ""; if (descX.textContent !== txt || descT.textContent !== curT.d.t) { desc.classList.remove("chg"); void desc.offsetWidth; desc.classList.add("chg"); } descT.textContent = curT.d.t; descX.textContent = txt; };
+    const focusT = t => { curT = t; showDesc(); tiles.forEach(x => x.el.classList.toggle("sel", x === t)); };
+    const backBar = h("div", {class: "tbackbar", style: {display: "none"}}, h("button", {type: "button", class: "tback", text: "‹ 返回", onclick: () => closeDetail()}));
+    const stepBtns = [1, 2].map(p => h("button", {type: "button", text: p === 1 ? "規則" : "座位", onclick: () => go(p)}));
+    const rsBtn = dlg.querySelector(".dh .mini-btn");   // 房間設定鈕: 從標題區搬到分頁列最右邊
+    if (rsBtn) { rsBtn.classList.add("rs-tab"); rsBtn.textContent = "⚙ 房間設定"; }
+    const steps = h("div", {class: "wzs", role: "group"}, h("span", {class: "wzs-l", text: "設定分類"}), ...stepBtns, rsBtn || "");
+    const closeDetail = () => {
+      holder.querySelectorAll(".sec.cur").forEach(s => s.classList.remove("cur"));
+      inDetail = false; grid.style.display = ""; desc.style.display = ""; steps.style.display = ""; backBar.style.display = "none"; layout();
+    };
+    const openDetail = (sec, withHint) => {
+      sec.classList.add("cur"); inDetail = true; grid.style.display = "none"; desc.style.display = "none"; steps.style.display = "none"; backBar.style.display = "";
+      if (withHint && !sec.querySelector(":scope > .shx")) { const i = sec.querySelector(".shi"); if (i) i.click(); }   // 從卡片的 ⓘ 進來: 直接展開說明
+      body.scrollTop = 0;
+    };
+    const layout = () => { tiles.forEach(t => { t.el.style.display = t.d.p === page && !t.off ? "" : "none"; }); stepBtns.forEach((b, i) => b.classList.toggle("on", i + 1 === page)); if (!curT || curT.el.style.display === "none") { const f = tiles.find(t => t.el.style.display !== "none"); if (f) focusT(f); } };
+    const mk = (txt, cls, fn) => h("button", {type: "button", class: cls, text: txt, onclick: fn});
+    const drawDf = () => { df.textContent = ""; df.append(mk("取消", "", close), page === 1 ? mk("下一步 ›", "", () => go(2)) : mk("‹ 上一步", "", () => go(1)), mk("開始遊戲", "primary big", start)); };
+    const playGrid = dir => { grid.classList.remove("anim", "l", "r"); let n = 0; tiles.forEach(t => { if (t.el.style.display !== "none") t.el.style.setProperty("--i", n++); }); void grid.offsetWidth; grid.classList.add("anim", dir); };
+    const go = p => { const dir = p > page ? "r" : "l"; page = p; if (inDetail) closeDetail(); layout(); drawDf(); body.scrollTop = 0; playGrid(dir); };
+    D.forEach(d => {
+      const sec = dlg.querySelector(`section.sec[data-t="${d.t}"]`); if (!sec) return;
+      const art = h("div", {class: "tart seal", text: d.t[0]});
+      const ART = "/assets/sgs_sim/web/setup/", VARY = {mode: 1, count: 1, diff: 1, hp: 1, gmode: 1, rmode: 1, lord: 1};   // VARY: 圖片跟著目前選項換 (檔名 <代號>-<第幾個選項>.webp),找不到就用 <代號>.webp,再沒有就用印章字
+      let artKey = null;
+      const setArt = (key, dir) => {   // dir: +1 往下一個選項 (新圖從右滑入),-1 往上一個 (從左滑入)
+        if (key === artKey) return; artKey = key;
+        const names = key === d.k ? [d.k] : [key, d.k], tryNext = i => {
+          if (key !== artKey) return;
+          if (i >= names.length) { art.textContent = d.t[0]; art.classList.add("seal"); return; }
+          const pre = new Image(); pre.alt = "";
+          pre.onload = () => {
+            if (key !== artKey) return;
+            const old = [...art.querySelectorAll("img")];
+            art.classList.remove("seal"); if (!old.length) art.textContent = "";
+            if (dir && old.length) {
+              pre.classList.add(dir > 0 ? "in-r" : "in-l");
+              old.forEach(o => { o.classList.add(dir > 0 ? "out-l" : "out-r"); setTimeout(() => o.remove(), 300); });
+            } else old.forEach(o => o.remove());
+            art.append(pre);
+          };
+          pre.onerror = () => tryNext(i + 1);
+          pre.src = ART + names[i] + ".webp";
+        };
+        tryNext(0);
+      };
+      setArt(d.k);
+      const val = h("span", {class: "tval"});
+      const btns = () => { const b = sec.querySelector(".seg"); return b ? [...b.querySelectorAll("button")] : []; };
+      const idx = () => btns().findIndex(b => b.classList.contains("on"));
+      const t = {d, el: null, off: false};
+      const stepBy = n => { const b = btns()[idx() + n]; if (b) b.click(); };
+      const prev = h("button", {type: "button", class: "tstep", onclick: e => { e.stopPropagation(); focusT(t); t.dir = -1; stepBy(-1); }}, h("span", {class: "sr", text: "上一個"}), h("span", {class: "chev l"}));
+      const next = h("button", {type: "button", class: "tstep", onclick: e => { e.stopPropagation(); focusT(t); t.dir = 1; stepBy(1); }}, h("span", {class: "sr", text: "下一個"}), h("span", {class: "chev r"}));
+      const info = sec.querySelector(".shi") ? h("button", {type: "button", class: "tinfo", onclick: e => { e.stopPropagation(); openDetail(sec, true); }}, h("span", {class: "sr", text: "說明"}), "ⓘ") : null;
+      const el = t.el = h("div", {class: "wtile" + (d.o ? " open" : ""), "data-k": d.k, onpointerdown: () => focusT(t)}, info, art, h("div", {class: "tn", text: d.t}), d.o ? h("div", {class: "tv one"}, val) : h("div", {class: "tv"}, prev, val, next));
+      if (d.o || sec.querySelector(".shx.rich")) { el.classList.add("open"); el.tabIndex = 0; el.setAttribute("role", "button"); el.onclick = () => openDetail(sec); el.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openDetail(sec); } }; }
+      const lbl = () => { const on = sec.querySelector(".seg button.on"); return on ? on.textContent : ""; };
+      t.refresh = () => {
+        const i = idx(), n = btns().length, lk = sec.classList.contains("lk");
+        const meta = sec.querySelector(":scope > div > .meta");
+        const fixedNoRole = d.k === "rmode" && i < 0 && !!meta && meta.textContent.includes("無身分");   // 2~3 人固定無身分: 沒有選項可選,卡片只寫短標籤
+        const raw = d.o ? (d.k === "gmode" ? lbl() : "點選編輯") : (lbl() || (fixedNoRole ? "無身分 (各打各的)" : meta ? meta.textContent.split(/[:：]/)[0] : ""));
+        val.textContent = raw.replace(/^[^\p{L}\p{N}]+/u, "");   // 卡片上的值不放 emoji
+        el.classList.toggle("hintv", raw === "點選編輯");
+        if (VARY[d.k]) {
+          const ai = d.k === "count" ? (parseInt(lbl(), 10) || 0) - 2 : d.k === "lord" ? Math.min(i, 1) : i;   // 人數的選項會隨模式減少 (段位模式沒有 2、3 人),要用數字算,不能用第幾個按鈕
+          setArt(fixedNoRole ? d.k + "-1" : i >= 0 && ai >= 0 ? d.k + "-" + ai : d.k, t.dir); t.dir = 0;
+        }
+        t.descText = descOf(t, {i, ai: d.k === "count" ? (parseInt(lbl(), 10) || 0) - 2 : i, fixedNoRole}); if (curT === t) showDesc();
+        prev.disabled = lk || i <= 0; next.disabled = lk || i < 0 || i >= n - 1;
+        el.classList.toggle("lk", lk);
+        const off = sec.style.display === "none"; if (off !== t.off) { t.off = off; layout(); }
+      };
+      new MutationObserver(t.refresh).observe(sec, {subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["class", "style"]});
+      tiles.push(t); grid.append(el);
+    });
+    holder.append(...[...body.children]);   // 原本的區塊全部收進隱藏的容器 (仍在 DOM 裡,原本的邏輯照舊)
+    body.append(steps, grid, desc, backBar, holder);
+    tiles.forEach(t => t.refresh()); layout(); drawDf(); playGrid("r");
+  })();
   M.append(h("div", {class: "modal"}, dlg, rkSide));
   const placeRk = () => {   // 左邊的段位卡貼著對話框左緣;聊天欄開著對話框被推向左邊時,放不下就不顯示 (下方仍有一行段位)
     if (!rkSide.isConnected) return;
     const r = dlg.getBoundingClientRect();
-    rkSide.style.right = "auto"; rkSide.style.left = Math.max(0, r.left - 202) + "px";
-    rkSide.style.visibility = r.left < 206 ? "hidden" : "";
+    rkSide.style.right = "auto"; rkSide.style.left = Math.max(0, r.left / UZ() - 202) + "px";
+    rkSide.style.visibility = r.left / UZ() < 206 ? "hidden" : "";
   };
   setTimeout(placeRk, 30); setTimeout(placeRk, 300); window.addEventListener("resize", placeRk);
 }
@@ -2179,7 +2439,24 @@ document.querySelectorAll("#tabs button, #mnav button").forEach(b => b.addEventL
   const lb = $("#logbar"); if (lb) lb.style.display = (b.dataset.t || b.dataset.m) === "log" ? "" : "none";   // 只有對局紀錄分頁顯示
   if ((b.dataset.t || b.dataset.m) === "cc") { S.chatUnread = 0; updChatBadge(); if (window.SGSCH) SGSCH.shown(); setTimeout(() => { const L = $("#cl"); L.scrollTop = L.scrollHeight; }, 0); }
 }));
+/* ---------- 視窗進場動畫: 只在「原本沒有視窗,新跳出一個」時播;畫面重繪 (先清空再放回) 不重播,避免閃爍 ---------- */
+(function () {
+  try { if (matchMedia("(prefers-reduced-motion: reduce)").matches) return; } catch (e) {}
+  const isModal = n => n.nodeType === 1 && n.classList.contains("modal");
+  const watch = el => { if (!el) return; new MutationObserver(ms => {
+    let removed = false; const added = [];
+    for (const m of ms) { m.removedNodes.forEach(n => { if (isModal(n)) removed = true; }); m.addedNodes.forEach(n => { if (isModal(n)) added.push(n); }); }
+    if (removed) { lastGone = performance.now(); }
+    if (!added.length) return;
+    if (performance.now() - lastGone < 600 && removed) return;   // 同一批裡有舊的被移除: 是重繪,不播
+    added.forEach(n => { if (n.classList.contains("soft")) return; n.classList.add("mo-in"); setTimeout(() => n.classList.remove("mo-in"), 520); });
+  }).observe(el, {childList: true}); };
+  let lastGone = 0;
+  const init = () => { watch(document.body); watch(document.getElementById("modal")); };
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
+})();
 /* ---------- 暱稱 ---------- */
+function UZ() { const z = parseFloat(getComputedStyle(document.documentElement).zoom); return z > 0 ? z : 1; }   // 介面放大倍率 (CSS zoom): 量到的座標是畫面像素,要設回 CSS 前除以它
 function myNick() { try { return localStorage.getItem("nick") || ""; } catch (e) { return ""; } }
 function setNick(v) { try { localStorage.setItem("nick", v.trim().slice(0, 10)); } catch (e) {} }
 /* ---------- 大廳 (等朋友入座) ---------- */
@@ -2191,30 +2468,33 @@ function inviteFriendsBtn(big) {   // big: 跟旁邊的主要按鈕一樣大 (�
 function backBtn(big) {   // 回到大廳 (大廳 / 選武將 / 等待畫面都能用;確認視窗和上方「大廳」鈕一樣)
   return h("button", {type: "button", class: big ? "" : "mini-btn", style: big ? {minWidth: "150px"} : null, text: "🚪 回到大廳", onclick: () => $("#bRooms").click()});
 }
-function rankHelp() {   // 段位說明視窗: 位置固定在段位相關畫面 (開新遊戲 / 段位大廳) 的模式旁,蓋在其他視窗上
+function rankHelp() {   // 段位說明視窗 (圖文版): 位置固定在段位相關畫面 (開新遊戲 / 段位大廳) 的模式旁,蓋在其他視窗上
   const close = () => m.remove();
-  const sec = (t, b) => h("div", {style: {margin: "12px 0 0"}}, h("div", {style: {fontWeight: 700, marginBottom: "4px"}, text: t}), b);
-  const p = t => h("div", {class: "meta", style: {whiteSpace: "pre-line", lineHeight: 1.6}, text: t});
-  const chips = h("div", {style: {display: "flex", gap: "6px", flexWrap: "wrap", margin: "2px 0 6px"}},
-    ...[["青銅", 0], ["白銀", 150], ["黃金", 400], ["白金", 700], ["鑽石", 1100], ["大師", 1500], ["傳說", 2000]].map(([n, v]) => h("span", {style: {display: "inline-flex", alignItems: "center", gap: "4px"}}, h("span", {class: "rk rk-" + n, text: n}), h("span", {class: "meta", text: v}))));
+  const sec = (t, ...b) => h("div", {class: "rkg-sec"}, h("div", {class: "rkg-t", text: t}), ...b);
+  const note = t => h("div", {class: "rkg-n", text: t});
+  const ladder = h("div", {class: "rkg-lad"}, ...[["青銅", 0], ["白銀", 150], ["黃金", 400], ["白金", 700], ["鑽石", 1100], ["大師", 1500], ["傳說", 2000]].map(([n, v]) => h("div", {class: "st"}, h("span", {class: "rk rk-" + n, text: n}), h("span", {class: "meta", text: v}))));
+  const pips = k => h("span", {class: "pips"}, ...[1, 2, 3, 4, 5].map(i => h("i", {class: i <= k ? "on" : ""})));
+  const map = [["青銅", "弱", 1], ["白銀", "中", 2], ["黃金·白金", "強", 3], ["鑽石·大師", "很強", 4], ["傳說", "極強", 5]];
+  const mult = [["黃金以下", 0.7], ["白金·鑽石", 1], ["大師", 1.15], ["傳說", 1.3]];
   const m = h("div", {class: "modal", style: {zIndex: 7700}, onclick: e => { if (e.target === m) close(); }},
-    h("div", {class: "dlg", style: {width: "min(640px,94vw)"}, role: "dialog", "aria-label": "段位模式說明"},
+    h("div", {class: "dlg rkg", style: {width: "min(680px,calc(94vw / var(--uz)))"}, role: "dialog", "aria-label": "段位模式說明"},
       h("h3", {style: {margin: "0 0 2px"}, text: "段位模式說明"}),
-      sec("什麼是段位模式", p("段位模式是計分的對戰: 贏了加段位積分、輸了扣積分,積分決定你的段位。休閒模式積分不變,可以隨便玩。")),
-      sec("段位表 (所需積分)", h("div", {}, chips, p("傳說以外每個段位又分 3 → 2 → 1 三小段,數字越小越高 (例如 黃金3 → 黃金2 → 黃金1 → 白金3)。"))),
-      sec("怎麼加分", p("打贏電腦依難度加分: 弱 +10 / 中 +18 / 強 +25 / 很強 +32 / 極強 +40 (多種難度取平均);真人對手依他的段位換算成對應難度一起平均 (青銅 弱 … 傳說 極強),全真人局依對手段位 +10 ~ +40。連勝中每多贏一場,下一場多 +3,最多 +15;輸一場歸零。")),
-      sec("怎麼扣分", p("輸了扣的分數和同難度贏的加分一樣,但依你的段位調整: 黃金以下 ×0.7、白金·鑽石 ×1.0、大師 ×1.15、傳說 ×1.3。所以段位越高越難爬 (損益兩平勝率約 41% → 50% → 53% → 57%,積分最低 0)。")),
-      sec("電腦難度", p("段位模式的電腦難度不能自己選,跟著你的段位走: 青銅 弱 / 白銀 中 / 黃金·白金 強 / 鑽石·大師 很強 / 傳說 極強。")),
-      sec("身分係數", p("每個身分的天生勝率不同,輸贏分數會依人數和身分調整 (內奸贏得最多、輸扣最少;勝率高的身分贏得少)。輸了但自己撐到最後,扣分打 8 折。")),
-      sec("特殊情況", p("• 內奸撐到和主公單挑才輸: 算「次級勝利」,得贏分的 30%。\n• 平手 (超過回合上限): 得贏分的 40%,不算勝場、連勝不變。\n• 中途棄賽: 扣分 ×1.5。\n• 同場有其他真人: 真人對手依段位換算成難度,一起算進基礎分。\n• 同一個網路有多個帳號在同一場: 這場不計分。")),
-      sec("房間規則", p("段位模式武將全部隨機,基礎體力、主公座位、身分模式都固定,也不能開旁觀者看全部。打完之前不能開新遊戲 (可以先棄賽)。")),
+      note("計分對戰: 贏了加積分、輸了扣積分,積分決定段位。休閒模式積分不變。"),
+      sec("段位表 (所需積分)", ladder, note("傳說以外每個段位分 3 → 2 → 1 三小段,數字越小越高")),
+      sec("打贏電腦加分", h("div", {class: "rkg-g"}, ...[["弱", 1, 10], ["中", 2, 18], ["強", 3, 25], ["很強", 4, 32], ["極強", 5, 40]].map(([n, k, pt]) => h("div", {class: "rh-row"}, h("b", {text: n}), pips(k), h("span", {class: "pt", text: "+" + pt})))),
+        note("🔥 連勝: 每多贏一場,下一場 +3 (最多 +15),輸一場歸零"), note("👥 真人對手依他的段位換成對應難度,一起平均")),
+      sec("輸了扣分", note("扣分 = 同難度的加分 × 段位倍率,段位越高越難爬"), h("div", {class: "rkg-g"}, ...mult.map(([n, x]) => h("div", {class: "rh-row"}, h("b", {style: {minWidth: "76px"}, text: n}), h("span", {class: "bar"}, h("i", {style: {width: Math.round(x / 1.3 * 100) + "%"}})), h("span", {class: "pt", text: "×" + x})))), note("🛡 輸了但自己撐到最後: 扣分 ×0.8")),
+      sec("電腦難度跟著你的段位", h("div", {class: "rkg-g"}, ...map.map(([r, d, k]) => h("div", {class: "rh-row"}, h("b", {style: {minWidth: "76px"}, text: r}), h("span", {class: "arrow", text: "→"}), h("b", {text: d}), pips(k))))),
+      sec("特殊情況", h("div", {class: "rkg-g"}, ...[["🥈", "內奸撐到和主公單挑才輸", "得贏分 30%"], ["🤝", "平手 (超過回合上限)", "得贏分 40%,連勝不變"], ["🏳", "中途棄賽", "扣分 ×1.5"], ["🌐", "同網路多個帳號在同一場", "不計分"]].map(([ic, a, b]) => h("div", {class: "rh-row m2"}, h("span", {class: "ic", text: ic}), h("span", {text: a}), h("b", {class: "pt", text: b}))))),
+      sec("段位模式的房間", h("div", {class: "rkg-chips"}, ...["🎲 武將全隨機", "🔒 體力 / 主公座位 / 身分模式固定", "🚫 不能開旁觀看全部", "⏳ 打完才能開新遊戲"].map(t => h("span", {text: t})))),
       h("div", {style: {display: "flex", justifyContent: "flex-end", marginTop: "14px"}}, h("button", {type: "button", class: "primary", text: "關閉", onclick: close}))));
   document.body.append(m);
 }
 function rankHelpBtn(big) {
   return h("button", {type: "button", class: big ? "" : "mini-btn", style: big ? {minWidth: "150px"} : null, text: "❔ 段位說明", onclick: rankHelp});
 }
-function gameStartSfx() {   // 開局音效 (兩個進入遊戲的路徑都會呼叫,2 秒內只響一次)
+function gameStartSfx() {
+  try { const tb = $("#table"); if (tb && !matchMedia("(prefers-reduced-motion: reduce)").matches) { tb.classList.remove("enter"); void tb.offsetWidth; tb.classList.add("enter"); setTimeout(() => tb.classList.remove("enter"), 700); } } catch (e) {}   // 牌桌淡入   // 開局音效 (兩個進入遊戲的路徑都會呼叫,2 秒內只響一次)
   const t = Date.now(); if (S.gsT && t - S.gsT < 2000) return; S.gsT = t; S.rlSnd = false;
   try { if (window.SGS_FX) SGS_FX.sfx("gameStart"); } catch (e) {}
 }
@@ -2428,7 +2708,7 @@ function closeHandView() {   // 點空白處 / Esc: 取消釘住並收起別人�
   });
   W.addEventListener("pointermove", e => {
     if (!st || e.pointerId !== st.id) return;
-    px = Math.max(-500, Math.min(500, st.px + e.clientX - st.x)); py = Math.max(-500, Math.min(500, st.py + e.clientY - st.y)); apply();
+    px = Math.max(-500, Math.min(500, st.px + (e.clientX - st.x) / UZ())); py = Math.max(-500, Math.min(500, st.py + (e.clientY - st.y) / UZ())); apply();
   });
   const end = () => { st = null; W.classList.remove("dragging"); };
   W.addEventListener("pointerup", end); W.addEventListener("pointercancel", end);
@@ -2847,6 +3127,16 @@ $("#rcreate").onclick = async () => {
   if (!r.ok) { toast("創建失敗: " + r.error); return; }
   $("#rname").value = ""; $("#rpw").value = ""; enterRoom(r.room, r.name);
 };
+$("#rquick").onclick = async () => {   // 一鍵和電腦打: 建房 → 進房 → 4 人休閒局,自己坐座位 0,電腦「弱」
+  const b = $("#rquick"); b.disabled = true;
+  try {
+    const r = await (await fetch("/api/room_create", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({tok: TOK, name: "練習局", cap: 0})})).json();
+    if (!r.ok) { toast("創建失敗: " + r.error); return; }
+    enterRoom(r.room, r.name);
+    await api("/api/new", {players: 4, human: "0", humans: [0], chars: ["", "", "", ""], variant: 0, lord: "random", mode: "normal", role_mode: "normal", base_hp: 4, ranked: false, spec_all: false, difficulty: 1, diffs: [], seed: "", speed: +$("#speed").value});
+    $("#modal").textContent = ""; S.modalOpen = null; poll(true);
+  } finally { b.disabled = false; }
+};
 $("#rname").onkeydown = e => { if (e.key === "Enter" && !e.isComposing && e.keyCode !== 229) $("#rcreate").click(); };
 (async () => {
   let me = {ok: false};
@@ -2884,7 +3174,7 @@ $("#rname").onkeydown = e => { if (e.key === "Enter" && !e.isComposing && e.keyC
   const KINDS = [["frames", "頭像框"], ["fx", "頭像特效"], ["themes", "主題"], ["boxes", "玩家框"], ["cardbgs", "卡面"], ["cardbacks", "牌背"]];
   let root = null, cat = null, cur = null, sel = null, sub = "info", tab = "p", q = "", sortBy = "online";
   const css = `#devgui{position:fixed;inset:0;z-index:9990;display:none;background:rgba(0,0,0,.55);align-items:flex-start;justify-content:center;padding-top:50px}
-#devgui .dg{width:min(980px,96vw);height:min(640px,88vh);display:flex;flex-direction:column;background:#14161a;border:1px solid #c3ccd8;border-radius:8px;color:#dfe5ec;font-size:13px;box-shadow:0 8px 30px #000}
+#devgui .dg{width:min(980px,calc(96vw / var(--uz)));height:min(640px,calc(88vh / var(--uz)));display:flex;flex-direction:column;background:#14161a;border:1px solid #c3ccd8;border-radius:8px;color:#dfe5ec;font-size:13px;box-shadow:0 8px 30px #000}
 #devgui .dh{display:flex;gap:6px;align-items:center;padding:8px 12px;border-bottom:1px solid #3a4048}#devgui .dh b{color:#c3ccd8;flex:1}
 #devgui button{background:#232830;color:#dfe5ec;border:1px solid #4a525d;border-radius:4px;padding:4px 10px;cursor:pointer;font:inherit}#devgui button:hover{background:#323944}#devgui button.on{background:#c3ccd8;color:#14161a;font-weight:700}#devgui button.bad{border-color:#e23a3a;color:#ff8a8a}
 #devgui input{background:#0d0f12;color:#fff;border:1px solid #4a525d;border-radius:4px;padding:5px 8px;font:inherit;font-size:14px;min-width:0}
@@ -2896,7 +3186,7 @@ $("#rname").onkeydown = e => { if (e.key === "Enter" && !e.isComposing && e.keyC
 #devgui .g{background:#1f6f45}#devgui .rv{background:#8a2a2a}#devgui .nat{background:#4a525d}#devgui .no{background:#2a2d32}
 #devgui pre{margin:0;padding:8px 10px;overflow:auto;white-space:pre-wrap;word-break:break-all;flex:1;font:13px/1.5 Consolas,monospace}
 #devgui .od{display:inline-block;width:8px;height:8px;border-radius:50%;background:#3ddc84;margin-right:6px;flex:none}#devgui .od.off{background:#4a525d}#devgui .msg{color:#ffd166;min-height:18px}#devgui .dback{display:none}
-@media (max-width:820px){#devgui{padding-top:0}#devgui .dg{width:100vw;height:100vh;height:100dvh;border-radius:0;border:0}
+@media (max-width:820px){#devgui{padding-top:0}#devgui .dg{width:calc(100vw / var(--uz));height:calc(100vh / var(--uz));height:calc(100dvh / var(--uz));border-radius:0;border:0}
 #devgui .db{flex-direction:column}#devgui .dl{width:auto;border-right:0;padding:8px 10px}#devgui .dlist{max-height:none}
 #devgui .dg.hascur .dl{display:none}#devgui .dback{display:inline-block}#devgui .dr{padding:8px 10px}
 #devgui input,#devgui select{font-size:16px}#devgui button{padding:8px 12px;min-height:38px}#devgui .pr{padding:10px 8px}#devgui .it{flex-wrap:wrap}

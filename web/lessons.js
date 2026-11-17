@@ -35,7 +35,7 @@
 
   const css = `
 #lsov{position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:9000;display:flex;align-items:center;justify-content:center;padding:16px}
-.lsdlg{background:#161c28;color:#e6edf7;border:1px solid #394559;border-radius:12px;width:min(820px,100%);max-height:90vh;max-height:90dvh;display:flex;flex-direction:column;box-shadow:0 10px 40px rgba(0,0,0,.6)}
+.lsdlg{background:#161c28;color:#e6edf7;border:1px solid #394559;border-radius:12px;width:min(820px,100%);max-height:calc(90vh / var(--uz));max-height:calc(90dvh / var(--uz));display:flex;flex-direction:column;box-shadow:0 10px 40px rgba(0,0,0,.6)}
 .lsdlg .lsh{display:flex;align-items:center;gap:10px;padding:14px 18px 6px}.lsdlg .lsh b{font-size:17px}.lsdlg .lsh .sp{flex:1}
 .lsdlg .lsh button{background:none;border:0;color:#9fb0c8;font-size:18px;cursor:pointer;min-width:36px;min-height:36px}
 .lsdlg .lss{padding:0 18px 8px;color:#9fb0c8;font-size:13px}.lsgrid>.lss{grid-column:1/-1;padding:8px 2px}   /* 「全部通關了」「找不到」這類提示佔滿整排,不要被擠在一格裡換行 */
@@ -49,17 +49,17 @@
 .lstile:hover,.lstile:focus-visible{border-color:#3fd2ff;box-shadow:0 0 0 2px rgba(63,210,255,.25);outline:0}
 .lstile b{font-size:14px;text-align:center}.lstile{min-width:0;overflow:hidden}.lstile .im{position:relative;width:100%;aspect-ratio:5/7;overflow:hidden;flex:none}.lstile .im img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;border-radius:6px;display:block}   /* 卡圖不撐開格子 (原本圖原尺寸會跑出框外、蓋住名字) */
 .lstile.ok{border-color:#2f8f5a}.lstile.ok b::after{content:"✓";margin-left:5px;color:#4cd488;font-weight:700}
-#lsbar{position:fixed;top:60px;left:50%;transform:translateX(-50%);z-index:600;background:#16324a;color:#fff;border:1px solid #3fd2ff;border-radius:10px;padding:8px 12px;width:min(720px,calc(100vw - 16px));box-sizing:border-box;box-shadow:0 4px 18px rgba(0,0,0,.5);font-size:14px}
+#lsbar{position:fixed;top:60px;left:50%;transform:translateX(-50%);z-index:600;background:#16324a;color:#fff;border:1px solid #3fd2ff;border-radius:10px;padding:8px 12px;width:min(720px,calc(calc(100vw / var(--uz)) - 16px));box-sizing:border-box;box-shadow:0 4px 18px rgba(0,0,0,.5);font-size:14px}
 #lsbar.ok{background:#14382a;border-color:#4cd488}
 #lsbar .r1{display:flex;align-items:center;gap:8px;flex-wrap:wrap}#lsbar .nm{color:#3fd2ff;font-weight:700;white-space:nowrap}#lsbar.ok .nm{color:#4cd488}
 #lsbar .dots{display:flex;gap:4px}#lsbar .dots i{width:8px;height:8px;border-radius:50%;background:#456;display:block}#lsbar .dots i.d{background:#4cd488}#lsbar .dots i.c{background:#3fd2ff;box-shadow:0 0 0 2px rgba(63,210,255,.35)}
 #lsbar .sp{flex:1}#lsbar button{background:#ffffff14;border:1px solid #ffffff30;border-radius:6px;color:#e6edf7;cursor:pointer;font-size:13px;padding:4px 10px;min-height:32px}
 #lsbar button.pri{background:#2a7de1;border-color:#2a7de1;color:#fff}#lsbar.ok button.pri{background:#2f8f5a;border-color:#2f8f5a}
 #lsbar .st{margin-top:6px;line-height:1.5}#lspass{position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center}
-.lspd{padding:22px 26px;text-align:center;max-width:min(380px,calc(100vw - 32px));min-width:0;height:auto;border:1px solid #4cd488}.lspt{font-size:22px;font-weight:700;color:#4cd488}.lsps{margin:6px 0 16px;color:#c7d3e6}
+.lspd{padding:22px 26px;text-align:center;max-width:min(380px,calc(calc(100vw / var(--uz)) - 32px));min-width:0;height:auto;border:1px solid #4cd488}.lspt{font-size:22px;font-weight:700;color:#4cd488}.lsps{margin:6px 0 16px;color:#c7d3e6}
 .lspb{display:flex;flex-direction:column;gap:8px}.lspb button{background:#232c3d;border:1px solid #394559;border-radius:8px;color:#e6edf7;font-size:15px;padding:10px;min-height:44px;cursor:pointer}.lspb button.pri{background:#2f8f5a;border-color:#2f8f5a;color:#fff}
-#lsbar .cl{margin-top:6px;max-height:34vh;overflow:auto;display:flex;flex-direction:column;gap:4px}#lsbar .ci{display:flex;align-items:flex-start;gap:8px;line-height:1.45;font-size:13px}#lsbar .ci .ck{flex:none;width:16px;text-align:center;color:#8aa3bf}#lsbar .ci.ok .ck{color:#4cd488;font-weight:700}#lsbar .ci.ok .ct{opacity:.55;text-decoration:line-through}#lsbar .ci .ct{flex:1}#lsbar .ci button{flex:none;min-height:26px;padding:2px 8px;font-size:12px}
-#lsbar .wr{padding:6px 10px;background:#4a1d1d;border:1px solid #e0605a;border-radius:6px;color:#ffd5d2;font-size:13px}#lsbar .tp{margin-top:6px;padding:6px 10px;background:#0b1622;border-radius:6px;font-size:13px;color:#cfe0f5;max-height:32vh;overflow:auto}
+#lsbar .cl{margin-top:6px;max-height:calc(34vh / var(--uz));overflow:auto;display:flex;flex-direction:column;gap:4px}#lsbar .ci{display:flex;align-items:flex-start;gap:8px;line-height:1.45;font-size:13px}#lsbar .ci .ck{flex:none;width:16px;text-align:center;color:#8aa3bf}#lsbar .ci.ok .ck{color:#4cd488;font-weight:700}#lsbar .ci.ok .ct{opacity:.55;text-decoration:line-through}#lsbar .ci .ct{flex:1}#lsbar .ci button{flex:none;min-height:26px;padding:2px 8px;font-size:12px}
+#lsbar .wr{padding:6px 10px;background:#4a1d1d;border:1px solid #e0605a;border-radius:6px;color:#ffd5d2;font-size:13px}#lsbar .tp{margin-top:6px;padding:6px 10px;background:#0b1622;border-radius:6px;font-size:13px;color:#cfe0f5;max-height:calc(32vh / var(--uz));overflow:auto}
 #lsbar .tp p{margin:3px 0;line-height:1.5;white-space:pre-line}
 body.ls-on #modal .modal{padding-top:var(--lspush,0)!important;box-sizing:border-box;align-items:safe center!important}   /* 詢問視窗往下讓開步驟列 */
 @media (max-width:600px){#lsbar{top:52px;font-size:13px}.lsgrid{grid-template-columns:repeat(2,1fr)}}

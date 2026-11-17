@@ -2190,6 +2190,8 @@ class Handler(BaseHTTPRequestHandler):
                 return
             if path.startswith("/assets/sgs_sim/web/hp/"):   # 血量圖示 (隨程式附上,不在素材資料夾)
                 return self._file(os.path.join(WEB, "hp", os.path.basename(path)), "max-age=86400")   # 玉璧 SVG 不會變: 讓瀏覽器快取,牌桌每次重畫就不用重抓 (預設 SVG 是 no-store)
+            if path.startswith("/assets/sgs_sim/web/setup/"):   # 新遊戲設定卡片的插圖 (隨程式附上)
+                return self._file(os.path.join(WEB, "setup", os.path.basename(path)), "max-age=3600")
             if path.startswith("/assets/"):
                 full = os.path.normpath(os.path.join(ROOT, path[len("/assets/"):].replace("/", os.sep)))
                 if os.path.commonpath([full, os.path.normpath(ROOT)]) != os.path.normpath(ROOT):

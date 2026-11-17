@@ -6,6 +6,7 @@ from characters import SkillAct
 from thinking import opt_label, pname
 from view import ctext, full_name
 from view import card_dict
+import wuxie_hint
 
 NEED_PROMPT = {
     "閃": "你被攻擊了,要打出閃嗎?",
@@ -89,6 +90,7 @@ class HumanAgent:
             on = "" if ctx.get("target") is ctx["source"] and not ctx.get("targets") else f" 對 {who}"   # 對自己 / 沒有對象的牌 (五穀豐登、無中生有…) 不寫「對 自己」
             prompt = (f"{pname(ctx['source'])}{on} 使用 {full_name(ctx['trick'])}" +
                       f"{' (已被無懈)' if ctx.get('negated') else ''},要使用無懈嗎?")
+            prompt = wuxie_hint.hint(g, p, ctx) or prompt   # 利害摘要 (敵方【反賊】即將抽 3 張牌…);不認得的牌用上面的原句
         if need == "受傷響應":
             prompt = f"你即將受到 {ctx['n']} 點傷害,要使用 ⚡ 牌嗎?"
             if ctx.get("fan_n") not in (None, ctx["n"]):
@@ -101,9 +103,11 @@ class HumanAgent:
                 elif who is p:   # 周倉: 沒有傷害來源 (閃電…) 受到傷害,打出等量的閃抵擋
                     prompt = f"你即將受到傷害,要打出{need}抵擋嗎? (每打出一張抵擋 1 點)"
                 elif ctx.get("group"):
-                    prompt = f"{pname(who)} 使用 {full_name(ctx['group'])},要打出{need}嗎?"
+                    dn = g.dmg_preview(who, 1, tgt=p)
+                    prompt = f"{wuxie_hint.label(g, p, who)} 使用 {full_name(ctx['group'])},要打出{need}嗎? (不出 −{dn} 體力)"
                 elif cc is not None and g.cur_user is who and cc.name == "殺":
-                    prompt = f"{pname(who)} 對你使用殺,要打出{need}嗎? (不出會受到傷害)"
+                    dn = g.dmg_preview(who, 1, tgt=p, bonus=True)
+                    prompt = f"{wuxie_hint.label(g, p, who)} 對你使用殺,要打出{need}嗎? (不出會受到 {dn} 點傷害)"
                 elif cc is not None and g.cur_user is who:
                     prompt = f"{pname(who)} 使用 {full_name(cc.name)},要打出{need}嗎?"
                 else:

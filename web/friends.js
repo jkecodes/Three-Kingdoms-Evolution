@@ -5,7 +5,7 @@
   css.textContent = `
 #bFr,#bFr2{position:relative}.fb{display:none;width:9px;height:9px;border-radius:50%;background:#ff3b4e;position:absolute;top:2px;right:2px}.fb.on{display:block}
 #frdlg .tabs{display:flex;gap:6px;margin:12px 0 4px}#frdlg .tabs button{flex:1;padding:6px 4px;font-size:13px;position:relative}#frdlg .tabs .rd{display:inline-block;width:8px;height:8px;border-radius:50%;background:#ff3b4e;margin-left:4px}
-#frdlg .dlg{max-width:520px;display:flex;flex-direction:column;max-height:86vh;padding:0}
+#frdlg .dlg{max-width:520px;display:flex;flex-direction:column;max-height:calc(86vh / var(--uz));padding:0}
 #frdlg .sec{margin:12px 0 4px;color:var(--dim);font-size:12px;letter-spacing:.5px}
 #frdlg .addrow{display:flex;gap:8px;margin-top:10px}#frdlg .addrow input{flex:1;min-width:0}
 #frdlg .frow{display:flex;align-items:center;gap:8px;padding:8px 6px;border-bottom:1px solid var(--line)}
@@ -15,7 +15,7 @@
 #frdlg .frow .grow{flex:1;min-width:0}
 #frdlg .frow button{padding:4px 9px;font-size:13px}
 #frdlg .frow .ub{background:#ff5d73;color:#fff;border-radius:9px;font-size:11px;padding:0 6px;margin-left:4px}
-#frdlg .msgs{height:46vh;overflow:auto;padding:6px 2px;display:flex;flex-direction:column;gap:6px}
+#frdlg .msgs{height:calc(46vh / var(--uz));overflow:auto;padding:6px 2px;display:flex;flex-direction:column;gap:6px}
 #frdlg .msg{max-width:78%;padding:6px 10px;border-radius:10px;background:var(--panel2);word-break:break-word;white-space:pre-wrap}
 #frdlg .msg.me{align-self:flex-end;background:var(--accent);color:#06121f}
 #frdlg .msg small{display:block;font-size:10px;opacity:.6;margin-top:2px}

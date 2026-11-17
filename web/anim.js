@@ -15,7 +15,7 @@
   const reduce = () => { try { return matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) { return false; } };
 
   const CSS = `
-.anm{position:fixed;pointer-events:none;z-index:19;contain:layout style;overflow:visible}
+.anm{position:fixed;pointer-events:none;z-index:19;contain:layout style;overflow:visible;zoom:calc(1 / var(--uz,1))}
 .anm>*{position:absolute;box-sizing:border-box;will-change:transform,opacity}
 .anm .bg{inset:0;animation:anm-bg var(--T) ease-in-out both}
 .anm .sv{left:50%;top:50%;width:calc(var(--u)*var(--sz));height:calc(var(--u)*var(--sz));overflow:visible;transform:translate(-50%,-50%);animation:var(--an) var(--t) cubic-bezier(.2,.9,.25,1.05) var(--dl) both}

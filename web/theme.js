@@ -529,7 +529,7 @@ ${S} input[type=range]::-moz-range-thumb{width:${round ? 18 : 12}px;height:${rou
 #cosdlg .ach .ic{font-size:20px;width:26px;text-align:center}
 #cosdlg .ach .ad{font-size:12px;color:var(--dim)}
 #cosdlg .ach .au{font-size:11px;color:var(--accent)}
-.achtoast{position:fixed;left:50%;top:18px;transform:translateX(-50%);z-index:9700;background:linear-gradient(160deg,#13264a,#0a152b);border:1px solid var(--accent);box-shadow:0 0 24px rgba(63,210,255,.4);border-radius:10px;padding:12px 18px;max-width:92vw;text-align:center;cursor:pointer;animation:tin .4s ease-out}
+.achtoast{position:fixed;left:50%;top:18px;transform:translateX(-50%);z-index:9700;background:linear-gradient(160deg,#13264a,#0a152b);border:1px solid var(--accent);box-shadow:0 0 24px rgba(63,210,255,.4);border-radius:10px;padding:12px 18px;max-width:calc(92vw / var(--uz));text-align:center;cursor:pointer;animation:tin .4s ease-out}
 @keyframes tin{from{opacity:0;transform:translate(-50%,-14px)}}
 .achtoast b{color:var(--gold)}
 #cosdlg .buyrow{display:flex;align-items:center;gap:10px;padding:10px 14px;margin:0 0 12px;border-radius:8px;background:rgba(60,44,8,.85);box-shadow:inset 0 0 0 1px #c99419}
@@ -1148,7 +1148,7 @@ ${S} input[type=range]::-moz-range-thumb{width:${round ? 18 : 12}px;height:${rou
           h("div", { class: "dh" }, h("div", {}, h("div", { style: { display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" } }, h("h3", { style: { margin: 0 }, text: achMode ? "🏅 成就" : shopMode ? "🛒 外觀商店" : "🎨 外觀" }),
             achMode ? null : h("div", { style: { display: "flex", gap: "8px", flexWrap: "nowrap", flexBasis: "100%" } }, ...[["💰 ", p.coins || 0, " 遊戲幣"], ["🏵 ", p.renown || 0, " 聲望"]].map(([ic, n, lb]) => h("span", { style: { display: "inline-flex", alignItems: "center", gap: "4px", padding: "3px 9px", border: "1px solid #ffd24a", borderRadius: "6px", background: "rgba(255,210,74,.1)", fontSize: "13px", fontWeight: "700", whiteSpace: "nowrap" } }, ic, h("b", { style: { color: "#ffd24a", fontVariantNumeric: "tabular-nums" }, text: String(n) }), lb)))),
           achMode ? h("div", { class: "meta", text: "每個成就解鎖一個外觀;其他外觀到「外觀」用遊戲幣買" }) : null), h("button", { class: "x", text: "✕", onclick: close })),
-          h("div", { style: { padding: "6px 22px 18px", maxHeight: "70vh", overflowY: "auto" } },
+          h("div", { style: { padding: "6px 22px 18px", maxHeight: "calc(70vh / var(--uz))", overflowY: "auto" } },
             achMode || tab === "theme" || tab === "cardbg" || tab === "cardback" || tab === "anim" ? null : preview(), achMode ? null : buyRow(),
             achMode ? null : h("div", { class: "tabs" }, ...tabs.map(([k, n]) => h("button", { class: k === tab ? "on" : "", text: n, onclick: () => { tab = k; pv = null; render(); } }))),
             body, achMode ? null : h("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "14px", gap: "8px" } }, h("span"), h("button", { class: "primary", text: "完成", onclick: close }))))));   // 成就列表右上角有 ✕,不放最下面的完成按鈕
