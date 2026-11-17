@@ -359,7 +359,7 @@ class Profiles:
         bx = sel.get("box", "") if ok("boxes", sel.get("box", "")) else ""
         cb = sel.get("cardbg", "") if ok("cardbgs", sel.get("cardbg", "")) else ""
         bk = sel.get("cardback", "") if ok("cardbacks", sel.get("cardback", "")) else ""
-        ca = "svg" if sel.get("cardart") == "svg" else ""   # 卡圖外觀: "" = 新水墨圖, "svg" = 手繪向量圖 (免費,不用解鎖)
+        ca = ""   # 卡圖外觀: 舊的手繪向量圖 (svg) 已關閉,一律用水墨圖;等新卡牌做好再接上
         an = sel.get("anim", "") if ok("anims", sel.get("anim", "")) else ""
         return {"fr": fr, "fx": fx, "bx": bx, "cb": cb, "bk": bk, "an": an, "ca": ca, "ga": "old" if sel.get("genart") == "old" else ""}
 
@@ -379,7 +379,7 @@ class Profiles:
             if anim is not None and (anim == "" or ok("anims", anim)):
                 sel["anim"] = anim
             if cardart in ("", "svg", "ink"):
-                sel["cardart"] = "svg" if cardart == "svg" else ""
+                sel["cardart"] = ""   # 手繪向量圖已關閉
             if genart in ("", "old", "ink"):
                 sel["genart"] = "old" if genart == "old" else ""
             if cardback is not None and ok("cardbacks", cardback):

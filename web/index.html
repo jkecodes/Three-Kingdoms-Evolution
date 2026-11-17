@@ -260,7 +260,7 @@ button.big{font-size:16px;font-weight:800;padding:10px 38px}
 .rkg .bar{flex:1;height:8px;border-radius:2px;background:rgba(255,255,255,.1);overflow:hidden;max-width:240px}.rkg .bar i{display:block;height:100%;background:hsl(8,60%,52%)}
 .rkg .m2 .ic{width:24px;text-align:center}.rkg .m2 .pt{font-weight:600;text-align:right}
 .rkg-chips{display:flex;flex-wrap:wrap;gap:6px}.rkg-chips span{padding:5px 10px;border-radius:14px;background:rgba(255,255,255,.07);font-size:13px}
-.rset-dlg{width:min(360px,calc(92vw / var(--uz)))}.rset-list{display:flex;flex-direction:column;gap:8px;padding:14px 18px 18px}.rset-list button{width:100%;min-height:44px;justify-content:flex-start;text-align:left}
+.rset-dlg{width:min(360px,calc(92vw / var(--uz)))}.rset-list{display:flex;flex-direction:column;gap:8px;padding:14px 18px 18px}.rset-list button{width:100%;min-height:52px;font-size:17px!important;padding:8px 18px!important;justify-content:flex-start;text-align:left}
 
 .tholder .sec{display:none}.tholder .sec.cur{display:block}
 .wzs{display:flex;align-items:center;gap:8px;margin:6px 0 2px;flex-wrap:wrap}.wzs-l{font-size:13px;color:var(--dim);margin-right:2px}.wzs .rs-tab{margin-left:auto;border-radius:99px;padding:0 18px}
@@ -282,6 +282,7 @@ button.big{font-size:16px;font-weight:800;padding:10px 38px}
 .tstep{flex:none;min-width:40px;min-height:40px!important;padding:0!important;border-radius:50%!important;display:inline-flex!important;align-items:center;justify-content:center}
 .tstep .chev{width:9px;height:9px;border:solid currentColor;border-width:0 0 2.5px 2.5px;display:block}.tstep .chev.l{transform:rotate(45deg);margin-left:4px}.tstep .chev.r{transform:rotate(-135deg);margin-right:4px}
 .tv.one{min-height:40px}
+.seatask{max-width:360px}.seatask-b{display:flex;flex-direction:column;gap:10px;padding:6px 4px 4px}.seatask-b .btn{padding:12px;font-size:16px}.seatask-t{font-size:12.5px;color:var(--dim);text-align:center;line-height:1.5}
 .tdesc{text-align:center;margin:10px 4px 2px;min-height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}.tdesc-t{font-size:13px;color:var(--dim);letter-spacing:.08em}.tdesc-x{font-size:18px;font-weight:600;color:var(--text);line-height:1.4;max-width:560px}
 .wtile.sel{border-color:var(--gold)}
 .tholder .sec.cur{text-align:center}.tholder .sec.cur .sh{justify-content:center}.tholder .sec.cur .seg{justify-content:center}.tholder .sec.cur .shx{margin-left:auto;margin-right:auto;width:fit-content;max-width:100%;text-align:left}.tholder .sec.cur .tbackbar{text-align:left}
@@ -306,6 +307,7 @@ button.big{font-size:16px;font-weight:800;padding:10px 38px}
 @keyframes mo-art{from{opacity:0;transform:scale(1.04)}}
 .modal.mo-in{animation:mo-fade var(--mo-base) ease-out both}
 .modal.mo-in>.dlg,.modal.mo-in>.ci,.modal.mo-in>.cidual{animation:mo-pop var(--mo-base) var(--ease-out) both}
+#tutov.mo-in{animation:mo-fade var(--mo-base) ease-out both}#tutov.mo-in>.tdlg{animation:mo-pop var(--mo-base) var(--ease-out) both}
 .dlg.setup .tgrid.anim.l{animation:mo-slide-l var(--mo-base) var(--ease-out) both}
 .dlg.setup .tgrid.anim.r{animation:mo-slide-r var(--mo-base) var(--ease-out) both}
 .dlg.setup .tgrid.anim .wtile{animation:mo-rise var(--mo-base) var(--ease-out) both;animation-delay:calc(var(--i,0)*40ms)}
@@ -313,6 +315,11 @@ button.big{font-size:16px;font-weight:800;padding:10px 38px}
 .pane.on{animation:mo-fade var(--mo-base) ease-out both}
 :where(button){transition:background-color var(--mo-fast) ease,border-color var(--mo-fast) ease,color var(--mo-fast) ease,opacity var(--mo-fast) ease,transform var(--mo-fast) var(--ease-out),box-shadow var(--mo-fast) ease}
 :where(button:not(:disabled)):active{transform:scale(.97)}
+button:not(:disabled):active{transform:scale(.96);transition-duration:60ms}   /* 提高優先權: 滑鼠停在按鈕上 (hover) 時按下去也要縮一下,不然 button:hover 的 transform:none 會蓋掉 */
+#rooms button:not(:disabled):active,#rooms a.dc:active{transform:scale(.95);transition-duration:60ms}
+#lobbytools button:not(:disabled):hover:not(:active){transform:translateY(-1px)}
+#rooms a.dc,#rooms .rrow{transition:background-color var(--mo-fast) ease,border-color var(--mo-fast) ease,transform var(--mo-fast) var(--ease-out),box-shadow var(--mo-fast) ease}
+#rooms .rrow:hover{border-color:#3fd2ff;background:#102a4c}
 #table.enter{animation:mo-fade .6s ease-out both}
 #top button:hover,#side button:hover{filter:brightness(1.12)}
 .tholder .sec.cur{animation:mo-rise var(--mo-base) var(--ease-out) both}
@@ -950,7 +957,7 @@ function bkEl(seat) {   // 手牌數旁邊顯示這位玩家選的卡背 (其他
   return bk ? h("img", {class: "cbk", src: "/cards/_back.svg?bk=" + encodeURIComponent(bk), alt: "", title: "卡背"}) : null;
 }
 function mySel() { return (S.prof && S.prof.sel) || {}; }   // 新 / 舊卡圖、武將圖只看自己的選擇 (全部的牌和武將都用自己選的,不看對方選什麼)
-function caOf() { return mySel().cardart === "svg" ? "svg" : ""; }
+function caOf() { return ""; }   // 舊的手繪向量圖已關閉
 function setRosterArt(v) { S.roster = (S.roster || []).map(c => c.img ? Object.assign({}, c, {img: c.img.replace(/&art=old/, "") + (v === "old" ? "&art=old" : "")}) : c);  if (typeof renderChars === "function") { try { renderChars(); } catch (e) {} } if (typeof poll === "function") poll(true); }   // 選單 / 圖鑑裡的武將圖: 依自己選的新 / 舊版
 function gi(u) {   // 圖片網址: 依自己選的新 / 舊卡圖、武將圖、卡面風格 (詳細資訊、戰報、選武將、圖鑑都走這裡)
   if (typeof u !== "string") return u;
@@ -958,7 +965,7 @@ function gi(u) {   // 圖片網址: 依自己選的新 / 舊卡圖、武將圖�
   if (u.startsWith("/cards/") && u.indexOf("_back") < 0 && !/[?&](bg|art)=/.test(u)) {
     const ms = mySel(), q = [];
     if (ms.cardbg && ms.cardbg !== "classic") q.push("bg=" + encodeURIComponent(ms.cardbg));
-    if (ms.cardart === "svg") q.push("art=svg");
+    
     if (q.length) return u + (u.includes("?") ? "&" : "?") + q.join("&");
   }
   return u;
@@ -2225,7 +2232,7 @@ function openSetup() {
     drawRk(); if (st.ranked === "ranked") loadProfile().then(drawRk);   // 段位模式: 百變 / 基礎體力 / 主公座位 / 身分模式都固定
     const on = st.ranked === "ranked";
     if (st.ranked === "newbie") { st.mode = "normal"; st.hp = 4; st.lord = "random"; st.rm = "normal"; if (st.n > 5) st.n = 4; if (st.diff > 2) st.diff = 1; }   // 新手入門: 固定一般規則、電腦弱
-    if (on) { st.mode = "normal"; st.hp = 4; st.lord = "random"; st.rm = "normal"; if (st.n < 4) st.n = 4; Object.keys(keep).forEach(k => keep[k] = ""); }
+    if (on) { if (st.human === "spectate") st.human = "0"; st.mode = "normal"; st.hp = 4; st.lord = "random"; st.rm = "normal"; if (st.n < 4) st.n = 4; Object.keys(keep).forEach(k => keep[k] = ""); }
     drawMode(); hpDraw(); rebuild();
     seatBox.querySelectorAll("select[data-dseat]").forEach(x => { x.disabled = on; });
     if (diffSeg) { diffSeg.style.opacity = on ? ".45" : ""; diffSeg.style.pointerEvents = on ? "none" : ""; }
@@ -2236,7 +2243,7 @@ function openSetup() {
   drawMode();
   rebuild();
   showOnline();
-  const start = async () => {
+  const doStart = async () => {
     const chars = [...seatBox.querySelectorAll("select[data-seat]")].map(s => s.value);
     const diffs = [...seatBox.querySelectorAll("select[data-dseat]")].map(s => +s.value);
     const humans = st.ranked === "ranked" ? Array.from({length: st.n}, (_, i) => i) : [...seatBox.querySelectorAll("input[type=checkbox]")].map((x, i) => x.checked ? i : -1).filter(i => i >= 0);   // 段位模式: 全部座位開放,開始後再選參戰 / 觀戰
@@ -2245,6 +2252,18 @@ function openSetup() {
     await api("/api/new", {players: st.n, human: st.human, humans, chars, variant: st.variant, lord: st.lord, mode: st.mode, role_mode: st.n < 4 ? "none" : st.rm, base_hp: st.hp, ranked: st.ranked === "ranked", newbie: st.ranked === "newbie", spec_all: st.ranked !== "ranked" && specAll.checked, difficulty: st.diff, diffs, seed: "", speed: +speed.value});
     $("#speed").value = speed.value; $("#speedv").textContent = (+speed.value).toFixed(2) + "s";
     M.textContent = ""; S.modalOpen = null; poll(true);
+  };
+  const start = () => {   // 單人遊戲: 按下開始遊戲才決定要不要入座 (段位 / 多人房間照原本流程入座)
+    if (st.ranked === "ranked") { if (st.human === "spectate") st.human = "0"; return doStart(); }
+    if ([...seatBox.querySelectorAll("input[type=checkbox]")].some(x => x.checked)) return doStart();   // 多人房間 (有開放給真人的座位): 照原本流程,房主入座,其他人到大廳自己入座
+    const ask = h("div", {class: "modal", style: {zIndex: 7700}, onclick: e => { if (e.target === ask) ask.remove(); }},
+      h("div", {class: "dlg seatask", role: "dialog", "aria-label": "入座"},
+        h("div", {class: "dh"}, h("h3", {text: "你要入座嗎?"}), h("button", {class: "x", text: "✕", onclick: () => ask.remove()})),
+        h("div", {class: "seatask-b"},
+          h("button", {type: "button", class: "btn", text: "👤 我來打", onclick: () => { if (st.human === "spectate") st.human = "0"; ask.remove(); doStart(); }}),
+          h("button", {type: "button", class: "btn sec2", text: "👁 看電腦互打", onclick: () => { st.human = "spectate"; ask.remove(); doStart(); }}),
+          h("div", {class: "seatask-t", text: "看電腦互打: 你不入座,只在旁邊看 (可暫停 / 調整速度)"}))));
+    document.body.append(ask);
   };
   const close = () => { M.textContent = ""; S.modalOpen = null; S.setupOff = S.roomNow; };   // 取消後不要馬上又自動彈出
   const roomSet = items => {   // 房間設定: 五個房間按鈕收進一個按鈕,按下去跳出小視窗
@@ -2339,7 +2358,7 @@ function openSetup() {
             art.append(pre);
           };
           pre.onerror = () => tryNext(i + 1);
-          pre.src = ART + names[i] + ".webp?v=3";
+          pre.src = ART + names[i] + ".webp?v=20";
         };
         tryNext(0);
       };
@@ -2453,7 +2472,7 @@ document.querySelectorAll("#tabs button, #mnav button").forEach(b => b.addEventL
     added.forEach(n => { if (n.classList.contains("soft")) return; n.classList.add("mo-in"); setTimeout(() => n.classList.remove("mo-in"), 520); });
   }).observe(el, {childList: true}); };
   let lastGone = 0;
-  const init = () => { watch(document.body); watch(document.getElementById("modal")); };
+  const init = () => { watch(document.body); watch(document.getElementById("modal")); watch(document.getElementById("modal2")); };   /* modal2: 個人資訊 / 排行榜 / 外觀 / 成就 都放這一層 */
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
 })();
 /* ---------- 暱稱 ---------- */

@@ -1103,7 +1103,7 @@ ${S} input[type=range]::-moz-range-thumb{width:${round ? 18 : 12}px;height:${rou
         body = h("div", {}, stage, btns, h("div", { class: "meta", style: { marginBottom: "6px" }, text: `已擁有 ${L.filter(x => has("anims", x.id)).length} / ${L.length}` }), h("div", { class: "grid" }, ...sw));
       } else if (tab === "cardbg" || tab === "cardback") {   // 卡面 (你的牌的底色風格) / 卡背: 其他玩家看得到
         const isBg = tab === "cardbg", kind = isBg ? "cardbgs" : "cardbacks", L = CAT[kind] || [], curv = (isBg ? sel.cardbg : sel.cardback) || "classic";
-        const art = sel.cardart === "svg" ? "&art=svg" : "", url = id => isBg ? "/cards/" + encodeURIComponent("殺") + ".svg?bg=" + id + art + "&t=" + ARTT : "/cards/_back.svg?bk=" + id + "&t=" + ARTT;
+        const art = "", url = id => isBg ? "/cards/" + encodeURIComponent("殺") + ".svg?bg=" + id + art + "&t=" + ARTT : "/cards/_back.svg?bk=" + id + "&t=" + ARTT;
         const sw = ordered2(L, kind).map(x => {
           const ok = has(kind, x.id), on = curv === x.id;
           return h("button", {
@@ -1112,7 +1112,7 @@ ${S} input[type=range]::-moz-range-thumb{width:${round ? 18 : 12}px;height:${rou
           }, h("img", { src: url(x.id), alt: x.n, style: { width: "54px", height: "77px", borderRadius: "5px", display: "block" } }),
           h("span", { class: "tn", text: (ok ? "" : "🔒 ") + x.n }), ok ? null : h("span", { class: "rq", text: rq(x) }));
         });
-        const artRow = isBg ? h("div", { style: { display: "flex", gap: "6px", marginBottom: "8px", flexWrap: "wrap", alignItems: "center" } }, h("span", { class: "meta", text: "卡圖:" }), ...[["", "新"], ["svg", "舊"]].map(([v, n]) => h("button", {
+        const artRow = false ? h("div", { style: { display: "flex", gap: "6px", marginBottom: "8px", flexWrap: "wrap", alignItems: "center" } }, h("span", { class: "meta", text: "卡圖:" }), ...[["", "新"], ["svg", "舊"]].map(([v, n]) => h("button", {
           class: "tile" + ((sel.cardart || "") === v ? " sel" : ""), "aria-pressed": (sel.cardart || "") === v ? "true" : "false", style: { padding: "6px 12px" },
           onclick: async () => { await post({ cardart: v }); render(); if (typeof poll === "function") poll(true); setTimeout(() => { try { const cd = document.getElementById("cd"); if (cd && cd.classList.contains("on") && window.SGS_I18N) SGS_I18N.renderCardPane(); } catch (e) {} }, 700); } }, h("span", { class: "tn", text: n })))) : null;
         const genRow = isBg ? h("div", { style: { display: "flex", gap: "6px", marginBottom: "8px", flexWrap: "wrap", alignItems: "center" } }, h("span", { class: "meta", text: "武將圖:" }), ...[["", "新"], ["old", "舊"]].map(([v, n]) => h("button", {

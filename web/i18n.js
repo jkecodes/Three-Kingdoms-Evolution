@@ -585,7 +585,7 @@ function tutIll(page) {
 }
 function tutBox() {
   let b = document.getElementById("tutov");
-  if (!b) { b = el("div", { id: "tutov" }); document.body.append(b); }
+  if (!b) { b = el("div", { id: "tutov" }); document.body.append(b); try { if (!matchMedia("(prefers-reduced-motion: reduce)").matches) { b.classList.add("mo-in"); setTimeout(() => b.classList.remove("mo-in"), 520); } } catch (e) {} }   // 第一次打開才播進場動畫 (換頁不播)
   return b;
 }
 function closeTut() { const b = document.getElementById("tutov"); if (b) b.remove(); }

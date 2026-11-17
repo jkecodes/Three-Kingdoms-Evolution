@@ -28,7 +28,7 @@
   const tileImg = L => {   // 圖跟著自己選的卡面風格 / 新舊卡圖 / 武將圖
     if (!L.img) return null;
     let u = L.img; const ms = typeof mySel === "function" ? mySel() : {};
-    if (u.startsWith("/cards/")) { const q = []; if (ms.cardbg && ms.cardbg !== "classic") q.push("bg=" + encodeURIComponent(ms.cardbg)); if (ms.cardart === "svg") q.push("art=svg"); if (q.length) u += "?" + q.join("&"); }
+    if (u.startsWith("/cards/")) { const q = []; if (ms.cardbg && ms.cardbg !== "classic") q.push("bg=" + encodeURIComponent(ms.cardbg)); if (q.length) u += "?" + q.join("&"); }
     else u += "?v=ink2" + (typeof gaQ === "function" ? gaQ() : "");
     return el("img", { src: u, alt: L.name, loading: "lazy" });
   };
