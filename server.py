@@ -19,6 +19,7 @@ from urllib.parse import unquote, urlparse, parse_qs
 from ai import HeuristicAgent, LeveledAgent
 from ai_pro import ProAgent
 from characters import ROSTER
+from cards import NEWBIE_CHARS
 from engine import Game, ROLES
 from human import HumanAgent
 from thinking import Observed, Recorder
@@ -858,7 +859,14 @@ class Manager:
         want = list(cfg.get("chars") or [""] * n) + [""] * n
         want = want[:n]
         used = {w for w in want if w in ROSTER}
-        pool = [x for x in ROSTER if x not in used]
+        if cfg.get("newbie") and not cfg.get("ranked"):   # 新手入門: 武將只從 12 位簡單的挑,固定正常模式 / 4 體力 / 正常身分
+            cfg = dict(cfg, mode="normal", base_hp=4, role_mode="normal" if int(cfg.get("players", 4)) >= 4 else "none")
+            pool = [x for x in NEWBIE_CHARS if x in ROSTER and x not in used]
+            if len(pool) < n * 3:   # 人數多於 4 人時簡單武將不夠發,再補一些其他的
+                rest = [x for x in ROSTER if x not in used and x not in pool]; rng.shuffle(rest); pool += rest[:n * 3 - len(pool)]
+        else:
+            cfg = dict(cfg, newbie=False)
+            pool = [x for x in ROSTER if x not in used]
         rng.shuffle(pool)   # 隨機武將: 每人抽 3 張 (彼此不重複) 再選 1 張,見 start()
         self.picking, self.offers, self.picks = False, {}, {}
         self.rec = Recorder()
@@ -1318,7 +1326,7 @@ class Manager:
             else:
                 agents.append(Observed(make_ai(self._level(cfg, i)), self.rec))
         g = Game(agents, max_rounds=100, seed=cfg["seed"], chars=cfg["chars_"], role_variant=int(cfg.get("variant", 0)), lord_seat=self.lord_seat,
-                 mode="shuffle" if cfg.get("mode") == "shuffle" else "normal", role_mode=cfg.get("role_mode") or "normal", base_hp=int(cfg.get("base_hp") or 4))
+                 mode="shuffle" if cfg.get("mode") == "shuffle" else "normal", role_mode=cfg.get("role_mode") or "normal", base_hp=int(cfg.get("base_hp") or 4), newbie=bool(cfg.get("newbie")))
         g.on_log = self.on_log
         if lesson:
             g.scn = lambda gg, L=lesson: lessons.apply(gg, L)

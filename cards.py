@@ -70,12 +70,19 @@ class PairView(ViewCard):
 
 DECK_COPIES = 2
 
+# 新手入門局: 只放最常見、一看就懂的牌 (10 種錦囊 + 八卦陣 / 仁王盾),不放屬性殺與其他防具
+NEWBIE_TRICKS = {"順", "過", "無", "決", "南", "萬", "桃園", "無懈", "樂", "借"}
+NEWBIE_ARMOR = {"八卦陣", "仁王盾"}
+# 新手入門局的武將: 技能少、多半是被動或單一效果
+NEWBIE_CHARS = ["張飛", "馬超", "黃忠", "趙雲", "魏延", "荀彧", "夏侯惇", "曹彰", "孫策", "孫堅", "華雄", "張角"]
 
-def build_deck(rng: random.Random, only_implemented: bool = True) -> list[Card]:
+
+def build_deck(rng: random.Random, only_implemented: bool = True, newbie: bool = False) -> list[Card]:
     entries = [(n, c, "basic") for n, c in BASIC]
-    entries += [("殺", c, "basic", nt) for nt, c in NATURE_SHA]
-    entries += [(n, c, "trick") for n, c in TRICK if not only_implemented or n in IMPLEMENTED_TRICKS]
-    entries += [(n, c, "armor") for n, c in ARMOR if not only_implemented or n in IMPLEMENTED_ARMOR]
+    if not newbie:
+        entries += [("殺", c, "basic", nt) for nt, c in NATURE_SHA]
+    entries += [(n, c, "trick") for n, c in TRICK if (not only_implemented or n in IMPLEMENTED_TRICKS) and (not newbie or n in NEWBIE_TRICKS)]
+    entries += [(n, c, "armor") for n, c in ARMOR if (not only_implemented or n in IMPLEMENTED_ARMOR) and (not newbie or n in NEWBIE_ARMOR)]
     entries += [(n, c, "horse") for n, c in HORSE]
     entries += [(n, c, "weapon") for n, c, _ in WEAPON]
     deck, toggle, cid = [], 0, 0

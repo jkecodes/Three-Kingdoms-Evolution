@@ -201,8 +201,9 @@ class _Pile(list):
 
 
 class Game:
-    def __init__(self, agents, seed=0, verbose=False, max_rounds=100, chars=None, role_variant=0, lord_seat=0, lord_bonus=1, mode="normal", role_mode="normal", base_hp=4):
+    def __init__(self, agents, seed=0, verbose=False, max_rounds=100, chars=None, role_variant=0, lord_seat=0, lord_bonus=1, mode="normal", role_mode="normal", base_hp=4, newbie=False):
         self.rng = random.Random(seed)
+        self.newbie = newbie
         self.mode, self.lord_bonus = mode, lord_bonus   # mode: normal 正常 / shuffle 百變 (第 2 輪起每次輪到自己都換新武將)
         n = len(agents)
         # role_mode: normal 正常 / none 無身分 (各打各的,最後活著的人贏;2~3 人固定這樣) / open 全部身分公開 / hidden 主公不公開 (不加體力上限)
@@ -267,7 +268,7 @@ class Game:
         for lp in ([self.players[i] for i in self.lords.values()] if self.team_mode else [self.lord]):   # 雙國戰: 兩位主公都多體力上限
             lp.maxhp += lord_bonus   # 主公多 lord_bonus 點體力上限
             lp.hp += lord_bonus
-        self.deck = build_deck(self.rng)
+        self.deck = build_deck(self.rng, newbie=newbie)
         self.total_cards = len(self.deck)
         self.discard: list[Card] = _Pile()
         self.last_reveal = None  # (標題, [(玩家idx, 牌), ...]) 例如鴻門宴亮出的兩張牌

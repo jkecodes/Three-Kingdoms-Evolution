@@ -8,6 +8,7 @@
 #frdlg .dlg{max-width:520px;display:flex;flex-direction:column;max-height:calc(86vh / var(--uz));padding:0}
 #frdlg .sec{margin:12px 0 4px;color:var(--dim);font-size:12px;letter-spacing:.5px}
 #frdlg .addrow{display:flex;gap:8px;margin-top:10px}#frdlg .addrow input{flex:1;min-width:0}
+@keyframes frin{from{opacity:0;transform:translateY(10px)}}#frdlg.fresh .frow{animation:frin 300ms cubic-bezier(.2,.8,.2,1) both}#frdlg.fresh .frow:nth-child(2){animation-delay:40ms}#frdlg.fresh .frow:nth-child(3){animation-delay:80ms}#frdlg.fresh .frow:nth-child(4){animation-delay:120ms}#frdlg.fresh .frow:nth-child(n+5){animation-delay:160ms}@media (prefers-reduced-motion:reduce){#frdlg.fresh .frow{animation:none}}
 #frdlg .frow{display:flex;align-items:center;gap:8px;padding:8px 6px;border-bottom:1px solid var(--line)}
 #frdlg .frow .dot{width:9px;height:9px;border-radius:50%;background:#59657a;flex:none}
 #frdlg .frow .dot.on{background:var(--green);box-shadow:0 0 6px var(--green)}
@@ -120,7 +121,7 @@
     const m = el("div", {class: "modal", id: "frdlg", style: {zIndex: 7500}}, dlg);
     m.onclick = e => { if (e.target === m) close(); };
     document.body.append(m);
-    F.dlg = m;
+    F.dlg = m; m.classList.add("fresh"); setTimeout(() => m.classList.remove("fresh"), 700);   // 剛打開: 好友列一列一列滑進來 (之後重畫不再播)
     renderList(true);
     poll();
   }

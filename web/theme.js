@@ -1083,7 +1083,7 @@ ${S} input[type=range]::-moz-range-thumb{width:${round ? 18 : 12}px;height:${rou
             class: "tile" + (ok ? "" : " lock") + (on ? " sel" : "") + (pv && pv.box === x.id ? " pvd" : ""), title: ok ? x.n : "需要 " + x.req_text, "aria-pressed": on ? "true" : "false",
             onclick: async () => { if (!ok) { pv = needPv("boxes", x, { box: x.id }); render(); return; } pv = null; const id = x.id === "classic" ? "" : x.id; sel.box = id; render(); await post({ box: id }); render(); },
           }, (() => { const e = h("span", { class: "bxsw", style: { display: "block", width: "92px", height: "54px", borderRadius: "6px", background: bg, boxShadow: `inset 0 0 0 1px ${sp ? sp.bd : "#24557d"},0 0 8px ${sp ? sp.gl + "55" : "rgba(63,210,255,.25)"}` } }); if (sp) applyBox(e, x.id); return e; })(),
-          h("span", { class: "tn", text: (ok ? "" : "🔒 ") + x.n }), x.anim ? h("span", { class: "meta", style: { fontSize: "11px", opacity: ".85" }, text: "🎬 " + animName(x.anim) }) : null, ok ? null : h("span", { class: "rq", text: rq(x) }), ok ? null : lockProg(x));
+          h("span", { class: "tn", text: (ok ? "" : "🔒 ") + x.n }), ok ? null : h("span", { class: "rq", text: rq(x) }), ok ? null : lockProg(x));
         });
         body = h("div", {}, h("div", { class: "meta", style: { marginBottom: "6px" }, text: `已解鎖 ${(CAT.boxes || []).filter(x => has("boxes", x.id)).length} / ${(CAT.boxes || []).length}` }), h("div", { class: "grid" }, ...sw), h("div", { class: "meta", style: { marginTop: "10px" }, text: "玩家框是牌桌上你的座位方塊外觀,所有玩家都看得到。有些要成就解鎖。每個框下面的 🎬 是推薦搭配的動畫特效。" }));
       } else if (tab === "anim") {   // 動畫特效 (聲望限定): 進場 + 勝利 + 落敗,所有玩家都看得到

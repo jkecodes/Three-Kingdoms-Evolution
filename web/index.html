@@ -41,7 +41,7 @@ html{zoom:var(--uz)}
 #app{display:grid;grid-template-rows:auto minmax(0,1fr) auto;height:calc(100vh / var(--uz));height:calc(100dvh / var(--uz))}
 #top{display:flex;gap:10px;align-items:center;padding:9px 16px;background:rgba(24,33,43,.92);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);flex-wrap:wrap;box-shadow:0 2px 12px rgba(0,0,0,.35);z-index:3}
 #bMenu{display:none}
-#top .title{font-weight:800;font-size:18px;letter-spacing:.15em;color:var(--accent);margin-right:10px;text-shadow:0 0 12px rgba(233,191,98,.35)}
+#top .title{font-weight:800;font-size:18px;letter-spacing:.15em;color:var(--accent);margin-right:10px;text-shadow:none}
 #top label{color:var(--dim);display:flex;align-items:center;gap:6px}
 #status{margin-left:0;color:var(--dim);background:var(--panel2);padding:3px 12px;border-radius:99px;border:1px solid var(--line);font-size:13px}
 #mid{display:grid;grid-template-columns:1fr 390px;min-height:0}
@@ -54,18 +54,18 @@ html{zoom:var(--uz)}
 #tablewrap::after{content:"";position:absolute;inset:6% 5%;border-radius:50%;box-shadow:inset 0 0 0 2px rgba(233,191,98,.18);margin:26px;pointer-events:none}
 #table{position:absolute;inset:0}
 #center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center;color:#a9c4b8;text-shadow:0 1px 4px rgba(0,0,0,.6)}
-#roundtag{position:absolute;left:12px;top:10px;z-index:4;pointer-events:none;font-size:22px;font-weight:800;letter-spacing:.15em;color:var(--accent);text-shadow:0 0 14px rgba(63,210,255,.7)}
+#roundtag{position:absolute;left:12px;top:10px;z-index:4;pointer-events:none;font-size:22px;font-weight:800;letter-spacing:.15em;color:var(--accent);text-shadow:none}
 #roundtag:empty{display:none}
 #roundtag .rtdeck{font-size:14px;letter-spacing:.05em;font-weight:600;color:#9eeaff;margin-top:2px}
 #center .big{font-size:30px;color:var(--gold);font-weight:800;letter-spacing:.2em}
 #winner{margin-top:10px;font-size:24px;color:#fff;font-weight:800;background:rgba(0,0,0,.45);padding:6px 20px;border-radius:99px;border:1px solid var(--gold)}
 .pl{position:absolute;transform:translate(-50%,-50%);width:calc(236px + var(--exn,0) * 42px);background:linear-gradient(160deg,rgba(33,44,57,.96),rgba(20,28,37,.96));border:2px solid var(--line);border-radius:14px;padding:8px;display:flex;gap:8px;cursor:pointer;box-shadow:var(--shadow);transition:border-color .2s,box-shadow .2s}
 .pl:hover{border-color:#44586f}
-.pl.cur{border-color:var(--accent);box-shadow:0 0 0 2px rgba(233,191,98,.25),0 0 24px rgba(233,191,98,.5);animation:pulse 2s infinite}
-@keyframes pulse{50%{box-shadow:0 0 0 4px rgba(233,191,98,.15),0 0 32px rgba(233,191,98,.65)}}
+.pl.cur{border-color:var(--accent);box-shadow:0 0 0 2px rgba(233,191,98,.5),0 6px 16px rgba(0,0,0,.45);animation:pulse 2s infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 5px rgba(233,191,98,.3),0 6px 16px rgba(0,0,0,.45)}}
 .pl.dead{opacity:.4;filter:grayscale(1)}
 .pl.sel{outline:2px solid var(--blue);outline-offset:2px}
-.pl.target{border-color:var(--green);box-shadow:0 0 0 2px rgba(83,201,138,.35),0 0 20px rgba(83,201,138,.5)}
+.pl.target{border-color:var(--green);box-shadow:0 0 0 3px rgba(83,201,138,.6),0 6px 14px rgba(0,0,0,.4)}
 .pl .ph{width:66px;height:94px;border-radius:8px;background:#0b0e12 center/cover no-repeat;flex:none;border:2px solid #34455a;box-shadow:inset 0 0 8px rgba(0,0,0,.5)}
 .pl .inf{min-width:0;flex:1}
 .pl .nm{font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -182,7 +182,7 @@ body.hide-side #side{display:none}
 }
 html,body{background:radial-gradient(ellipse at 50% -10%,#10294a 0,#060b16 62%)}
 #top{background:linear-gradient(90deg,rgba(8,20,40,.96),rgba(12,28,52,.96));border-bottom:1px solid #1f4468;box-shadow:0 1px 0 rgba(63,210,255,.25),0 4px 18px rgba(0,0,0,.5)}
-#top .title{color:var(--accent);text-shadow:0 0 14px rgba(63,210,255,.6)}
+#top .title{color:var(--accent);text-shadow:none}
 button{border-radius:8px;padding:6px 20px;background:linear-gradient(180deg,#17304f,#0e1f38);border:0;box-shadow:inset 0 0 0 1px #2a5a85}
 button:hover{box-shadow:inset 0 0 0 1px var(--accent),var(--glow);transform:none;background:linear-gradient(180deg,#1d3f66,#112846)}
 button.primary{background:linear-gradient(180deg,#52dcff,#1a9bd0);color:#02202e;box-shadow:inset 0 0 0 1px #9cecff}
@@ -190,15 +190,15 @@ button.primary{background:linear-gradient(180deg,#52dcff,#1a9bd0);color:#02202e;
 #status{border-radius:2px;background:#0c1d36;border-color:#1f4468;color:var(--accent)}
 #tablewrap::before{border-radius:50%;border:2px solid #2b6c98;
   background:radial-gradient(ellipse at 50% 45%,#12335a 0,#091a31 55%,#050b17 100%);
-  box-shadow:0 0 0 6px rgba(63,210,255,.08),0 0 0 7px rgba(63,210,255,.35),0 0 50px rgba(63,210,255,.25),inset 0 0 70px rgba(0,0,0,.7)}
+  box-shadow:0 0 0 6px rgba(63,210,255,.08),0 0 0 7px rgba(63,210,255,.35),0 18px 40px rgba(0,0,0,.45),inset 0 0 70px rgba(0,0,0,.7)}
 #tablewrap::after{border-radius:50%;box-shadow:inset 0 0 0 1px rgba(63,210,255,.28);margin:30px}
-#center .big{color:var(--accent);text-shadow:0 0 18px rgba(63,210,255,.7)}
+#center .big{color:var(--accent);text-shadow:none}
 #center{color:#7fb7dd}
 #winner{border-color:var(--gold);color:var(--gold);box-shadow:0 0 20px rgba(240,201,92,.4)}
 .pl{border-radius:4px;background:linear-gradient(160deg,rgba(18,40,72,.96),rgba(8,18,36,.96));border:0;box-shadow:inset 0 0 0 1px #24557d,inset 0 0 22px rgba(63,210,255,.08)}
 .pl:hover{box-shadow:inset 0 0 0 1px #4aa9d8,inset 0 0 22px rgba(63,210,255,.14)}
 .pl.cur{box-shadow:inset 0 0 0 2px var(--accent),inset 0 0 30px rgba(63,210,255,.3);animation:none}
-.pl.cur::after{content:"TURN";position:absolute;left:14px;top:-19px;font-size:11px;font-weight:800;letter-spacing:.15em;color:#02202e;background:var(--accent);padding:1px 10px;border-radius:4px 4px 0 0;box-shadow:0 0 10px rgba(63,210,255,.6)}
+.pl.cur::after{content:"TURN";position:absolute;left:14px;top:-19px;font-size:11px;font-weight:800;letter-spacing:.15em;color:#02202e;background:var(--accent);padding:1px 10px;border-radius:4px 4px 0 0;box-shadow:0 2px 6px rgba(0,0,0,.4)}
 .pl.sel{outline:none;box-shadow:inset 0 0 0 2px var(--gold)}
 .pl.target{box-shadow:inset 0 0 0 2px var(--green),inset 0 0 26px rgba(70,224,160,.35)}
 .pl .ph{border-radius:2px;border:1px solid #2f6f9c}
@@ -209,8 +209,8 @@ button.primary{background:linear-gradient(180deg,#52dcff,#1a9bd0);color:#02202e;
 .bubble{background:rgba(8,20,40,.96);color:var(--text);border:1px solid var(--accent);border-radius:2px;box-shadow:var(--glow)}
 .bubble::after{border-top-color:var(--accent)}
 .card{border-radius:5px;border:1px solid #2a5a85;box-shadow:0 4px 12px rgba(0,0,0,.6)}
-.card.ok{border:2px solid var(--accent);box-shadow:0 0 14px rgba(63,210,255,.55),0 4px 10px rgba(0,0,0,.6)}
-.card.ok:hover{box-shadow:0 0 22px rgba(63,210,255,.85),0 12px 20px rgba(0,0,0,.6)}
+.card.ok{border:2px solid var(--accent);box-shadow:0 0 0 1px rgba(63,210,255,.6),0 4px 10px rgba(0,0,0,.6)}
+.card.ok:hover{box-shadow:0 0 0 2px rgba(63,210,255,.9),0 12px 20px rgba(0,0,0,.6)}
 .card.picked{border-color:var(--gold);box-shadow:0 0 22px var(--gold),0 10px 18px rgba(0,0,0,.6)}
 .card:hover .info{background:var(--accent)}
 .eq{border-radius:3px;border-color:#2f6f9c}
@@ -272,7 +272,7 @@ button.big{font-size:16px;font-weight:800;padding:10px 38px}
 .wtile.open{cursor:pointer}.wtile.open:hover,.wtile.open:focus-visible{border-color:var(--gold);outline:none}
 .wtile.lk{opacity:.45;pointer-events:none}
 .tart{position:absolute;inset:0;z-index:0;pointer-events:none}
-.tart img{width:100%;height:100%;object-fit:cover;object-position:center 20%;display:block;-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 20%,#000 30%,rgba(0,0,0,.55) 52%,transparent 80%);mask-image:linear-gradient(to bottom,transparent 0,#000 20%,#000 30%,rgba(0,0,0,.55) 52%,transparent 80%)}
+.tart img{width:100%;height:100%;object-fit:cover;object-position:center 20%;display:block;-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 20%,#000 30%,rgba(0,0,0,.55) 52%,transparent 80%),linear-gradient(to right,transparent 0,#000 4%,#000 96%,transparent 100%);mask-image:linear-gradient(to bottom,transparent 0,#000 20%,#000 30%,rgba(0,0,0,.55) 52%,transparent 80%),linear-gradient(to right,transparent 0,#000 18%,#000 82%,transparent 100%);-webkit-mask-composite:source-in;mask-composite:intersect}   /* 四邊都淡出: 圖裡的人物 / 物件常常被圖框切掉,淡出後看不出裁切線 */
 .tart.seal{font-size:34px;font-weight:800;color:#f6e9d4}
 .tart.seal{inset:auto;top:14px;left:50%;margin-left:-36px;width:72px;height:72px;display:flex;align-items:center;justify-content:center;border-radius:4px;background:#8f2a22;box-shadow:inset 0 0 0 3px #8f2a22,inset 0 0 0 5px rgba(246,233,212,.8)}
 .tn{margin-top:auto;position:relative;z-index:1;font-weight:700;font-size:15px;color:var(--text);text-shadow:0 1px 6px rgba(0,0,0,.9)}
@@ -298,6 +298,7 @@ button.big{font-size:16px;font-weight:800;padding:10px 38px}
 @keyframes mo-heal{0%{box-shadow:0 0 0 3px rgba(70,224,160,.85),0 0 26px rgba(70,224,160,.7)}100%{box-shadow:0 0 0 0 rgba(70,224,160,0)}}
 @keyframes mo-turn{from{opacity:.55;filter:brightness(1.5)}}
 @keyframes mo-draw{from{opacity:0;transform:translateY(46px) scale(.9)}}
+.rrow.lg-in2{animation:mo-rise 320ms var(--ease-out) both}
 #table .pl.hit{animation:mo-hit 380ms var(--ease-out),mo-hitflash 700ms var(--ease-out)}
 #table .pl.heal{animation:mo-heal 800ms var(--ease-out)}
 #table .pl.turn-in{animation:mo-turn 420ms var(--ease-out)}
@@ -326,7 +327,7 @@ button.big{font-size:16px;font-weight:800;padding:10px 38px}
 .tart img{animation:mo-art var(--mo-slow) var(--ease-out) both}
 .dlg button,.dlg .wtile,.wzs button{transition:background-color var(--mo-fast) ease,border-color var(--mo-fast) ease,color var(--mo-fast) ease,opacity var(--mo-fast) ease,transform var(--mo-fast) var(--ease-out),box-shadow var(--mo-fast) ease}
 .dlg .wtile.open:active,.dlg .tstep:not(:disabled):active,.dlg button.primary:active,.wzs button:active{transform:scale(.97)}
-@media (prefers-reduced-motion:reduce){.tart img.in-r,.tart img.in-l,.tart img.out-l,.tart img.out-r{animation:none!important}.pane.on,#log .lg-in,#table .pl.hit,#table .pl.heal,#table .pl.turn-in,#hand .card.draw-in,#table.enter,.modal.mo-in,.modal.mo-in>.dlg,.modal.mo-in>.ci,.modal.mo-in>.cidual,.dlg.setup .tgrid.anim,.dlg.setup .tgrid.anim .wtile,.tholder .sec.cur,.tdesc.chg .tdesc-x,.tart img{animation:none!important}.dlg button,.dlg .wtile,.wzs button{transition:none}}
+@media (prefers-reduced-motion:reduce){.tart img.in-r,.tart img.in-l,.tart img.out-l,.tart img.out-r{animation:none!important}.pane.on,#log .lg-in,.rrow.lg-in2,#table .pl.hit,#table .pl.heal,#table .pl.turn-in,#hand .card.draw-in,#table.enter,.modal.mo-in,.modal.mo-in>.dlg,.modal.mo-in>.ci,.modal.mo-in>.cidual,.dlg.setup .tgrid.anim,.dlg.setup .tgrid.anim .wtile,.tholder .sec.cur,.tdesc.chg .tdesc-x,.tart img{animation:none!important}.dlg button,.dlg .wtile,.wzs button{transition:none}}
 .tholder .sec.cur .adv{display:flex;flex-direction:column;align-items:center;gap:18px;margin-top:8px}.tholder .sec.cur .adv .fld{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}.tholder .sec.cur .adv .rng{display:flex;align-items:center;justify-content:center;gap:12px}
 @media (max-width:820px){.wtile{min-height:clamp(128px,calc(17vh / var(--uz)),150px)}.tdesc{margin-top:6px;min-height:44px}.tdesc-x{font-size:16px}}
 
@@ -440,7 +441,7 @@ html .seg button.on,html .seg button.on:hover{background:linear-gradient(180deg,
 @media (max-width:820px),(pointer:coarse){.pl .who .hstx{display:none}}   /* 手機座位太窄: 房主只留皇冠 */
 .pl .who{font-size:12px;font-weight:700;white-space:nowrap;overflow:visible;text-overflow:ellipsis}   /* 不能切掉頭像特效 */
 .who.me{color:#46e0a0}.who.hum{color:var(--gold)}.who.ai{color:#8aa4c4;font-weight:400}
-.pl.me::before{content:"";position:absolute;left:0;top:6px;bottom:6px;width:4px;border-radius:0 3px 3px 0;background:#46e0a0;box-shadow:0 0 10px #46e0a0}
+.pl.me{border-color:#2f8f68}   /* 自己的座位: 綠框 (不再用左側色條) */
 .pl .nick{display:none}
 #toasts{position:fixed;left:50%;top:64px;transform:translateX(-50%);z-index:9800;display:flex;flex-direction:column;gap:6px;align-items:center;pointer-events:none}
 .toast{background:#5a1f1f;color:#ffd0d0;padding:8px 18px;border-radius:4px;box-shadow:0 6px 20px #000a;animation:tin .25s}
@@ -609,7 +610,7 @@ body:has(#modal .modal:not(.soft)) #bHand{display:none!important}   /* 新遊戲
 #lobbytools button:hover{border-color:#3fd2ff;background:#12305a}
 #lobbytools button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 #lobbytools svg{width:18px;height:18px;flex:none;stroke:#3fd2ff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-#rooms a.dc{float:right;margin-right:8px;display:flex;align-items:center;justify-content:center;width:40px;height:38px;box-sizing:border-box;border-radius:10px;background:#0e2442;border:1px solid #24496f}
+#rooms a.dc{float:right;margin-right:8px;display:flex;align-items:center;justify-content:center;width:40px;height:38px;box-sizing:border-box;border-radius:10px;background:none;border:0}
 #rooms a.dc:hover{border-color:#5865f2;background:#12305a}
 #rooms a.dc:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 #rooms a.dc svg{width:22px;height:22px;fill:#5865f2;stroke:none}
@@ -877,7 +878,6 @@ img.av{width:22px;height:22px;border-radius:50%;object-fit:cover;vertical-align:
   <h2>進化三國 · 大廳<span id="lobbycount"></span></h2>
   <div id="lobbytools" role="group" aria-label="快捷功能"></div>
   <div class="rnew"><input id="rname" type="text" maxlength="20" placeholder="房間名稱"><input id="rpw" type="password" maxlength="20" placeholder="房間密碼 (可不設)" autocomplete="new-password" style="max-width:150px"><select id="rcap" title="房間人數上限 (含觀戰的人)"><option value="0">人數不限</option><option value="2">上限 2 人</option><option value="3">上限 3 人</option><option value="4">上限 4 人</option><option value="5">上限 5 人</option><option value="6">上限 6 人</option><option value="7">上限 7 人</option><option value="8">上限 8 人</option><option value="9">上限 9 人</option><option value="10">上限 10 人</option></select><button id="rcreate" class="primary">創建房間</button></div>
-  <button id="rquick" class="primary" style="width:100%;margin:6px 0 2px;padding:12px;font-size:16px" title="一鍵建房: 4 人、你坐座位 0、電腦難度弱,馬上開打">🤖 快速開始 (和電腦練習)</button>
   <input id="rsearch" type="search" maxlength="20" placeholder="搜尋房間名稱 / 房主" aria-label="搜尋房間名稱 / 房主" style="width:100%;box-sizing:border-box;margin:8px 0">
   <div id="rlist"></div>
   <div id="rpager" style="display:flex;justify-content:center;align-items:center;gap:10px;margin-top:8px"></div>
@@ -2129,7 +2129,7 @@ function openSetup() {
   const roster = S.roster;
   const CAS = ["hunt", "traitor", "team", "teamh"];   // 休閒玩法 (放在「遊戲模式」那排): 暗殺目標 / 抓叛徒 (4 人以上) / 雙國戰 (4 6 8 10 人)
   const casOk = (m, n) => (m === "team" || m === "teamh") ? [4, 6, 8, 10].includes(n) : n >= 4;
-  const st = {n: 4, human: "0", variant: 0, lord: "random", mode: "normal", diff: (S.prof && (S.prof.games || 0) < 3) ? 1 : 3, rm: "normal", hp: 4, ranked: "casual"};
+  const st = {n: 4, human: "0", variant: 0, lord: "random", mode: "normal", diff: (S.prof && (S.prof.games || 0) < 3) ? 1 : 3, rm: "normal", hp: 4, ranked: (S.prof && (S.prof.games || 0) < 3) ? "newbie" : "casual"};
   const cnt = a => { const c = {}; a.forEach(x => c[x] = (c[x] || 0) + 1); return Object.entries(c).map(([k, v]) => k + v).join(" "); };
   const speed = h("input", {type: "range", min: 0.05, max: 1.5, step: 0.05, value: $("#speed").value});
   const speedV = h("span", {class: "val", text: (+speed.value).toFixed(2) + "s"});
@@ -2224,6 +2224,7 @@ function openSetup() {
   const lockRanked = () => {
     drawRk(); if (st.ranked === "ranked") loadProfile().then(drawRk);   // 段位模式: 百變 / 基礎體力 / 主公座位 / 身分模式都固定
     const on = st.ranked === "ranked";
+    if (st.ranked === "newbie") { st.mode = "normal"; st.hp = 4; st.lord = "random"; st.rm = "normal"; if (st.n > 5) st.n = 4; if (st.diff > 2) st.diff = 1; }   // 新手入門: 固定一般規則、電腦弱
     if (on) { st.mode = "normal"; st.hp = 4; st.lord = "random"; st.rm = "normal"; if (st.n < 4) st.n = 4; Object.keys(keep).forEach(k => keep[k] = ""); }
     drawMode(); hpDraw(); rebuild();
     seatBox.querySelectorAll("select[data-dseat]").forEach(x => { x.disabled = on; });
@@ -2241,7 +2242,7 @@ function openSetup() {
     const humans = st.ranked === "ranked" ? Array.from({length: st.n}, (_, i) => i) : [...seatBox.querySelectorAll("input[type=checkbox]")].map((x, i) => x.checked ? i : -1).filter(i => i >= 0);   // 段位模式: 全部座位開放,開始後再選參戰 / 觀戰
     S.baseSeat = null; S.logN = 0; S.thN = 0; S.thoughts = []; S.lastTh = {}; S.sel = null; S.picked = null; S.pendId = 0;
     $("#log").textContent = ""; $("#thl").textContent = "";
-    await api("/api/new", {players: st.n, human: st.human, humans, chars, variant: st.variant, lord: st.lord, mode: st.mode, role_mode: st.n < 4 ? "none" : st.rm, base_hp: st.hp, ranked: st.ranked === "ranked", spec_all: st.ranked !== "ranked" && specAll.checked, difficulty: st.diff, diffs, seed: "", speed: +speed.value});
+    await api("/api/new", {players: st.n, human: st.human, humans, chars, variant: st.variant, lord: st.lord, mode: st.mode, role_mode: st.n < 4 ? "none" : st.rm, base_hp: st.hp, ranked: st.ranked === "ranked", newbie: st.ranked === "newbie", spec_all: st.ranked !== "ranked" && specAll.checked, difficulty: st.diff, diffs, seed: "", speed: +speed.value});
     $("#speed").value = speed.value; $("#speedv").textContent = (+speed.value).toFixed(2) + "s";
     M.textContent = ""; S.modalOpen = null; poll(true);
   };
@@ -2256,7 +2257,7 @@ function openSetup() {
   const dlg = h("div", {class: "dlg setup"},
     h("div", {class: "dh"}, h("div", {}, h("h3", {text: "新遊戲"}), h("div", {id: "onl", class: "onl"}), ROOM && S.canManage ? roomSet([h("button", {type: "button", class: "mini-btn", text: "✎ 改房名", onclick: roomRename}), inviteFriendsBtn(), h("button", {type: "button", class: "mini-btn", id: "bRoomVis", text: S.roomUnlisted ? "不公開" : "公開", title: "切換房間是否顯示在大廳列表 (不公開的房間,只有知道房號或被邀請的人進得來)", onclick: roomVisibility}), h("button", {type: "button", class: "mini-btn", id: "bRoomPw", text: S.roomLocked ? "🔒 修改 / 移除密碼" : "🔓 設定密碼", onclick: roomPassword}), (S.amHost ? h("button", {type: "button", class: "mini-btn", text: "🗑 刪除房間", onclick: roomDelete}) : null)]) : null), h("button", {class: "x", text: "✕", onclick: close})),
     h("div", {class: "dbody"},
-      sect("對戰模式", "休閒模式: 段位積分不變;段位模式: 贏了加分、輸了扣分 (依電腦難度,見玩家資訊)", seg([["casual", "🎮 休閒模式"], ["ranked", "🏅 段位模式"]], st.ranked, v => { st.ranked = v; lockRanked(); }), h("div", {style: {margin: "2px 0 6px"}}, rankHelpBtn()), rkIn),
+      sect("對戰模式", "休閒模式: 段位積分不變;段位模式: 贏了加分、輸了扣分 (依電腦難度,見玩家資訊);新手入門: 只用 12 位簡單武將和 10 種常見錦囊,不計積分", seg([["casual", "🎮 休閒模式"], ["ranked", "🏅 段位模式"], ["newbie", "🎓 新手入門"]], st.ranked, v => { st.ranked = v; lockRanked(); }), h("div", {style: {margin: "2px 0 6px"}}, rankHelpBtn()), rkIn),
       sect("人數", "", nBox),
       sect("電腦難度", "上面一排是一次調整全部電腦;每個座位也可以在下方「座位與武將」各自調整。段位模式打贏電腦加的積分: 弱 +10 / 中 +18 / 強 +25 / 很強 +32 / 極強 +40;輸了扣的分數和同難度贏的加分一樣 (勝率超過約 50% 才會升)。同場有其他真人時,每位真人對手依他的段位當成對應難度一起取平均 (青銅 弱 … 傳說 極強),對手越強輸贏的分越多。段位模式的電腦難度不能自己調,跟著入座玩家的平均段位走: 青銅 弱 / 白銀 中 / 黃金·白金 強 / 鑽石·大師 很強 / 傳說 極強。", diffSeg = seg(diffLabels().map((t, k) => [k + 1, t]), st.diff, v => { st.diff = v; seatBox.querySelectorAll("select[data-dseat]").forEach(x => { x.value = String(v); keepD[x.dataset.dseat] = String(v); }); })),
       sect("房主", "把房主讓給目前在線的某人", h("div", {id: "handover", class: "seg"})),
@@ -2280,7 +2281,7 @@ function openSetup() {
     const holder = h("div", {class: "tholder"}), grid = h("div", {class: "tgrid"});
     let page = 1, inDetail = false;
     const tiles = [];
-    const DESC = {"mode": ["不影響段位積分,可以自由調整所有設定", "贏了加段位積分、輸了扣積分;武將全隨機,部分設定固定"], "diff": ["段位模式贏了 +10 分", "段位模式贏了 +18 分", "段位模式贏了 +25 分", "段位模式贏了 +32 分", "段位模式贏了 +40 分"], "hp": ["所有武將體力上限 −2 (原本 4 血的變 2 血)", "所有武將體力上限 −1", "預設值,武將維持原本的體力", "所有武將體力上限 +1", "所有武將體力上限 +2", "所有武將體力上限 +4", "所有武將體力上限 +6"], "gmode": ["武將不變", "第 2 輪起,每個回合隨機換一位武將", "沒有身分,每人暗中有一個目標,先親手殺死目標者勝", "藏著一個叛徒,陣亡會公布身分;叛徒死了好人勝 (4 人以上)", "分紅藍兩邊 (4 / 6 / 8 / 10 人),先殺死對方主公者勝;全部人的陣營都公開", "分紅藍兩邊,只有兩位主公公開,靠行為判斷隊友 (陣亡才翻開)"], "rmode": ["標準身分局: 主公、忠臣、反賊、內奸各有勝利條件", "沒有身分,各打各的", "每個人的身分一開始就公開", "不公開主公的身分,要自己判斷誰是主公"]};   // 左右切換選項時,下方顯示該選項的說明 (依第幾個選項)
+    const DESC = {"mode": ["不影響段位積分,可以自由調整所有設定", "贏了加段位積分、輸了扣積分;武將全隨機,部分設定固定", "只有 12 位簡單武將和 10 種常見錦囊,不計積分,最適合第一次玩"], "diff": ["段位模式贏了 +10 分", "段位模式贏了 +18 分", "段位模式贏了 +25 分", "段位模式贏了 +32 分", "段位模式贏了 +40 分"], "hp": ["所有武將體力上限 −2 (原本 4 血的變 2 血)", "所有武將體力上限 −1", "預設值,武將維持原本的體力", "所有武將體力上限 +1", "所有武將體力上限 +2", "所有武將體力上限 +4", "所有武將體力上限 +6"], "gmode": ["武將不變", "第 2 輪起,每個回合隨機換一位武將", "沒有身分,每人暗中有一個目標,先親手殺死目標者勝", "藏著一個叛徒,陣亡會公布身分;叛徒死了好人勝 (4 人以上)", "分紅藍兩邊 (4 / 6 / 8 / 10 人),先殺死對方主公者勝;全部人的陣營都公開", "分紅藍兩邊,只有兩位主公公開,靠行為判斷隊友 (陣亡才翻開)"], "rmode": ["標準身分局: 主公、忠臣、反賊、內奸各有勝利條件", "沒有身分,各打各的", "每個人的身分一開始就公開", "不公開主公的身分,要自己判斷誰是主公"]};   // 左右切換選項時,下方顯示該選項的說明 (依第幾個選項)
     const descOf = (t, ctx) => {
       const k = t.d.k;
       if (k === "count") return ctx.ai < 0 ? "" : ctx.ai <= 1 ? "2~3 人固定為無身分,各打各的" : ctx.ai <= 3 ? "有身分: 主公、忠臣、反賊、內奸" : "人多的局,反賊和忠臣更多";
@@ -3039,12 +3040,13 @@ function renderRooms() {
   const pages = Math.max(1, Math.ceil(shown.length / ROOMS_PER));
   if (roomPage >= pages) roomPage = pages - 1;
   const pg = $("#rpager"); pg.textContent = "";
-  if (pages > 1) pg.append(h("button", {text: "‹", "aria-label": "上一頁", disabled: roomPage === 0, onclick: () => { roomPage--; renderRooms(); }}),
+  if (pages > 1) pg.append(h("button", {text: "‹ 上一頁", disabled: roomPage === 0, onclick: () => { roomPage--; S.rlIn = false; renderRooms(); }}),
     h("span", {class: "meta", text: (roomPage + 1) + " / " + pages}),
-    h("button", {text: "›", "aria-label": "下一頁", disabled: roomPage >= pages - 1, onclick: () => { roomPage++; renderRooms(); }}));
+    h("button", {text: "下一頁 ›", disabled: roomPage >= pages - 1, onclick: () => { roomPage++; S.rlIn = false; renderRooms(); }}));
   if (q && !shown.length) L.append(h("div", {class: "meta", style: {textAlign: "center", padding: "12px"}, text: "找不到符合的房間"}));
+  const stag = !S.rlIn && !q; S.rlIn = true; let ri = 0;   // 剛進大廳 / 換頁第一次畫: 房間一列一列滑進來;之後輪詢重畫不再播
   for (const r of shown.slice(roomPage * ROOMS_PER, (roomPage + 1) * ROOMS_PER)) {
-    L.append(h("div", {class: "rrow"},
+    L.append(h("div", {class: "rrow" + (stag ? " lg-in2" : ""), style: stag ? {animationDelay: Math.min(ri++, 8) * 40 + "ms"} : {}},
       h("div", {class: "ri"}, h("div", {class: "rn", text: (r.locked ? "🔒 " : "") + r.name}), h("div", {class: "rm", text: (r.host ? "房主: " + r.host + " · " : "") + (r.n ? r.n + " 人局 · " : "") + "目前 " + r.online + (r.cap ? " / " + r.cap : "") + " 人在線"})),
       r.ranked != null ? h("span", {class: "st" + (r.ranked ? " go" : ""), style: {marginRight: "6px"}, text: r.ranked ? "🏅 段位模式" : "🎮 休閒模式"}) : null,   // 對戰中 / 選武將 / 等待入座的房間: 標出是哪種模式
       h("span", {class: "st" + (r.state === "進行中" ? " go" : ""), text: r.state}),
@@ -3078,7 +3080,7 @@ function buildLobbyTools() {   // 把上方那排的功能也放進大廳 (按�
   }
 }
 function showRooms(msg) {
-  buildLobbyTools();
+  S.rlIn = false; buildLobbyTools();
   $("#rooms").classList.add("on");
   if (msg) toast(msg);
   refreshRooms(); clearInterval(roomTimer); roomTimer = setInterval(() => { if ($("#rooms").classList.contains("on")) refreshRooms(); else clearInterval(roomTimer); }, 2000);
@@ -3126,16 +3128,6 @@ $("#rcreate").onclick = async () => {
   const r = await (await fetch("/api/room_create", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({tok: TOK, name: $("#rname").value, password: $("#rpw").value, cap: +$("#rcap").value})})).json();
   if (!r.ok) { toast("創建失敗: " + r.error); return; }
   $("#rname").value = ""; $("#rpw").value = ""; enterRoom(r.room, r.name);
-};
-$("#rquick").onclick = async () => {   // 一鍵和電腦打: 建房 → 進房 → 4 人休閒局,自己坐座位 0,電腦「弱」
-  const b = $("#rquick"); b.disabled = true;
-  try {
-    const r = await (await fetch("/api/room_create", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({tok: TOK, name: "練習局", cap: 0})})).json();
-    if (!r.ok) { toast("創建失敗: " + r.error); return; }
-    enterRoom(r.room, r.name);
-    await api("/api/new", {players: 4, human: "0", humans: [0], chars: ["", "", "", ""], variant: 0, lord: "random", mode: "normal", role_mode: "normal", base_hp: 4, ranked: false, spec_all: false, difficulty: 1, diffs: [], seed: "", speed: +$("#speed").value});
-    $("#modal").textContent = ""; S.modalOpen = null; poll(true);
-  } finally { b.disabled = false; }
 };
 $("#rname").onkeydown = e => { if (e.key === "Enter" && !e.isComposing && e.keyCode !== 229) $("#rcreate").click(); };
 (async () => {
