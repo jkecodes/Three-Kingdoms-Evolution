@@ -1179,6 +1179,8 @@ ${S} input[type=range]::-moz-range-thumb{width:${round ? 18 : 12}px;height:${rou
   window.SGS_COS = { onProfile };
   window.SGS_THEME = { open: openDlg, apply };
   apply(cur);
+  /* 之後才動態加進頁面的樣式表 (練習關卡 / 教學等第一次打開才載入) 也要依目前主題換色,不然會一直是原本的藍色 */
+  new MutationObserver(ms => { if (ms.some(m => [...m.addedNodes].some(n => n.tagName === "STYLE" && !n.dataset.cos))) apply(cur); }).observe(document.head, { childList: true });
   window.addEventListener("load", () => apply(cur));
   fetch("/api/cosmetics").then(r => r.json()).then(c => { CAT = c; if (prof()) onProfile(prof()); }).catch(() => {});
   window.addEventListener("DOMContentLoaded", () => {
