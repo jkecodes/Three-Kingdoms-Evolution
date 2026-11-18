@@ -33,7 +33,7 @@ PRI = {
 DUAL_W = {"甘寧", "夏侯淵"}
 DUAL_A = {"周瑜", "甘寧", "夏侯淵"}
 AOE = ("南蠻入侵", "萬箭齊發", "飢餓", "突襲")
-DMG_CARDS = ("決鬥", "火攻", "笑裡藏刀", "降雷")
+DMG_CARDS = ("決鬥", "火攻", "笑裡藏刀", "鴻門宴")
 SHA_NAMES = ("殺", "火殺", "冰殺", "雷殺")
 
 _FN = {}
@@ -299,7 +299,9 @@ class ProAgent(LeveledAgent):
             pf = 0.97 ** len(q.hand)
             if q.has_armor("八卦陣") and not g.equip_off():
                 pf *= 0.5
-            if self.attitude(g, p, q) >= 1.0:
+            if self.expected_dmg(g, p, q, n, via_sha=False, nature=None, bonus=False, mods=False) <= 0:
+                val = 0.0
+            elif self.attitude(g, p, q) >= 1.0:
                 val = -1.5 - (2 if q is g.lord else 0) - (1 if q.hp <= n else 0)
             else:
                 ts = self.tscore(g, p, q)
@@ -355,48 +357,88 @@ class ProAgent(LeveledAgent):
             self._lethal = self.lethal_on_lord(g, p)
 
     _lethal = False
+    _cur_opts = ()
 
-    def atk_adj(self, g, p, card, t):
-        """對 t 打這張牌的修正: <= -100 代表打了沒用 (被防具擋掉)。"""
+    def expected_dmg(self, g, p, t, base=1, via_sha=False, nature=None, bonus=True, mods=True, extra_jiu=False, extra_x2=0):
+        """預估 p 對 t 造成的實際傷害 (含免疫 / 防具 / 弱化 / 緩衝盾 / 傷害上限)。"""
+        if t is None or not getattr(t, "alive", False) or base <= 0:
+            return 0
+        if via_sha and t.char.sha_reflect:
+            return 0
+        b = base + (1 if extra_jiu else 0)
+        if p is not None and extra_x2:
+            p.dmg_x2 += extra_x2
+            try:
+                return g.dmg_preview(p, b, tgt=t, nature=nature, bonus=bonus, via_sha=via_sha, mods=mods)
+            finally:
+                p.dmg_x2 -= extra_x2
+        return g.dmg_preview(p, b, tgt=t, nature=nature, bonus=bonus, via_sha=via_sha, mods=mods)
+
+    def atk_adj(self, g, p, card, t, extra_jiu=False, extra_x2=0):
+        """對 t 打這張牌的修正: <= -100 代表打了沒用 (0 傷害或無效 / 反彈)。"""
         c = real(card)
-        n = fn(c)
-        sha = is_sha(c)
+        n = fn(card)
+        sha = is_sha(card)
+        if n == "降雷":
+            flipped = t.dg_flip if t.disguise else t.flipped
+            if t is p:
+                return 0 if flipped and not t.flip_char.no_thunder_unflip else -999
+            if t.char.thunder_reflect or flipped or t.flip_char.no_flip or t.flip_char.name == "無名":
+                return -999
+            return 0
         if not (sha or n in AOE or n in DMG_CARDS):
             return 0
-        if g.equip_off() or not t.armor_names():
-            return 0
-        nature = getattr(c, "nature", None)
-        if sha and p.has_weapon("孔雀羽扇"):
-            nature = "火"
-        if n == "火攻":
-            nature = "火"
-        if n == "降雷":
-            nature = "雷"
-        if sha and p.has_weapon("青釭劍"):
-            return 0
-        b = self.burst(g, p)
-        dmg = (1 + b["hammer"]) * 2 ** min(3, b["buff"])
-        adj = 0
-        for a in t.armor_names():
-            if a == "仁王盾" and sha and c.color == "黑":
+        if sha:
+            if t.char.sha_reflect:
                 return -999
-            if a == "藤甲":
-                if nature == "火":
-                    adj += 12
-                elif (sha and not nature) or n in AOE:
+            ignore = p.has_weapon("青釭劍")
+            fire = p.has_weapon("孔雀羽扇") and not t.has_armor("火盾")
+            sn = getattr(card, "nature", None) or getattr(c, "nature", None)
+            nature = "火" if fire else sn
+            if not ignore and not g.equip_off() and not nature:
+                if t.has_armor("藤甲"):
                     return -999
-            if (a, nature) in (("火盾", "火"), ("冰盾", "冰"), ("雷盾", "雷")):
+                if card.color == "黑" and (t.has_armor("仁王盾") or (not t.armor_names() and t.char.virtual_renwang(g, t))):
+                    return -999
+            base = 1 + (1 if (g.jiu or extra_jiu) else 0)
+            dmg = self.expected_dmg(g, p, t, base=base, via_sha=True, nature=nature, bonus=True, mods=True, extra_x2=extra_x2)
+            if dmg <= 0:
                 return -999
-            if a == "緩衝盾" and dmg <= 1 and n not in AOE:
+            adj = 0
+            if not ignore and not g.equip_off():
+                if nature == "火" and t.has_armor("藤甲"):
+                    adj += 12
+                if t.has_armor("八卦陣") or (not t.armor_names() and t.char.virtual_bagua(g, t)):
+                    adj -= 12
+            if t.char.name == "曹真" and getattr(t.char, "used", -1) != g.turn_id:
+                adj -= 15
+            return adj
+        if n in AOE:
+            if n in ("南蠻入侵", "萬箭齊發", "飢餓") and not g.equip_off() and t.has_armor("藤甲"):
                 return -999
-            if a == "八卦陣" and sha:
-                adj -= 12
-        return adj
+            short = {"南蠻入侵": "南", "萬箭齊發": "萬", "飢餓": "飢", "突襲": "突"}[n]
+            base = p.char.group_damage(g, p, short)
+            dmg = self.expected_dmg(g, p, t, base=base, via_sha=False, nature=None, bonus=True, mods=True, extra_x2=extra_x2)
+            return -999 if dmg <= 0 else 0
+        if n in DMG_CARDS:
+            if n == "火攻":
+                rem = [h for h in p.hand if h is not c]
+                if not rem or not t.hand:
+                    return -999
+            nature = "火" if n == "火攻" else None
+            dmg = self.expected_dmg(g, p, t, base=1, via_sha=False, nature=nature, bonus=True, mods=True, extra_x2=extra_x2)
+            if dmg <= 0:
+                return -999
+            if t.char.name == "曹真" and getattr(t.char, "used", -1) != g.turn_id:
+                return -15
+            return 0
+        return 0
 
     # ------------------------------------------------------------ 出牌
     def act(self, g, p, options):
         if not options:
             return None
+        self._cur_opts = options
         self.update_lethal(g, p)
         if self._tries.get("turn") != g.turn_id:
             self._tries = {"turn": g.turn_id}
@@ -408,7 +450,8 @@ class ProAgent(LeveledAgent):
         owed = sum(p.fa_debt) if p.fa_debt else 0
         red = self.redirect_cnt(p)
         names = [fn(c) for c in hand]
-        sbr = ("發憤圖強" in names) and red > 0 and bool(foes) and (p.hp >= 2 or "占卜" in names or "桃" in names)
+        sbr = (("發憤圖強" in names) and red > 0 and bool(foes) and (p.hp >= 2 or "占卜" in names or "桃" in names)
+               and g.dmg_mul(p, 1) > 0 and any(self.expected_dmg(g, p, q, 2, bonus=True) > 0 for q in foes))
         if not self.adv("combo"):   # 4 級以下不做連招規劃
             sbr = False
             self._lethal = False
@@ -566,9 +609,9 @@ class ProAgent(LeveledAgent):
                     if self._tries.get(k, 0) < 2:
                         self._tries[k] = self._tries.get(k, 0) + 1
                         out.append((-2, 250, i, nm))
-        # --- 呂蒙: 這回合沒出殺就不用棄牌, 所以不出殺 (除非能殺人)
+        # --- 呂蒙: 這回合沒出殺就不用棄牌, 所以不出殺 (除非能殺人); 不出殺時也別喝攻擊酒
         if cur == "呂蒙" and not self._lethal and not any(q.hp <= 1 for q in foes):
-            out = [c for c in out if not is_sha(real(card_of(c)))]
+            out = [c for c in out if not is_sha(real(card_of(c))) and not (fn(real(card_of(c))) == "酒" and options[c[2]][1] != "heal")]
         # --- 諸葛亮: 手牌盡量出光 (沒手牌 = 無敵), 不補牌、不出有風險的
         if cur == "諸葛亮" and hand:
             skip = {"無中生有", "增兵減灶", "未雨綢繆", "五穀豐登", "桃園結義", "發憤圖強", "閃電", "偽裝"}
@@ -608,7 +651,7 @@ class ProAgent(LeveledAgent):
                 if isinstance(c, SkillAct) or t is not j:
                     continue
                 n = fn(real(c))
-                if n == "降雷":
+                if n == "降雷" and self.atk_adj(g, p, c, j) > -100:
                     out.append((-0.3, 195, i, "降雷→蔣幹"))
                 elif n in ("過河拆橋", "順手牽羊"):
                     out.append((-0.3, 190, i, n + "→蔣幹"))
@@ -778,15 +821,34 @@ class ProAgent(LeveledAgent):
             if heal and p.hp <= p.maxhp - 2:
                 return (3, 95, heal[0], n)
             plain = [i for i, t in idx_t if t != "heal"]
-            if plain and cs >= 1 and foes and not combo_on:
-                return (5, 79.5, plain[0], n)
+            if plain and not combo_on and any(
+                    not isinstance(sc, SkillAct) and is_sha(sc) and isinstance(st, Player_cls)
+                    and self.tscore(g, p, st) > -100 and not st.char.no_jiu_target
+                    and self.atk_adj(g, p, sc, st, extra_jiu=True) > -100
+                    for sc, st in self._cur_opts):
+                return (5, 98, plain[0], n)
             return None
         if n == "強化":
             if foes and (b["n"] >= 1 or sbr):
                 mine = [i for i, t in tgt_players if t is p]
                 if mine:
-                    pri = 99 if sbr else (91 if (killable or b["buff"] >= 1 or self._lethal) else 0)
-                    return (3, pri, mine[0], n) if pri else None
+                    sbr_ok = sbr and any(not isinstance(oc, SkillAct) and fn(real(oc)) == "發憤圖強" for oc, _ in self._cur_opts)
+                    hits_ally = p.role != "反賊" and lord is not None and lord.alive
+                    has_atk = False
+                    for ac, at in self._cur_opts:
+                        if isinstance(ac, SkillAct) or real(ac) is real(c):
+                            continue
+                        an = fn(ac)
+                        if is_sha(ac) or an in ("決鬥", "鴻門宴") or (an == "火攻" and len(hand) >= 3) or (an == "笑裡藏刀" and len(hand) >= 3):
+                            if isinstance(at, Player_cls) and self.tscore(g, p, at) > -100 and self.atk_adj(g, p, ac, at, extra_x2=1) > -100:
+                                has_atk = True
+                                break
+                        elif an in AOE and not (hits_ally and lord_low) and any(self.atk_adj(g, p, ac, q, extra_x2=1) > -100 for q in foes):
+                            has_atk = True
+                            break
+                    if sbr_ok or has_atk:
+                        pri = 99 if sbr_ok else (91 if (killable or b["buff"] >= 1 or self._lethal) else 0)
+                        return (3, pri, mine[0], n) if pri else None
             return None
         if n == "降雷":
             r = self.best_target(g, p, c, tgt_players)
@@ -913,7 +975,18 @@ class ProAgent(LeveledAgent):
 
     def choose_skill(self, g, p, skill):
         if skill == "貫石斧-強中":
-            return True
+            t = g.cur_sha_target
+            if t is None or self.attitude(g, p, t) >= 0:
+                return False
+            card = g.cur_card if getattr(g.cur_card, "name", None) == "殺" else _FakeSha
+            fire = p.has_weapon("孔雀羽扇") and not t.has_armor("火盾")
+            sn = getattr(card, "nature", None) or getattr(getattr(card, "orig", None), "nature", None)
+            if self.expected_dmg(g, p, t, base=2, via_sha=True, nature="火" if fire else sn, bonus=True) <= 0:
+                return False
+            pool = sorted([c for c in p.all_cards() if c.name != "貫石斧"], key=self.kv(g, p))
+            if len(pool) < 2:
+                return False
+            return t.hp <= 2 or (self.keep_val(g, p, pool[0]) <= 80 and self.keep_val(g, p, pool[1]) <= 80)
         if skill == "寒冰劍-棄牌":
             return False
         if skill == "司馬懿-奪牌":   # 手牌 > 3 發動; 單挑且對方手牌至少 2 張也發動
@@ -938,19 +1011,40 @@ class ProAgent(LeveledAgent):
             must = sum(1 for c in p.hand if fn(c) in ("發憤圖強", "偽裝", "反擊", "調虎離山"))
             return max(1, min(maxn, len(p.hand) - must))
         if skill == "周魴-棄牌扣血":
-            foes = sorted(self.foes_of(g, p), key=lambda q: q.hp)
-            x = min(3, foes[0].hp) if foes else 3
-            return max(1, min(maxn, x))
+            foes = sorted([q for q in self.foes_of(g, p) if self.expected_dmg(g, p, q, min(3, maxn), bonus=True) > 0], key=lambda q: q.hp)
+            if foes:
+                q = foes[0]
+                sh = q.armor_names().count("緩衝盾")
+                return max(1, min(maxn, min(3, q.hp + sh)))
+            return 1
         return super().choose_count(g, p, skill, maxn)
 
     # ------------------------------------------------------------ 響應
     def respond(self, g, p, need, cands, ctx):
+        if need in ("殺", "閃") and self._incoming_zero(g, p, need, ctx):
+            return None
+        if need == "桃" and "target" not in ctx and self._incoming_zero(g, p, "桃", ctx):
+            return None
         if need in ("殺", "閃", "火攻", "借刀殺人", "青龍追擊") and cands:
             if need == "借刀殺人" and self.attitude(g, p, ctx["victim"]) >= 0:
                 return None
-            if need in ("殺", "閃", "火攻", "青龍追擊"):
+            if need == "火攻":
+                tgt = ctx.get("target")
+                if tgt and self.expected_dmg(g, p, tgt, 1, nature="火", bonus=True) <= 0:
+                    return None
+            if need == "青龍追擊":
+                v = ctx.get("victim")
+                if v is None or self.attitude(g, p, v) >= 0:
+                    return None
+                valid = [c for c in cands if self.atk_adj(g, p, c, v) > -100]
+                return min(valid, key=self.kv(g, p)) if valid else None
+            if need in ("殺", "閃", "火攻"):
                 return min(cands, key=self.kv(g, p))
         if need in ("趙雲棄牌", "劉協棄牌", "夏侯淵給牌", "袁術棄牌", "韓當棄牌") and cands:
+            src = ctx.get("source")
+            bonus = need in ("劉協棄牌", "夏侯淵給牌")
+            if self.expected_dmg(g, src, p, 1, bonus=bonus) <= 0:
+                return None
             low = min(cands, key=self.kv(g, p))
             return low if (self.keep_val(g, p, low) <= 75 or p.hp <= 1) else None
         if need == "無懈" and ctx.get("source") is p and p._char.name != "諸葛亮":
@@ -972,12 +1066,16 @@ class ProAgent(LeveledAgent):
         foes = self.foes_of(g, p)
         names = [fn(c) for c in p.hand]
         self_hit = g.cur is p
+        lethal = n >= p.hp
+        raw_n = n * (2 if p.char.fan_double else 1)
+        fan_ok = any(self.expected_dmg(g, p, q, raw_n, bonus=True) > 0 for q in foes)
+        diao_ok = any(self.expected_dmg(g, p, q, n, bonus=False, mods=False) > 0 for q in foes)
         if src is None and getattr(self, "_fa_reflect", None) == p.idx:
             self._fa_reflect = None
             for k in ("反", "調"):
-                if k in by:
+                ok = lethal or (fan_ok if k == "反" else diao_ok)
+                if k in by and ok:
                     return by[k]
-        lethal = n >= p.hp
         if p._char.name == "蔣幹" and foes:
             others = [c for c in cands if c.name not in ("占", "反", "調")]
             for k in ("反", "調"):
@@ -990,7 +1088,8 @@ class ProAgent(LeveledAgent):
         if plan_hold and not lethal and not self_hit:
             return None   # 留著轉傷牌做爆發, 硬吃
         for k in ("反", "調"):
-            if k in by and foes and (n >= 2 or lethal or self_hit):
+            ok = lethal or (fan_ok if k == "反" else diao_ok)
+            if k in by and foes and ok and (n >= 2 or lethal or self_hit):
                 return by[k]
         if "占" in by and lethal:
             return by["占"]
@@ -1030,13 +1129,15 @@ class ProAgent(LeveledAgent):
             chained = self.chained_enemy(g, p)
             self._fa_reflect = None
             k = 0
-            if chained:
-                k = min(max_k, p.hp - 1)
-            elif red > 0 and self.foes_of(g, p):
-                if p._char.name == "蔣幹":
-                    k = max_k if len(p.hand) >= 3 else 0
-                else:
-                    k = max_k if (red >= 2 or backup >= 1 or p.hp > max_k) else min(max_k, p.hp - 1)
+            foes = self.foes_of(g, p)
+            if g.dmg_mul(p, 1) > 0:
+                if chained and self.expected_dmg(g, p, chained, 2, bonus=False, mods=False) > 0:
+                    k = min(max_k, p.hp - 1)
+                elif red > 0 and foes and any(self.expected_dmg(g, p, q, 2, bonus=True) > 0 for q in foes):
+                    if p._char.name == "蔣幹":
+                        k = max_k if len(p.hand) >= 3 else 0
+                    else:
+                        k = max_k if (red >= 2 or backup >= 1 or p.hp > max_k) else min(max_k, p.hp - 1)
             k = max(0, min(k, max_k, max(0, p.hp - 1) if p._char.name != "蔣幹" else max_k))
             best = max((i for i, kk in enumerate(ks) if kk <= k), key=lambda i: ks[i], default=0)
             if ks[best] > 0:

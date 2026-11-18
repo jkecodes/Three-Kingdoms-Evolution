@@ -679,23 +679,43 @@ class Game:
         self._dmg_ctx = None
         return n
 
-    def dmg_preview(self, src, n, tgt=None, nature=None, bonus=False):
+    def dmg_preview(self, src, n, tgt=None, nature=None, bonus=False, via_sha=False, mods=True):
         """提示文字用: 照 damage() 的順序先算一遍 (不改任何狀態),n 點傷害實際會是幾點。
-        含流星錘 (bonus)、藤甲、來源武將的加成 (司馬昭 / 許褚…)、強化 / 弱化、緩衝盾、受傷上限 (一回合最多扣 N)。
+        含免疫 / 防具 / 流星錘 (bonus) / 藤甲 / 來源武將的加成 / 強化弱化 / 緩衝盾 / 受傷上限。
         tgt 不確定 (例如「其他人」) 時略過對象那邊的防具 / 上限;要攔下傷害的技能 (pre_damage) 要問人,算不進來。"""
+        if n <= 0:
+            return 0
         t = tgt
         if t is None and src is not None:
             t = next(iter(self.others(src)), None)
-        if tgt is not None and nature == "火" and tgt.has_armor("藤甲"):
+        if tgt is not None:
+            if not tgt.alive:
+                return 0
+            if nature is None and tgt.char.plain_immune(self, tgt):
+                return 0
+            if tgt.char.damage_only_sha and not via_sha:
+                return 0
+            if nature and tgt.char.immune_nature(self, tgt, nature):
+                return 0
+            qg = via_sha and src is not None and src.has_weapon("青釭劍")
+            immune = NATURE_ARMOR.get(nature)
+            if immune and not qg and tgt.has_armor(immune):
+                return 0
+            if getattr(tgt.char, "armed", -1) == self.turn_id:
+                return 0
+        else:
+            qg = False
+        if tgt is not None and nature == "火" and not qg and tgt.has_armor("藤甲"):
             n += 1
         if bonus and src is not None and src.has_weapon("流星錘"):
             n += 1
-        if src is not None and t is not None and src is not t:
+        if mods and src is not None and t is not None and src is not t:
             n = src.char.dmg_dealt_mod(self, src, t, n)
-        if src is not None:
+        if mods and src is not None:
             n = self.dmg_mul(src, n)
-        if tgt is not None:
+        if tgt is not None and not qg:
             n -= tgt.armor_names().count("緩衝盾")
+        if tgt is not None:
             n = tgt.char.cap_damage(self, tgt, n)
         return max(0, n)
 
@@ -1063,12 +1083,11 @@ class Game:
         return False
 
     def _sha_absorbed(self, p, tgt, card):
-        """這張殺被緩衝盾扣完剩 0 點傷害 (青釭劍無視防具不算): 出閃 / 受傷前 ⚡ 都沒有意義,不用問。"""
-        if p.has_weapon("青釭劍") or not tgt.armor_names().count("緩衝盾"):
-            return False
+        """這張殺扣完防具 / 免傷 / 弱化後剩 0 點傷害: 出閃 / 受傷前 ⚡ 都沒有意義,不用問。"""
         fire = p.has_weapon("孔雀羽扇") and not tgt.has_armor("火盾")
         sn = getattr(card, "nature", None) or getattr(getattr(card, "orig", None), "nature", None)
-        return self.dmg_preview(p, 1, tgt=tgt, nature="火" if fire else sn, bonus=True) == 0
+        base = 1 + (1 if self.jiu else 0)
+        return self.dmg_preview(p, base, tgt=tgt, nature="火" if fire else sn, bonus=True, via_sha=True) == 0
 
     def sha_window(self, p, tgt, card, when=None):
         """牌指定目標後、目標響應前: 目標可接連鎖使用 ⚡ 強 / 弱 / 降雷 / 孤 / 出 (各牌自己的條件由 play_options 決定)。

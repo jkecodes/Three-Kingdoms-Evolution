@@ -391,7 +391,7 @@ class 孫權(Char):
     def ai_choose(self, g, p, options):
         att = getattr(p.agent, "attitude", None)
         for i, (c, t) in enumerate(options):
-            if getattr(c, "name", "") == "孫權-殺殺" and att and att(g, p, t) < 0 and t.hp <= 2:
+            if getattr(c, "name", "") == "孫權-殺殺" and att and att(g, p, t) < 0 and t.hp <= 2 and g.dmg_preview(p, 1, tgt=t, bonus=True) > 0:
                 return i
         for i, (c, t) in enumerate(options):
             junk = sum(1 for h in p.hand if h.name not in ("桃", "閃", "殺", "無", "無懈", "酒"))
@@ -540,7 +540,7 @@ class 趙雲(Char):
     def ai_choose(self, g, p, options):
         att = getattr(p.agent, "attitude", None)
         for i, (c, t) in enumerate(options):
-            if getattr(c, "name", "") == "趙雲-棄牌或扣血" and att and att(g, p, t) < 0:
+            if getattr(c, "name", "") == "趙雲-棄牌或扣血" and att and att(g, p, t) < 0 and g.dmg_preview(p, 1, tgt=t, bonus=True) > 0:
                 return i
 
 
@@ -684,10 +684,26 @@ class 張遼(Char):
 
     def ai_choose(self, g, p, options):
         att = getattr(p.agent, "attitude", None)
-        if not att:
+        sha = next((c for c in p.hand if c.name == "殺"), None)
+        if not att or not sha:
             return None
-        foes = sum(1 for q in g.others(p) if att(g, p, q) < 0)
-        friends = sum(1 for q in g.others(p) if att(g, p, q) >= 1)
+        if p.role == "忠臣" and g.lord is not None and g.lord.alive and g.lord.hp <= 2 and not g.lord.char.sha_reflect:
+            return None
+        ignore = p.has_weapon("青釭劍")
+        sn = getattr(sha, "nature", None)
+        base = 1 + (1 if g.jiu else 0)
+        foes = 0
+        for q in g.others(p):
+            if att(g, p, q) >= 0 or q.char.sha_reflect:
+                continue
+            fire = p.has_weapon("孔雀羽扇") and not q.has_armor("火盾")
+            nat = "火" if fire else sn
+            if not ignore and not g.equip_off() and not nat:
+                if q.has_armor("藤甲") or (sha.color == "黑" and (q.has_armor("仁王盾") or (not q.armor_names() and q.char.virtual_renwang(g, q)))):
+                    continue
+            if g.dmg_preview(p, base, tgt=q, nature=nat, bonus=True, via_sha=True) > 0:
+                foes += 1
+        friends = sum(1 for q in g.others(p) if att(g, p, q) >= 1 and not q.char.sha_reflect)
         if foes >= 2 and foes > friends:
             for i, (c, t) in enumerate(options):
                 if getattr(c, "name", "") == "張遼-殺全部人":
@@ -1330,10 +1346,12 @@ class 周魴(Char):
         att = getattr(p.agent, "attitude", None)
         if len(junk) < 2 or not att:
             return None
+        maxn = min(3, len(p.all_cards()))
         best = None
         for i, (c, t) in enumerate(options):
-            if getattr(c, "name", "") == "周魴-棄牌扣血" and att(g, p, t) <= -1 and (best is None or t.hp < options[best][1].hp):
-                best = i
+            if getattr(c, "name", "") == "周魴-棄牌扣血" and att(g, p, t) <= -1 and g.dmg_preview(p, maxn, tgt=t, bonus=True) > 0:
+                if best is None or t.hp < options[best][1].hp:
+                    best = i
         return best
 
     def on_turn_start(self, g, p):  # 和場上體力最多的人交換體力 (上限 = 各自體力上限)
@@ -1990,7 +2008,7 @@ class 李儒(Char):
     def ai_choose(self, g, p, options):
         best = None
         for i, (c, t) in enumerate(options):
-            if getattr(c, "name", "") == "李儒-逼出閃" and p.agent.attitude(g, p, t) <= -1:
+            if getattr(c, "name", "") == "李儒-逼出閃" and p.agent.attitude(g, p, t) <= -1 and g.dmg_preview(p, 1, tgt=t, nature="火", bonus=True) > 0:
                 if best is None or t.hp < options[best][1].hp:
                     best = i
         return best
@@ -2050,7 +2068,8 @@ class 賈詡(Char):
         att = p.agent.attitude
         for i, (c, t) in enumerate(options):
             if getattr(c, "name", "") == "賈詡-殺令決鬥" and att(g, p, t[0]) <= -0.5 and att(g, p, t[1]) <= -0.5:
-                return i
+                if g.dmg_preview(t[0], 1, tgt=t[1], bonus=True) > 0 or g.dmg_preview(t[1], 1, tgt=t[0], bonus=True) > 0:
+                    return i
 
 
 class 郭圖逢紀(Char):

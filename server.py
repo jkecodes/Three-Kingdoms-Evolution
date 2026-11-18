@@ -1271,7 +1271,7 @@ class Manager:
         """選武將: 大家同時選。AI 馬上選好;真人各自挑,全部選完就開始。"""
         for seat, offer in self.offers.items():
             if seat not in self.picks and seat not in self.claims:
-                self.picks[seat] = self.pick_rng.choice(offer)
+                self.picks[seat] = char_tags.ai_pick(offer, (getattr(self, 'pick_roles', None) or {}).get(seat, ''), self.pick_rng, self._level(self.cfg, seat))   # 電腦也先看身分再選
         if all(i in self.picks for i in self.offers):
             self.picking = False
             return self._launch()

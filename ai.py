@@ -492,10 +492,43 @@ class HeuristicAgent(RandomAgent):
                 return g.rng.choice(cand)
         return None
 
+    def _incoming_zero(self, g, p, need, ctx):
+        """判斷目前要閃/殺/桃回應的這次傷害,即使不回應實際扣血是否為 0。"""
+        grp = ctx.get("group")
+        if grp in ("南", "萬", "突", "飢"):
+            atk = ctx.get("attacker")
+            base = atk.char.group_damage(g, atk, grp) if atk else 1
+            return g.dmg_preview(atk, base, tgt=p, bonus=True) <= 0
+        if grp == "調":
+            return g.dmg_preview(ctx.get("attacker"), 1, tgt=p, bonus=False, mods=False) <= 0
+        if ctx.get("duel_with") is not None:
+            return g.dmg_preview(ctx["duel_with"], 1, tgt=p, bonus=True) <= 0
+        if need == "閃" and ctx.get("attacker") is not None:
+            atk = ctx["attacker"]
+            if ctx.get("cao_n"):
+                return g.dmg_preview(atk, 1, tgt=p, bonus=False, mods=False) <= 0
+            if "ignore_armor" in ctx:
+                card = g.cur_card
+                fire = atk.has_weapon("孔雀羽扇") and not p.has_armor("火盾")
+                sn = getattr(card, "nature", None) or getattr(getattr(card, "orig", None), "nature", None)
+                base = 1 + (1 if g.jiu else 0)
+                return g.dmg_preview(atk, base, tgt=p, nature="火" if fire else sn, bonus=True, via_sha=True) <= 0
+            if p.char.name == "周倉" or (hasattr(p.char, "extras") and any(x.name == "周倉" for x in [p.char.own] + p.char.extras)):
+                return False
+            if atk is not p:
+                cur = g.cur_card
+                nat = "火" if (cur is None and atk.char.name == "李儒") else None
+                base = 3 if (cur is None and atk.char.name == "周魴") else (2 if (cur is None and atk.char.name == "虞翻") else (max(1, g.last_dealt) if atk.char.name == "張紘" else 1))
+                bonus = not (cur is None and atk.char.name in ("張紘", "虞翻", "袁術", "韓當"))
+                return g.dmg_preview(atk, base, tgt=p, nature=nat, bonus=bonus) <= 0
+        return False
+
     def respond(self, g, p, need, cands, ctx):
         att = lambda q: self.attitude(g, p, q)
         if need == "桃":
             if "target" not in ctx:  # 飢: 血少才出桃
+                if self._incoming_zero(g, p, "桃", ctx):
+                    return None
                 return cands[0] if p.hp <= 2 else None
             tgt = ctx["target"]
             if tgt is p:
@@ -537,16 +570,34 @@ class HeuristicAgent(RandomAgent):
         if need == "隔":
             return cands[0]
         if need == "張遼-八卦陣":  # 沒有閃時才犧牲低價值的紅牌
+            if self._incoming_zero(g, p, "閃", ctx):
+                return None
             low = min(cands, key=self.val)
             return low if self.val(low) <= 6 else None
         if need == "張遼-仁王盾":
+            if self._incoming_zero(g, p, "閃", ctx):
+                return None
             low = min(cands, key=self.val)
             return low if (self.val(low) <= 3 or p.hp <= 2) else None
         if need in ("趙雲棄牌", "劉協棄牌", "夏侯淵給牌", "袁術棄牌", "韓當棄牌"):  # 手牌不重要就棄,血少時一定棄
+            src = ctx.get("source")
+            bonus = need in ("劉協棄牌", "夏侯淵給牌")
+            if g.dmg_preview(src, 1, tgt=p, bonus=bonus) <= 0:
+                return None
             low = min(cands, key=self.val)
             return low if (self.val(low) <= 3 or p.hp <= 1) else None
         if need == "借刀殺人":
             return cands[0] if att(ctx["victim"]) < 0 else None
+        if need in ("殺", "閃") and self._incoming_zero(g, p, need, ctx):
+            return None
+        if need == "火攻":
+            tgt = ctx.get("target")
+            if tgt and g.dmg_preview(p, 1, tgt=tgt, nature="火", bonus=True) <= 0:
+                return None
+        if need == "青龍追擊":
+            v = ctx.get("victim")
+            if v and (att(v) >= 0 or g.dmg_preview(p, 1, tgt=v, via_sha=True, bonus=True) <= 0):
+                return None
         return cands[0]  # 殺 / 閃 / 火攻: 能出就出
 
     def choose_discard(self, g, p, n, cands, msg=None):
@@ -559,6 +610,15 @@ class HeuristicAgent(RandomAgent):
         return "HAND"
 
     def choose_target(self, g, p, kind, cands):
+        if kind == "曹叡-交牌":
+            return max(cands, key=lambda q: (self.attitude(g, p, q), -q.hp))
+        if kind == "反":
+            base = 2 if p.char.fan_double else 1
+            return min(cands, key=lambda q: (g.dmg_preview(p, base, tgt=q, bonus=True) <= 0, self.attitude(g, p, q), q.hp))
+        if kind in ("沮授-轉移", "楊修-轉移傷害"):
+            return min(cands, key=lambda q: (g.dmg_preview(p, 1, tgt=q, bonus=False, mods=False) <= 0, self.attitude(g, p, q), q.hp))
+        if kind == "曹休-翻面":
+            return min(cands, key=lambda q: (q.flipped or q.flip_char.no_flip, self.attitude(g, p, q), q.hp))
         return min(cands, key=lambda q: (self.attitude(g, p, q), q.hp))
 
     def choose_x(self, g, p):
@@ -592,8 +652,9 @@ class HeuristicAgent(RandomAgent):
         r = p.char.ai_choose(g, p, options)
         if r is not None:
             return r
+        _can_thunder = lambda q: hasattr(q, "char") and not q.char.thunder_reflect and not (q.dg_flip if q.disguise else q.flipped) and not q.flip_char.no_flip and q.flip_char.name != "無名"
         if when.startswith("降雷連鎖"):   # 有人對我降雷: 先對自己再降雷,兩個抵銷 (後出的先結算)
-            if not p.flipped and f"對 {p.name} 使用降雷" in when and p._char.name != "無名":
+            if _can_thunder(p) and f"對 {p.name} 使用降雷" in when:
                 for i, (c, t) in enumerate(options):
                     if t is p:
                         return i
@@ -601,11 +662,11 @@ class HeuristicAgent(RandomAgent):
         if when.startswith(("對你使用", "使用了")):   # 被指定時: 殘血替自己弱化;敵人翻面降雷
             for i, (c, t) in enumerate(options):
                 n = getattr(c, "name", "")
-                if n == "弱" and t is cur and self.attitude(g, p, cur) <= -1 and p.hp <= 2:
-                    return i
-                if n == "降雷" and t is cur and self.attitude(g, p, cur) <= -1 and cur._char.name != "無名" and not cur.flipped:
-                    return i
-                if n == "強" and t is p and p.hp >= 3 and len(p.hand) >= 3 and self.foes(g, p, -0.5):
+                if n == "弱" and t is cur and self.attitude(g, p, cur) <= -1 and p.hp <= 2 and any(k in when for k in ("殺", "決", "火攻", "南", "萬", "突", "飢", "笑", "鴻")):
+                    nat = "火" if "火攻" in when else None
+                    if g.dmg_preview(cur, 1, tgt=p, nature=nat, bonus=True, via_sha=("殺" in when)) > 0:
+                        return i
+                if n == "降雷" and t is cur and self.attitude(g, p, cur) <= -1 and _can_thunder(cur):
                     return i
                 if n == "決" and t is cur and self.attitude(g, p, cur) <= -1 and sum(1 for h in p.hand if h.name == "殺") >= 2 and p.hp >= cur.hp:
                     return i
@@ -622,7 +683,7 @@ class HeuristicAgent(RandomAgent):
                 return None
             for i, (c, t) in enumerate(options):
                 nm = getattr(c, "name", "")
-                if nm == "弱" and t is src and p is tgt and n >= 2 and (self.attitude(g, p, src) <= -1 or src is p) and (n >= p.hp or src is p):
+                if nm == "弱" and t is src and p is tgt and n >= 1 and (self.attitude(g, p, src) <= -1 or src is p) and (n >= p.hp or (n >= 2 and p.hp <= 3) or src is p):
                     return i
                 if nm == "強" and t is p and p is src and tgt is not p and self.attitude(g, p, tgt) <= -1 and n < tgt.hp <= n * 2:
                     return i
@@ -632,9 +693,9 @@ class HeuristicAgent(RandomAgent):
         att = lambda q: self.attitude(g, p, q)
         for i, (c, t) in enumerate(options):  # ⚡ 卡牌
             n = getattr(c, "name", "")
-            if n == "降雷" and t is cur and att(cur) <= -1 and cur._char.name != "無名":
+            if n == "降雷" and t is cur and att(cur) <= -1 and _can_thunder(cur):
                 return i
-            if n == "降雷" and t is not p and getattr(t, "_char", None) is not None and t._char.name == "劉備" and getattr(t._char, "ren", 0) >= 2 and not t.flipped and att(t) < 1:
+            if n == "降雷" and t is not p and getattr(t, "_char", None) is not None and t._char.name == "劉備" and getattr(t._char, "ren", 0) >= 2 and _can_thunder(t) and att(t) < 1:
                 return i
             if n == "弱" and t is cur and att(cur) <= -1 and any(att(q) >= 1 and q.hp <= 2 for q in g.alive_players()):
                 return i
@@ -645,7 +706,9 @@ class HeuristicAgent(RandomAgent):
         return None
 
     def choose_option(self, g, p, skill, labels):
-        if skill == "趙雲-棄牌或扣血":   # 體力夠高 (或手上有閃) 才吃扣血,不然乖乖棄牌
+        if skill == "趙雲-棄牌或扣血":   # 體力夠高 (或手上有閃、或實際扣血為 0) 才吃扣血,不然乖乖棄牌
+            if g.dmg_preview(g.cur, 1, tgt=p, bonus=True) <= 0:
+                return 1
             return 1 if p.hp >= 4 or (p.hp == 3 and any(c.name == "閃" for c in p.hand)) else 0
         if skill == "發憤圖強-少棄":
             # 手上有反 / 調 又有敵人: 故意少棄 1~2 張吃傷害,再用反 / 調把傷害轉給敵人 (留 2 點體力以上才敢)

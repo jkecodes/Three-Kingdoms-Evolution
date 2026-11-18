@@ -46,3 +46,25 @@ def fits(name, role):
     """適合這個身分: 定位裡有這個身分最需要的那一種 (ROLE_FIT 的第一項)。"""
     want = ROLE_FIT.get(role)
     return bool(want) and want[0] in tags_of(name)
+
+
+def role_key(role):
+    """雙國戰的「紅主公 / 藍忠臣」當成主公 / 忠臣;沒有身分的模式回傳空字串。"""
+    r = role or ""
+    for k in ("主公", "忠臣", "反賊", "內奸"):
+        if r.endswith(k):
+            return k
+    return ""
+
+
+def ai_pick(offer, role, rng, level=5):
+    """電腦在三張候選裡挑一位: 難度 3 以上看身分 (跟玩家看到的 ⭐ 推薦同一套定位),難度 1~2 照舊隨機。
+    分數 = 有這個身分最需要的定位 +3、有次要定位 +1、主定位就是最需要的 +1,同分隨機。"""
+    want = ROLE_FIT.get(role_key(role))
+    if level < 3 or not want:
+        return rng.choice(offer)
+    def score(n):
+        t = tags_of(n)
+        return (3 if want[0] in t else 0) + (1 if want[1] in t else 0) + (1 if t and t[0] == want[0] else 0)
+    best = max(score(n) for n in offer)
+    return rng.choice([n for n in offer if score(n) == best])
