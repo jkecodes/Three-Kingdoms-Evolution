@@ -58,11 +58,11 @@ def attach_strategies(cls):
     """把「先問武將策略檔」的掛鉤加到任何代理類別上 (保留該類別自己原本的方法當後備)。ProAgent 用這個接上。"""
     cls.use_strategy = True
 
-    def strat(self, p):   # 「武將專屬戰術」只有最高難度才開 (ProAgent.adv("combo")); 沒有難度分級的代理一律開
+    def strat(self, p):   # 「武將專屬戰術」難度 3 (強 / 黃金段位) 以上才開 (ProAgent.adv("infer")); 高壓連招 (算斬殺線、自殘轉傷) 仍留在 ai_pro 的 adv("combo") 難度 5; 沒有難度分級的代理一律開
         if getattr(p, "_char", None) is None or not self.use_strategy:
             return None
         adv = getattr(self, "adv", None)
-        if adv is not None and not adv("combo"):
+        if adv is not None and not adv("infer"):
             return None
         return strategy_for(p._char.name)
 

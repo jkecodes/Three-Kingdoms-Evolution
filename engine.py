@@ -1062,6 +1062,14 @@ class Game:
             return True
         return False
 
+    def _sha_absorbed(self, p, tgt, card):
+        """這張殺被緩衝盾扣完剩 0 點傷害 (青釭劍無視防具不算): 出閃 / 受傷前 ⚡ 都沒有意義,不用問。"""
+        if p.has_weapon("青釭劍") or not tgt.armor_names().count("緩衝盾"):
+            return False
+        fire = p.has_weapon("孔雀羽扇") and not tgt.has_armor("火盾")
+        sn = getattr(card, "nature", None) or getattr(getattr(card, "orig", None), "nature", None)
+        return self.dmg_preview(p, 1, tgt=tgt, nature="火" if fire else sn, bonus=True) == 0
+
     def sha_window(self, p, tgt, card, when=None):
         """牌指定目標後、目標響應前: 目標可接連鎖使用 ⚡ 強 / 弱 / 降雷 / 孤 / 出 (各牌自己的條件由 play_options 決定)。
         反 / 調 / 占 在『要受到傷害時』、無懈 在錦囊結算時、隔 在受傷時各自詢問。"""
@@ -1077,7 +1085,7 @@ class Game:
             if not opts:
                 return voided
             merged, rmap, shan_ids = False, {}, set()
-            if getattr(card, "name", "") == "殺" and not when and hasattr(tgt.agent, "_ask"):
+            if getattr(card, "name", "") == "殺" and not when and hasattr(tgt.agent, "_ask") and not self._sha_absorbed(p, tgt, card):
                 # 真人被殺: 連鎖 ⚡ / 出閃 / 受傷前的 ⚡ (反 / 調 / 占) 放在同一個詢問裡,不要分兩次問
                 merged = True
                 for c in tgt.hand:
@@ -1239,7 +1247,10 @@ class Game:
             self.log("  仁王盾 (臨時): 黑色殺無效")
             return
         dodged = True
-        for _ in range(max(1, p.char.sha_dodge_need(self, p, tgt))):
+        if self._sha_absorbed(p, tgt, card):
+            dodged = False   # 緩衝盾扣完是 0 點傷害: 出閃沒有意義,不用問 (傷害結算時會寫「被抵銷」)
+        else:
+          for _ in range(max(1, p.char.sha_dodge_need(self, p, tgt))):
             if not self.need_response(tgt, "閃", {"attacker": p, "ignore_armor": ignore}):
                 dodged = False
                 break

@@ -536,7 +536,7 @@ body:has(#modal .modal:not(.soft)) #bHand{display:none!important}   /* 新遊戲
 #log img.lc.dl{width:62px;height:44px;margin:9px 2px}#log .arw img.lc.dl{margin:9px 3px}   /* 延時錦囊 (橫的牌): 戰報裡橫放,外框和圖都是橫的、不轉向 */
 #log .dmgb{color:#ffb4bf;font-weight:800;margin:0 3px}
 #log .pc{font-weight:700;color:#d7ecff}
-.picks{display:flex;gap:12px;flex-wrap:wrap;margin:10px 0}.pk{flex:1 1 200px;max-width:260px;background:rgba(10,22,44,.8);border:1px solid #2f6f9c;border-radius:4px;padding:8px;display:flex;flex-direction:column;gap:4px}.pk img{width:100%;max-height:220px;object-fit:contain}.pk .sk{font-size:12px;color:#c3d6ea}.pk button{margin-top:auto}.pk .sk:last-of-type{margin-bottom:8px}   /* 三張一樣高,「選這位」固定貼在底部對齊 */
+.picks{display:flex;gap:12px;flex-wrap:wrap;margin:10px 0}.pk{flex:1 1 200px;max-width:260px;background:rgba(10,22,44,.8);border:1px solid #2f6f9c;border-radius:4px;padding:8px;display:flex;flex-direction:column;gap:4px}.pk img{width:100%;max-height:220px;object-fit:contain}.pk .sk{font-size:12px;color:#c3d6ea}.pk button{margin-top:auto}.pk .sk:last-of-type{margin-bottom:8px}.ptags{display:flex;gap:4px;flex-wrap:wrap;align-items:center}.ptag{font-size:12px;padding:1px 7px;border-radius:9px;border:1px solid hsl(200 40% 45%);color:hsl(200 60% 82%);background:hsl(205 40% 18%)}.pk .recb{margin-left:2px}.pkrole{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:6px 0;padding:6px 10px;border-radius:4px;background:hsl(40 40% 16%);border:1px solid hsl(40 50% 40%)}.pkrole .rl{font-weight:bold;font-size:16px;color:hsl(45 90% 70%)}   /* 三張一樣高,「選這位」固定貼在底部對齊 */
 .pl .ph .cover{position:absolute;inset:0;transform:translate(7px,7px);background:#0b0e12 center/cover no-repeat;border:1px solid #e9bf62;border-radius:2px;box-shadow:-3px -3px 8px rgba(0,0,0,.6),0 0 10px rgba(233,191,98,.5);z-index:2}
 .pl .ph .wei{position:absolute;right:-3px;top:-6px;z-index:3;background:#b8862b;color:#fff;font-size:11px;font-weight:700;padding:0 5px;border-radius:2px}
 #cc{display:none;flex-direction:column;padding:0}.pane#cc.on{display:flex}
@@ -1178,7 +1178,7 @@ function rkEl(r, big) {   // 段位標籤 (例: 黃金2)
   const m = /^(★\d+) (.+)$/.exec(String(r)), base = m ? m[2] : String(r);   // Prestige: 「★2 青銅3」
   return h("span", {class: "rk rk-" + base.replace(/\d+$/, "") + (m ? " pres" : "") + (big ? " big" : ""), title: (m ? "轉生 " + m[1].slice(1) + " 次 · " : "") + "段位 " + base, text: base});   // 顯示不帶 ★N, 轉生次數由旁邊的「轉生 N」方框表示
 }
-document.addEventListener("visibilitychange", () => { if (!document.hidden) window.__visAt = Date.now(); });   // 剛切回分頁: 這一瞬間湧進來的一批紀錄不播特效
+document.addEventListener("visibilitychange", () => { if (!document.hidden) { window.__visAt = Date.now(); if (typeof poll === "function") poll(true); } });   // 剛切回分頁: 這一瞬間湧進來的一批紀錄不播特效
 function setRoundTag(snap) {   // 左上角: 第幾輪 + 牌堆張數
   if (window.SGS_ANIM) try { SGS_ANIM.onSnap(snap); } catch (e) {}   // 動畫特效 (進場 / 勝負): 所有人都看得到
   if (snap.over && !S.overSeen) { S.overSeen = true; [1500, 4000].forEach(t => setTimeout(loadProfile, t)); }   // 對局結束: 盡快讀檔案,有升降段就跳視窗
@@ -2532,9 +2532,11 @@ function renderPicking(snap) {   // 隨機武將: 每人抽 3 張選 1,大家同
   if (snap.pick) {
     { const k = snap.pick.offers.map(c => c.name).join(); if (S.pickSnd !== k) { S.pickSnd = k; try { if (window.SGS_FX) SGS_FX.sfx("pickOpen"); } catch (e) {} } }   // 新的三選一出現: 提示音
     dlg.append(h("h3", {text: "選擇你的武將 (三選一)"}), h("div", {class: "meta", text: "大家同時選;這三張是專屬抽給你的,不會和其他人重複。選了什麼要到開局才會公開。"}));
+    if (snap.pick.role) dlg.append(h("div", {class: "pkrole"}, h("b", {text: "你的身分"}), h("span", {class: "rl", text: snap.pick.role}), snap.pick.tip ? h("span", {class: "meta", text: snap.pick.tip}) : ""));   // 先看身分再選武將
     const row = h("div", {class: "picks"});
     snap.pick.offers.forEach(c => row.append(h("div", {class: "pk"},
       c.img ? h("img", {src: gi(c.img)}) : "", h("b", {text: `${c.faction} ${c.name}`}), h("span", {class: "meta", text: ` ${c.maxhp}體力`}),
+      (c.tags || []).length || c.rec ? h("div", {class: "ptags"}, ...(c.tags || []).map(t => h("span", {class: "ptag", text: t})), c.rec ? h("span", {class: "recb", title: "適合你這個身分的定位", text: "⭐ 推薦"}) : "") : "",
       c.skills.map(s => h("div", {class: "sk", text: s})),
       h("button", {class: "primary", text: "選這位", onclick: async () => { try { if (window.SGS_FX) SGS_FX.sfx("pickChoose"); } catch (e) {} await api("/api/pick", {name: c.name}); S.lobbyKey = null; poll(true); }}))));
     dlg.append(row);
@@ -2636,7 +2638,9 @@ $("#chq").addEventListener("input", () => { if (S.roster) renderChars(); });
 let busy = false;
 async function poll(force) {
   if (!ROOM) return;   // 還在大廳 (房間列表)
-  if (busy && !force) return; busy = true;
+  if (busy && !force) return;
+  if (!force && ((document.hidden || (S.snap && S.snap.over)) && Date.now() - (S.lastPollAt || 0) < 2000)) return;   // 分頁在背景 / 這局已經結束: 輪詢放慢到 2 秒一次 (省伺服器與手機電量);操作後的強制刷新不受影響
+  S.lastPollAt = Date.now(); busy = true;
   try {
     if (!myNick()) { if (S.modalOpen !== "nick") showNickGate(); return; }   // 進入遊戲前先取暱稱
     const peek = $("#peek").checked ? 1 : 0;

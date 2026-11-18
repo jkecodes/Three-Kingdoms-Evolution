@@ -19,7 +19,7 @@
 - 打包成 exe 時 `strategies/` 已列在 `sgs_server.spec` 的 datas,新增策略檔後 exe 要重新打包才會帶到。
 - 其他測試台: `rolestat.py` (全電腦自我對戰量各陣營勝率)、`lordsweep.py` (掃描主公體力加成對勝率的影響)。
 
-- **策略檔只有最高難度 (5 級「極強」) 的電腦會用** (strategy_agent.py 用 `adv("combo")` 把關); 4 級以下一律走通用 AI。
+- **策略檔從難度 3 (強 / 黃金段位) 起電腦會用** (strategy_agent.py 用 `adv("infer")` 把關); 2 級以下走通用 AI。算斬殺線、自殘轉傷這類高壓連招在 ai_pro.py 裡仍用 `adv("combo")`,只有難度 5。
 - 策略檔可以 `from ai_pro import SkillAct, fn, real, is_sha` (全名 / 原始牌 / 是不是殺)。想「先讓通用 AI 選、不滿意再自己選」可以參考 劉諶.py 的 `_generic` (用旗標避免遞迴)。
 - 注意牌堆比例 (共 1630 張): 殺 6%、閃 3%、桃 3%、無懈 1%。所以「對方有沒有閃 / 殺」幾乎都是沒有,殺和決鬥大多會中; 用錯機率會整個想歪。
 

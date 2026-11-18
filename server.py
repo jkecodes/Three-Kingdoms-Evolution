@@ -28,6 +28,7 @@ from view import ROOT, DATA, snapshot
 import cosmetics
 import devconsole
 import cardart
+import char_tags
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 WEB = os.path.join(HERE, "web")
@@ -1251,9 +1252,20 @@ class Manager:
         # 隨機武將: 每人抽 3 張 (彼此不重複),大家同時選 1 張
         self.offers = {i: [pool.pop() for _ in range(min(3, len(pool)))] for i, w in enumerate(cfg["want"]) if w == ""}
         self.picks = {i: None for i, o in self.offers.items() if not o}
+        self.pick_roles = self._pre_roles(cfg, n)   # 選武將前就先讓大家看到自己的身分 (身分只跟種子 / 模式有關,和武將無關,開局時會是同一份)
         self.picking = True
         self.pick_deadline = time.time() + self.PICK_SECONDS   # 選武將倒數: 時間到沒選的人隨機
         return self._advance()
+
+    def _pre_roles(self, cfg, n):
+        """用開局同樣的參數先算出每個座位的身分 (不影響真正的開局)。算不出來就回傳空,選武將畫面就不顯示身分。"""
+        try:
+            g = Game([None] * n, seed=cfg["seed"], chars=None, role_variant=int(cfg.get("variant", 0)), lord_seat=self.lord_seat,
+                     mode="shuffle" if cfg.get("mode") == "shuffle" else "normal", role_mode=cfg.get("role_mode") or "normal",
+                     base_hp=int(cfg.get("base_hp") or 4), newbie=bool(cfg.get("newbie")))
+            return {p.idx: p.role for p in g.players}
+        except Exception:
+            return {}
 
     def _advance(self):
         """選武將: 大家同時選。AI 馬上選好;真人各自挑,全部選完就開始。"""
@@ -1297,7 +1309,12 @@ class Manager:
                "pick_left": max(0, round(getattr(self, "pick_deadline", None) - time.time(), 1)) if getattr(self, "pick_deadline", None) else None}
         out["pick_spec"] = seat is None   # 沒入座的旁觀者: 畫面不要寫「你已選好武將」
         if seat is not None and seat in self.offers and seat not in self.picks:
-            out["pick"] = {"seat": seat, "offers": [data[n] for n in self.offers[seat] if n in data]}
+            role = (getattr(self, "pick_roles", None) or {}).get(seat, "")
+            offers = []
+            for nm in self.offers[seat]:
+                if nm in data:
+                    offers.append(dict(data[nm], tags=char_tags.tags_of(nm), rec=char_tags.fits(nm, role)))
+            out["pick"] = {"seat": seat, "offers": offers, "role": role if role and role != "無" else "", "tip": char_tags.ROLE_TIP.get(role, "")}
         return out
 
     def _launch(self):
