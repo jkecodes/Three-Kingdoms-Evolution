@@ -116,7 +116,7 @@
     const close = () => { const m = document.getElementById("frdlg"); if (m) m.remove(); F.dlg = null; F.chat = null; };
     const body = el("div", {class: "dbody", id: "frbody"});
     const dlg = el("div", {class: "dlg"},
-      el("div", {class: "dh"}, el("div", {}, el("h3", {text: "好友"})), el("button", {class: "x", text: "✕", onclick: close})),
+      el("div", {class: "dh"}, el("div", {}, el("h3", {text: "好友"})), el("button", {class: "x", text: "×", onclick: close})),
       body);
     const m = el("div", {class: "modal", id: "frdlg", style: {zIndex: 7500}}, dlg);
     m.onclick = e => { if (e.target === m) close(); };

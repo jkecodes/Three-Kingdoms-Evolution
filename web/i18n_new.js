@@ -214,6 +214,7 @@ window.SGS_LOG_TPL = (window.SGS_LOG_TPL || []).concat([
 ["反賊: 要在主公撐住前打死他,選快攻的 (爆發 / 過牌)", "Rebel: kill the Emperor before they stabilize, pick an aggressive hero (Burst / Card flow)", "反逆者: 君主が持ちこたえる前に倒すため、速攻型を (爆発 / ドロー)"],
 ["內奸: 要撐到最後,選靈活能操控局面的 (控場 / 過牌)", "Spy: survive to the end, pick a flexible hero that steers the game (Control / Card flow)", "内通者: 最後まで生き残るため、柔軟に場を操れる武将を (コントロール / ドロー)"],
 ["⭐ = 適合你這個身分的定位", "⭐ = suits your role", "⭐ = あなたの役職に向いています"],
+["背景音樂", "Music", "BGM"], ["音樂音量", "Music volume", "BGM音量"], ["音樂與音效來源", "Music & sound credits", "音楽・効果音のクレジット"], ["查看", "View", "表示"], ["沒有使用外部音檔", "No external audio files in use", "外部音源は使用していません"],
 ["規則", "Rules", "ルール"], ["說明", "Help", "説明"], ["點選編輯", "Select to edit", "選んで編集"],
 ["下一步 ›", "Next ›", "次へ ›"], ["‹ 上一步", "‹ Back", "‹ 戻る"], ["‹ 返回", "‹ Back", "‹ 戻る"], ["上一個", "Previous", "前へ"], ["下一個", "Next", "次へ"],
 ["選擇用法", "Choose how to use it", "使い方を選択"], [": 選擇用法", ": choose how to use it", ": 使い方を選択"], ["邀請到目前的房間", "Invite to this room", "このルームに招待"], ["邀請失敗", "Invite failed", "招待失敗"], ["邀請已失效", "Invitation expired", "招待は無効になりました"],

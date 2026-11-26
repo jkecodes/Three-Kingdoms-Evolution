@@ -1118,9 +1118,9 @@ ${S} input[type=range]::-moz-range-thumb{width:${round ? 18 : 12}px;height:${rou
         const genRow = false ? h("div", { style: { display: "flex", gap: "6px", marginBottom: "8px", flexWrap: "wrap", alignItems: "center" } }, h("span", { class: "meta", text: "武將圖:" }), ...[["", "新"], ["old", "舊"]].map(([v, n]) => h("button", {
           class: "tile" + ((sel.genart || "") === v ? " sel" : ""), "aria-pressed": (sel.genart || "") === v ? "true" : "false", style: { padding: "6px 12px" },
           onclick: async () => { await post({ genart: v }); if (typeof setRosterArt === "function") setRosterArt(v); render(); } }, h("span", { class: "tn", text: n })))) : null;
-        const pvRow = isBg ? h("div", { style: { display: "flex", gap: "14px", alignItems: "flex-end", justifyContent: "center", marginBottom: "10px", padding: "8px", borderRadius: "10px", background: "rgba(120,160,200,.08)" } },
-          h("img", { src: "/cards/" + encodeURIComponent("殺") + ".svg?bg=" + curv + art + "&t=" + ARTT, alt: "卡牌預覽", style: { height: "150px", borderRadius: "6px" } }),
-          h("img", { src: "/thumb/char/" + encodeURIComponent("關羽") + "?v=ink2" + "", alt: "武將預覽", style: { height: "150px", borderRadius: "6px" } })) : null;
+        const shown = pv && pv.ck === kind && pv.cid ? pv.cid : curv;   // 點到還沒擁有的: 上面的大圖也跟著換成那個風格,先看長怎樣再決定買不買
+        const pvRow = h("div", { style: { display: "flex", gap: "14px", alignItems: "flex-end", justifyContent: "center", marginBottom: "10px", padding: "8px", borderRadius: "10px", background: "rgba(120,160,200,.08)" } },
+          h("img", { src: url(shown), alt: "預覽", style: { height: "150px", borderRadius: "6px" } }));   // 只秀卡牌 / 卡背,不放武將
         body = h("div", {}, pvRow, artRow, genRow, h("div", { class: "meta", style: { marginBottom: "6px" }, text: `已擁有 ${L.filter(x => has(kind, x.id)).length} / ${L.length}` }), h("div", { class: "grid" }, ...sw),
           h("div", { class: "meta", style: { marginTop: "10px" }, text: isBg ? "卡面是你的手牌和你打出的牌的底色風格,其他玩家看到你的牌時也是這個風格。" : "卡背會顯示在你座位的手牌數旁邊,所有玩家都看得到。" }));
       } else if (tab === "ach") {
@@ -1147,7 +1147,7 @@ ${S} input[type=range]::-moz-range-thumb{width:${round ? 18 : 12}px;height:${rou
         h("div", { class: "dlg", id: "cosdlg", style: { maxWidth: "520px" } },
           h("div", { class: "dh" }, h("div", {}, h("div", { style: { display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" } }, h("h3", { style: { margin: 0 }, text: achMode ? "🏅 成就" : shopMode ? "🛒 外觀商店" : "🎨 外觀" }),
             achMode ? null : h("div", { style: { display: "flex", gap: "8px", flexWrap: "nowrap", flexBasis: "100%" } }, ...[["💰 ", p.coins || 0, " 遊戲幣"], ["🏵 ", p.renown || 0, " 聲望"]].map(([ic, n, lb]) => h("span", { style: { display: "inline-flex", alignItems: "center", gap: "4px", padding: "3px 9px", border: "1px solid #ffd24a", borderRadius: "6px", background: "rgba(255,210,74,.1)", fontSize: "13px", fontWeight: "700", whiteSpace: "nowrap" } }, ic, h("b", { style: { color: "#ffd24a", fontVariantNumeric: "tabular-nums" }, text: String(n) }), lb)))),
-          achMode ? h("div", { class: "meta", text: "每個成就解鎖一個外觀;其他外觀到「外觀」用遊戲幣買" }) : null), h("button", { class: "x", text: "✕", onclick: close })),
+          achMode ? h("div", { class: "meta", text: "每個成就解鎖一個外觀;其他外觀到「外觀」用遊戲幣買" }) : null), h("button", { class: "x", text: "×", "aria-label": "close", onclick: close })),
           h("div", { style: { padding: "6px 22px 18px", maxHeight: "calc(70vh / var(--uz))", overflowY: "auto" } },
             achMode || tab === "theme" || tab === "cardbg" || tab === "cardback" || tab === "anim" ? null : preview(), achMode ? null : buyRow(),
             achMode ? null : h("div", { class: "tabs" }, ...tabs.map(([k, n]) => h("button", { class: k === tab ? "on" : "", text: n, onclick: () => { tab = k; pv = null; render(); } }))),

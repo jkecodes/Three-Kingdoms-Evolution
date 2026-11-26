@@ -233,7 +233,7 @@ button.primary{background:linear-gradient(180deg,#52dcff,#1a9bd0);color:#02202e;
 .dlg.setup{padding:0;width:min(920px,calc(95vw / var(--uz)));max-height:calc(92vh / var(--uz));max-height:min(calc(92vh / var(--uz)),calc(calc(100dvh / var(--uz)) - var(--toph,48px) - 12px));display:flex;flex-direction:column;overflow:hidden;border-radius:14px}
 .dh{display:flex;justify-content:space-between;align-items:flex-start;padding:18px 22px 14px;border-bottom:1px solid #1b3a5a;background:linear-gradient(180deg,rgba(63,210,255,.08),transparent)}
 .dh h3{margin:0;font-size:22px;letter-spacing:.08em}
-.dh .x{clip-path:none;width:34px;height:34px;padding:0;background:#122440;box-shadow:inset 0 0 0 1px #2a5a85}
+.dh .x{clip-path:none;width:34px;height:34px;padding:0;font:400 24px/1 Arial,Helvetica,sans-serif;display:inline-flex;align-items:center;justify-content:center;background:#122440;box-shadow:inset 0 0 0 1px #2a5a85}
 .dbody{overflow:auto;padding:6px 22px 14px;flex:1}
 .df{display:flex;justify-content:flex-end;gap:12px;padding:14px 22px;border-top:1px solid #1b3a5a;background:rgba(0,0,0,.25)}
 .df button{padding:10px 26px}
@@ -2067,7 +2067,7 @@ async function showPlayer(key) {   // 看別人的個人資訊 (在線列表 / �
     return h("div", {style: {background: "#0e2442", border: "1px solid #24496f", borderRadius: "10px", padding: "8px 12px", flex: "1 1 90px", minWidth: 0, overflow: "hidden", textAlign: "center"}}, val, h("div", {class: "meta", text: k})); };
   const m = h("div", {class: "modal", id: "playerdlg", style: {zIndex: 7700}, onclick: e => { if (e.target === m) close(); }},
     h("div", {class: "dlg", style: {maxWidth: "420px"}},
-      h("div", {class: "dh"}, h("div", {}, h("h3", {text: "玩家資訊"})), h("button", {class: "x", text: "✕", onclick: close})),
+      h("div", {class: "dh"}, h("div", {}, h("h3", {text: "玩家資訊"})), h("button", {class: "x", text: "×", onclick: close})),
       h("div", {class: "dbody"},
         boxRow((p.style || {}).bx,
           avEl(p.avatar, p.style, {style: {width: "72px", height: "72px", borderRadius: "50%", objectFit: "cover", border: "2px solid #3fd2ff"}}, "big"),
@@ -2125,7 +2125,7 @@ function openOnlineList() {
   const close = () => { const m = document.getElementById("onlist"); if (m) m.remove(); };
   const m = h("div", {class: "modal", id: "onlist", style: {zIndex: 7500}, onclick: e => { if (e.target === m) close(); }},
     h("div", {class: "dlg", style: {maxWidth: "420px"}},
-      h("div", {class: "dh"}, h("div", {}, h("h3", {text: "👥 在線的人"})), h("button", {class: "x", text: "✕", onclick: close})),
+      h("div", {class: "dh"}, h("div", {}, h("h3", {text: "👥 在線的人"})), h("button", {class: "x", text: "×", onclick: close})),
       h("div", {class: "dbody", id: "onlist-body", style: {maxHeight: "calc(60vh / var(--uz))", overflowY: "auto"}})));
   document.body.append(m);
   renderOnlineList();
@@ -2258,7 +2258,7 @@ function openSetup() {
     if ([...seatBox.querySelectorAll("input[type=checkbox]")].some(x => x.checked)) return doStart();   // 多人房間 (有開放給真人的座位): 照原本流程,房主入座,其他人到大廳自己入座
     const ask = h("div", {class: "modal", style: {zIndex: 7700}, onclick: e => { if (e.target === ask) ask.remove(); }},
       h("div", {class: "dlg seatask", role: "dialog", "aria-label": "入座"},
-        h("div", {class: "dh"}, h("h3", {text: "你要入座嗎?"}), h("button", {class: "x", text: "✕", onclick: () => ask.remove()})),
+        h("div", {class: "dh"}, h("h3", {text: "你要入座嗎?"}), h("button", {class: "x", text: "×", onclick: () => ask.remove()})),
         h("div", {class: "seatask-b"},
           h("button", {type: "button", class: "btn", text: "👤 我來打", onclick: () => { if (st.human === "spectate") st.human = "0"; ask.remove(); doStart(); }}),
           h("button", {type: "button", class: "btn sec2", text: "👁 看電腦互打", onclick: () => { st.human = "spectate"; ask.remove(); doStart(); }}),
@@ -2270,11 +2270,11 @@ function openSetup() {
     const list = h("div", {class: "rset-list"}, ...items.filter(Boolean));
     const closeRs = () => { rs.remove(); };
     const rs = h("div", {class: "modal", style: {zIndex: 7600}, onclick: e => { if (e.target === rs) closeRs(); }},
-      h("div", {class: "dlg rset-dlg", role: "dialog", "aria-label": "房間設定"}, h("div", {class: "dh"}, h("h3", {text: "房間設定"}), h("button", {class: "x", text: "✕", onclick: closeRs})), list));
+      h("div", {class: "dlg rset-dlg", role: "dialog", "aria-label": "房間設定"}, h("div", {class: "dh"}, h("h3", {text: "房間設定"}), h("button", {class: "x", text: "×", onclick: closeRs})), list));
     return h("button", {type: "button", class: "mini-btn", text: "⚙ 房間設定", onclick: () => document.body.append(rs)});
   };
   const dlg = h("div", {class: "dlg setup"},
-    h("div", {class: "dh"}, h("div", {}, h("h3", {text: "新遊戲"}), h("div", {id: "onl", class: "onl"}), ROOM && S.canManage ? roomSet([h("button", {type: "button", class: "mini-btn", text: "✎ 改房名", onclick: roomRename}), inviteFriendsBtn(), h("button", {type: "button", class: "mini-btn", id: "bRoomVis", text: S.roomUnlisted ? "不公開" : "公開", title: "切換房間是否顯示在大廳列表 (不公開的房間,只有知道房號或被邀請的人進得來)", onclick: roomVisibility}), h("button", {type: "button", class: "mini-btn", id: "bRoomPw", text: S.roomLocked ? "🔒 修改 / 移除密碼" : "🔓 設定密碼", onclick: roomPassword}), (S.amHost ? h("button", {type: "button", class: "mini-btn", text: "🗑 刪除房間", onclick: roomDelete}) : null)]) : null), h("button", {class: "x", text: "✕", onclick: close})),
+    h("div", {class: "dh"}, h("div", {}, h("h3", {text: "新遊戲"}), h("div", {id: "onl", class: "onl"}), ROOM && S.canManage ? roomSet([h("button", {type: "button", class: "mini-btn", text: "✎ 改房名", onclick: roomRename}), inviteFriendsBtn(), h("button", {type: "button", class: "mini-btn", id: "bRoomVis", text: S.roomUnlisted ? "不公開" : "公開", title: "切換房間是否顯示在大廳列表 (不公開的房間,只有知道房號或被邀請的人進得來)", onclick: roomVisibility}), h("button", {type: "button", class: "mini-btn", id: "bRoomPw", text: S.roomLocked ? "🔒 修改 / 移除密碼" : "🔓 設定密碼", onclick: roomPassword}), (S.amHost ? h("button", {type: "button", class: "mini-btn", text: "🗑 刪除房間", onclick: roomDelete}) : null)]) : null), h("button", {class: "x", text: "×", onclick: close})),
     h("div", {class: "dbody"},
       sect("對戰模式", "休閒模式: 段位積分不變;段位模式: 贏了加分、輸了扣分 (依電腦難度,見玩家資訊);新手入門: 只用 12 位簡單武將和 10 種常見錦囊,不計積分", seg([["casual", "🎮 休閒模式"], ["ranked", "🏅 段位模式"], ["newbie", "🎓 新手入門"]], st.ranked, v => { st.ranked = v; lockRanked(); }), h("div", {style: {margin: "2px 0 6px"}}, rankHelpBtn()), rkIn),
       sect("人數", "", nBox),
@@ -2671,6 +2671,7 @@ async function poll(force) {
       return;
     }
     { const c = $("#center"); if (c.querySelector(".ngb")) { c.textContent = ""; S.centerKey = null; } }
+    bgmSync(snap);
     if (snap.lobby) { renderLobby(snap); return; }
     if (S.modalOpen === "lobby" || S.modalOpen === "wait") { gameStartSfx(); $("#modal").textContent = ""; S.modalOpen = null; S.baseSeat = null; S.logN = 0; S.thN = 0; S.thoughts = []; S.lastTh = {}; $("#log").textContent = ""; $("#thl").textContent = ""; }
     if (snap.log_total < S.logN) { gameStartSfx(); S.baseSeat = null; S.logN = 0; $("#log").textContent = ""; return; }
@@ -2860,7 +2861,7 @@ function confirmPrestige(p) {
   const close = () => { M.textContent = ""; };
   const next = (p.pres || 0) + 1;
   M.append(h("div", {class: "modal", onclick: e => { if (e.target.classList.contains("modal")) close(); }}, h("div", {class: "dlg", style: {maxWidth: "400px"}},
-    h("div", {class: "dh"}, h("div", {}, h("h3", {text: "🌟 轉生 " + next})), h("button", {class: "x", text: "✕", onclick: close})),
+    h("div", {class: "dh"}, h("div", {}, h("h3", {text: "🌟 轉生 " + next})), h("button", {class: "x", text: "×", onclick: close})),
     h("div", {class: "dbody"},
       h("p", {text: "確定要轉生嗎?"}),
       h("ul", {class: "meta", style: {paddingLeft: "20px", lineHeight: "1.7"}},
@@ -2888,7 +2889,7 @@ async function showProfile() {
   const chars = (p.chars || []).map(([n, g, w]) => h("div", {style: {display: "flex", justifyContent: "space-between", padding: "3px 0", borderBottom: "1px solid #17304f"}},
     h("span", {text: n}), h("span", {class: "meta", text: g + " 場 · " + w + " 勝 · " + rate(w, g)})));
   M.append(h("div", {class: "modal", onclick: e => { if (e.target.classList.contains("modal")) close(); }}, h("div", {class: "dlg", style: {maxWidth: "460px"}},
-    h("div", {class: "dh"}, h("div", {}, h("h3", {text: "玩家資訊"})), h("button", {class: "x", text: "✕", onclick: close})),
+    h("div", {class: "dh"}, h("div", {}, h("h3", {text: "玩家資訊"})), h("button", {class: "x", text: "×", onclick: close})),
     h("div", {class: "dbody"},
       boxRow(p.sel && p.sel.box,
         avEl(p.avatar, {fr: p.sel && p.sel.frame, fx: p.sel && p.sel.fx}, {id: "avbig", style: {width: "72px", height: "72px", borderRadius: "50%", objectFit: "cover", border: "2px solid #3fd2ff"}}, "big"),
@@ -2998,7 +2999,7 @@ async function showBoard() {
     if (mi >= 10) body.append(h("div", {class: "meta", style: {textAlign: "center", padding: "2px"}, text: "⋮"}), line(sorted[mi], mi));
   };
   M.append(h("div", {class: "modal", onclick: e => { if (e.target.classList.contains("modal")) close(); }}, h("div", {class: "dlg", style: {maxWidth: "460px"}},
-    h("div", {class: "dh"}, h("div", {}, h("h3", {text: "玩家排行榜"})), h("button", {class: "x", text: "✕", onclick: close})), body)));
+    h("div", {class: "dh"}, h("div", {}, h("h3", {text: "玩家排行榜"})), h("button", {class: "x", text: "×", onclick: close})), body)));
   draw();
 }
 $("#bBoard").onclick = showBoard;
@@ -3102,8 +3103,12 @@ function buildLobbyTools() {   // 把上方那排的功能也放進大廳 (按�
     box.append(b);
   }
 }
+function bgmSync(snap) {   // 背景音樂: 大廳 / 選武將 / 結算後放 lobby,對戰進行中放 battle (沒有音檔或關掉就不會有聲音)
+  try { if (window.SGS_FX) SGS_FX.bgm(snap && !snap.over && !snap.lobby && !snap.picking && snap.ready && snap.locked ? "battle" : "lobby"); } catch (e) {}
+}
 function showRooms(msg) {
   S.rlIn = false; buildLobbyTools();
+  try { if (window.SGS_FX) SGS_FX.bgm("lobby"); } catch (e) {}
   $("#rooms").classList.add("on");
   if (msg) toast(msg);
   refreshRooms(); clearInterval(roomTimer); roomTimer = setInterval(() => { if ($("#rooms").classList.contains("on")) refreshRooms(); else clearInterval(roomTimer); }, 2000);

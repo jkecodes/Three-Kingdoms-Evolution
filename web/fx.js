@@ -35,6 +35,51 @@
     const g = c.createGain(); g.gain.setValueAtTime((v || 0.3) * vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
     s.connect(fl).connect(g).connect(c.destination); s.start(t, Math.random() * (2.9 - dur), dur);
   }
+  /* ----- 音檔 (audio/manifest.json): 有檔案的音效 / 背景音樂用檔案,沒有的音效維持程式合成 ----- */
+  const AB = "/assets/sgs_sim/web/audio/";
+  let MAN = null, manP = null; const BUF = {}, BP = {};
+  const loadMan = () => manP || (manP = fetch(AB + "manifest.json?t=" + Date.now()).then(r => r.ok ? r.json() : null).catch(() => null).then(m => { MAN = m && typeof m === "object" ? m : { sfx: {}, bgm: {} }; return MAN; }));
+  const fileUrl = f => AB + f + "?v=" + ((MAN && MAN.v) || 1);
+  function loadBuf(f) {
+    if (BP[f]) return BP[f];
+    const c = ac(); if (!c) return Promise.resolve(null);
+    return BP[f] = fetch(fileUrl(f)).then(r => r.ok ? r.arrayBuffer() : Promise.reject()).then(ab => new Promise((ok, no) => c.decodeAudioData(ab, ok, no))).then(b => (BUF[f] = b)).catch(() => null);
+  }
+  function playFile(k) {   // 有音檔而且已經解碼好就播 (回傳 true);還沒準備好先回 false,這次用合成音頂著
+    const list = MAN && MAN.sfx && MAN.sfx[k]; if (!list || !list.length) return false;
+    const f = list[Math.floor(Math.random() * list.length)], b = BUF[f];
+    if (!b) { loadBuf(f); return false; }
+    const c = ac(); if (!c) return false;
+    const s = c.createBufferSource(), g = c.createGain();
+    s.buffer = b; g.gain.value = Math.min(1.5, vol * 1.6 * (((MAN.gain || {})[f]) || 1));
+    s.connect(g).connect(c.destination); s.start();
+    return true;
+  }
+  const preloadSfx = () => loadMan().then(m => { Object.values(m.sfx || {}).forEach(l => (l || []).forEach(f => loadBuf(f))); });
+
+  let bgmOn = true, bgmVol = 0.35, bgmWant = "", bgmCur = null, bgmGesture = false;
+  try { bgmOn = localStorage.getItem("sgs_bgm") !== "off"; const v = parseFloat(localStorage.getItem("sgs_bgmvol")); if (v >= 0 && v <= 1) bgmVol = v; } catch (e) {}
+  const fade = (el, to, ms, done) => {   // 音量漸變 (淡入 / 淡出)
+    if (el._ft) clearInterval(el._ft);
+    const from = el.volume, steps = Math.max(1, Math.round(ms / 50)); let i = 0;
+    el._ft = setInterval(() => { i++; el.volume = Math.max(0, Math.min(1, from + (to - from) * i / steps)); if (i >= steps) { clearInterval(el._ft); el._ft = null; if (done) done(); } }, 50);
+  };
+  function bgmApply() {   // 依「想要的狀態」把正在播的音樂換過去 (沒有 / 關掉 / 還沒互動過就先不播)
+    if (!bgmGesture) return;
+    const want = bgmOn && !document.hidden ? bgmWant : "";
+    loadMan().then(m => {
+      const list = want && m.bgm && m.bgm[want];
+      if (!list || !list.length) { if (bgmCur) { const o = bgmCur; bgmCur = null; fade(o.el, 0, 800, () => { o.el.pause(); }); } return; }
+      if (bgmCur && list.includes(bgmCur.f) && bgmCur.state === want) { fade(bgmCur.el, bgmVol, 300); return; }   // 同一類別已經在播: 只調音量
+      if (bgmCur) { const o = bgmCur; bgmCur = null; fade(o.el, 0, 800, () => { o.el.pause(); }); }
+      const f = list[Math.floor(Math.random() * list.length)];
+      const el = new Audio(fileUrl(f)); el.loop = true; el.volume = 0; el.preload = "auto";
+      bgmCur = { el, f, state: want };
+      el.play().then(() => fade(el, bgmVol, 1500)).catch(() => { if (bgmCur && bgmCur.el === el) bgmCur = null; });
+    });
+  }
+  document.addEventListener("visibilitychange", () => { try { bgmApply(); } catch (e) {} });   // 切到背景就停 (省電),回來再接著放
+
   const SFX = {
     card() { noise(0.06, 0.5, 2200, 1200); tone(320, 0.07, "triangle", 0.18, 180); },
     slash() { noise(0.28, 0.7, 500, 5000, 0, 0.8); tone(220, 0.2, "sawtooth", 0.08, 90); },
@@ -63,7 +108,7 @@
     arena() { tone(110, 0.45, "sine", 0.4, 70); noise(0.18, 0.35, 400, 150); [330, 440, 554].forEach((f, i) => tone(f, 0.4, "triangle", 0.16, 0, 0.18 + i * 0.12)); tone(880, 0.5, "sine", 0.12, 0, 0.6); },   // 進入段位大廳: 低鼓 + 三個上行號角音
     win() { [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.35, "triangle", 0.28, 0, i * 0.14)); },
   };
-  function sfx(k) { if (!muted && SFX[k]) SFX[k](); }
+  function sfx(k) { if (muted) return; if (playFile(k)) return; if (SFX[k]) SFX[k](); }
 
   /* ----- 動畫 ----- */
   function layer() {   // 特效層: 和牌桌 / 箭頭一樣跟著「拖曳牌桌」的位移一起動 (飛牌、爆點都放在這一層)
@@ -193,6 +238,11 @@
     onLine, hint, sfx, tone, noise, begin() { budget = { snd: 0, fly: 0 }; healSeen = null; textHeal = null; },
     get muted() { return muted; },
     get vol() { return vol; }, setVol(v) { vol = v; store("sgs_vol", v); },
+    bgm(state) { bgmWant = state || ""; bgmApply(); },   // "lobby" 大廳 / 選武將;"battle" 對戰中;"" 停止
+    get bgmOn() { return bgmOn; }, get bgmVol() { return bgmVol; },
+    setBgmOn(v) { bgmOn = !!v; store("sgs_bgm", bgmOn ? "on" : "off"); bgmApply(); },
+    setBgmVol(v) { bgmVol = v; store("sgs_bgmvol", v); if (bgmCur) bgmCur.el.volume = v; },
+    credits() { return loadMan().then(m => m.credits || []); },
     get tts() { return tts; }, setTts(on) { tts = !!on; store("sgs_tts", on ? "on" : "off"); if (!on && window.speechSynthesis) window.speechSynthesis.cancel(); },
     get fs() { return fs; }, setFs(v) { fs = v; store("sgs_fs", v); document.documentElement.style.setProperty("--fs", v); },
     setMuted(m) { muted = !!m; store("sgs_snd", muted ? "off" : "on"); if (!muted) sfx("card"); },
@@ -223,6 +273,16 @@
       const vv = el("span", { className: "sv", textContent: Math.round(vol * 100) + "%" });
       const vs = el("input", { type: "range", min: 0, max: 100, value: Math.round(vol * 100) }); vs.oninput = () => { SGS_FX.setVol(vs.value / 100); vv.textContent = vs.value + "%"; };
       vs.onchange = () => sfx("card");
+      const bgvv = el("span", { className: "sv", textContent: Math.round(bgmVol * 100) + "%" });
+      const bgv = el("input", { type: "range", min: 0, max: 100, value: Math.round(bgmVol * 100) }); bgv.oninput = () => { SGS_FX.setBgmVol(bgv.value / 100); bgvv.textContent = bgv.value + "%"; };
+      const creditRow = () => {   // 音樂與音效的授權標示 (來源寫在 audio/manifest.json 的 credits)
+        const b2 = el("button", { type: "button", textContent: "查看", onclick: () => SGS_FX.credits().then(L => {
+          const box = el("div", { className: "meta", style: "margin-top:6px;line-height:1.6" });
+          (L.length ? L : [{ role: "", name: "沒有使用外部音檔", url: "" }]).forEach(c => box.append(el("div", {}, (c.role ? c.role + ": " : "") + c.name + (c.note ? " (" + c.note + ")" : "") + " ", c.url ? el("a", { href: c.url, target: "_blank", rel: "noopener noreferrer", textContent: c.url }) : "")));
+          const old = document.getElementById("credbox"); if (old) old.remove(); box.id = "credbox"; row2.after(box);
+        }) });
+        const row2 = row("音樂與音效來源", b2); return row2;
+      };
       const fv = el("span", { className: "sv", textContent: Math.round(fs * 100) + "%" });
       const fsl = el("input", { type: "range", min: 80, max: 150, step: 5, value: Math.round(fs * 100) }); fsl.oninput = () => { SGS_FX.setFs(fsl.value / 100); fv.textContent = fsl.value + "%"; };
       const ttsRow = window.speechSynthesis ? row("朗讀", cb(tts, v => SGS_FX.setTts(v)), el("span", { className: "meta", textContent: "唸出對局紀錄" })) : row("朗讀", el("span", { className: "meta", textContent: "這個瀏覽器不支援朗讀" }));
@@ -302,7 +362,9 @@
         el("div", { className: "dh" }, el("div", {}, el("h3", { textContent: "⚙ 設定" })), el("button", { className: "x", textContent: "✕", onclick: close })),
         el("div", { className: "dbody" },
           row("音效", cb(!muted, v => SGS_FX.setMuted(!v)), el("span", { className: "meta", textContent: "開 / 關" })),
-          row("音量", vs, vv), row("字體大小", fsl, fv), row("每步延遲", spd, spv), window.SGS_LANGSEL ? row("語言", window.SGS_LANGSEL()) : "", ttsRow, discordRow(), row("⚡連鎖詢問", cs), aboutRow(), acctRow()));
+          row("音量", vs, vv),
+          row("背景音樂", cb(bgmOn, v => SGS_FX.setBgmOn(v)), el("span", { className: "meta", textContent: "開 / 關" })),
+          row("音樂音量", bgv, bgvv), creditRow(), row("字體大小", fsl, fv), row("每步延遲", spd, spv), window.SGS_LANGSEL ? row("語言", window.SGS_LANGSEL()) : "", ttsRow, discordRow(), row("⚡連鎖詢問", cs), aboutRow(), acctRow()));
       const m = el("div", { className: "modal", id: "setdlg", style: "z-index:7600" }, dlg);
       m.onclick = e => { if (e.target === m) close(); };
       document.body.append(m);
@@ -315,5 +377,8 @@
       top.insertBefore(d, b);
     }
   });
-  ["pointerdown", "keydown"].forEach(ev => window.addEventListener(ev, () => { if (!muted && !ctx) ac(); }, { passive: true }));
+  ["pointerdown", "keydown"].forEach(ev => window.addEventListener(ev, () => {
+    if (!muted && !ctx) { ac(); preloadSfx(); }
+    if (!bgmGesture) { bgmGesture = true; bgmApply(); }
+  }, { passive: true }));
 })();

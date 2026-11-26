@@ -2028,6 +2028,33 @@ class Handler(BaseHTTPRequestHandler):
         with open(path, "rb") as f:
             self._send(200, f.read(), ctype, cache)
 
+    def _media(self, full):
+        """音檔: 支援 Range 要求 (回 206),瀏覽器的 <audio> 才能循環 / 跳播;檔案不大,整份讀進記憶體再切。"""
+        if not os.path.isfile(full):
+            return self._send(404, {"error": "not found"})
+        ctype = mimetypes.guess_type(full)[0] or "application/octet-stream"
+        with open(full, "rb") as f:
+            data = f.read()
+        total, rng = len(data), self.headers.get("Range") or ""
+        m = re.match(r"bytes=(\d*)-(\d*)$", rng.strip())
+        if m and (m.group(1) or m.group(2)):
+            a = int(m.group(1)) if m.group(1) else max(0, total - int(m.group(2)))
+            z = min(total - 1, int(m.group(2))) if m.group(1) and m.group(2) else total - 1
+            if a > z or a >= total:
+                self.send_response(416); self.send_header("Content-Range", f"bytes */{total}"); self.end_headers()
+                return
+            part = data[a:z + 1]
+            self.send_response(206)
+            self.send_header("Content-Type", ctype); self.send_header("Content-Length", str(len(part)))
+            self.send_header("Content-Range", f"bytes {a}-{z}/{total}"); self.send_header("Accept-Ranges", "bytes")
+            self.send_header("Cache-Control", "max-age=86400")
+            self.end_headers(); self.wfile.write(part)
+            return
+        self.send_response(200)
+        self.send_header("Content-Type", ctype); self.send_header("Content-Length", str(total)); self.send_header("Accept-Ranges", "bytes")
+        self.send_header("Cache-Control", "max-age=86400")
+        self.end_headers(); self.wfile.write(data)
+
     def do_GET(self):
         u = urlparse(self.path)
         q = parse_qs(u.query)
@@ -2215,6 +2242,12 @@ class Handler(BaseHTTPRequestHandler):
                 return
             if path.startswith("/assets/sgs_sim/web/hp/"):   # 血量圖示 (隨程式附上,不在素材資料夾)
                 return self._file(os.path.join(WEB, "hp", os.path.basename(path)), "max-age=86400")   # 玉璧 SVG 不會變: 讓瀏覽器快取,牌桌每次重畫就不用重抓 (預設 SVG 是 no-store)
+            if path.startswith("/assets/sgs_sim/web/audio/"):   # 背景音樂 / 音效 (隨程式附上): 支援 Range,<audio> 才能邊下載邊播、循環
+                rel = path[len("/assets/sgs_sim/web/audio/"):]
+                full = os.path.normpath(os.path.join(WEB, "audio", rel.replace("/", os.sep)))
+                if os.path.commonpath([full, os.path.normpath(os.path.join(WEB, "audio"))]) != os.path.normpath(os.path.join(WEB, "audio")):
+                    return self._send(403, {"error": "forbidden"})
+                return self._media(full)
             if path.startswith("/assets/sgs_sim/web/setup/"):   # 新遊戲設定卡片的插圖 (隨程式附上)
                 return self._file(os.path.join(WEB, "setup", os.path.basename(path)), "max-age=3600")
             if path.startswith("/assets/"):

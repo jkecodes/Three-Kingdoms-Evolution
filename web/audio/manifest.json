@@ -1,0 +1,22 @@
+{
+  "_說明": "sfx: 音效代號 -> 檔案清單 (有多個就隨機挑一個);沒列的代號用程式合成音。bgm: lobby = 大廳 / 選武將, battle = 對戰中。gain: 個別檔案的音量倍率 (預設 1)。檔案放在 audio/ 底下,新增或換檔後把 v 加 1 (避免瀏覽器快取舊檔)。",
+  "v": 1,
+  "sfx": {
+    "slash": ["se/maou_se_battle01.mp3", "se/maou_se_battle06.mp3"],
+    "duel": ["se/maou_se_battle03.mp3"],
+    "hit": ["se/maou_se_battle08.mp3"]
+  },
+  "bgm": {
+    "lobby": ["bgm/maou_ethnic33.mp3"],
+    "battle": ["bgm/maou_ethnic33.mp3"]
+  },
+  "gain": {
+    "se/maou_se_battle01.mp3": 1.0,
+    "se/maou_se_battle03.mp3": 1.1,
+    "se/maou_se_battle06.mp3": 0.7,
+    "se/maou_se_battle08.mp3": 0.8
+  },
+  "credits": [
+    {"role": "BGM / 音效", "name": "魔王魂", "url": "https://maou.audio/", "note": "音楽：魔王魂"}
+  ]
+}
