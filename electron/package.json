@@ -1,7 +1,7 @@
 {
   "name": "sgs-sim",
   "productName": "Three Kingdoms Evolution",
-  "version": "1.11.3",
+  "version": "1.12.0",
   "description": "進化三國模擬器 (桌面版)",
   "main": "main.js",
   "private": true,
