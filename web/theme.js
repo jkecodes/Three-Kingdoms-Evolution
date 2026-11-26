@@ -39,6 +39,8 @@
   gf.textContent = `
 html.gf{--gold:#d9ad4f;--red:#d2412f;--felt1:#3a281a;--felt2:#140d08;--ser:var(--ff,serif)}
 html.gf,html.gf body{background:linear-gradient(rgba(14,8,4,.28),rgba(14,8,4,.5)),url(/bg/gf.jpg) center/cover no-repeat fixed #150d08}   /* 水墨山水背景,上面蓋一層暗色讓字看得清楚 */
+@media (pointer:coarse),(max-width:1024px){html.gf,html.gf body{background:linear-gradient(rgba(14,8,4,.28),rgba(14,8,4,.5)),url(/bg/gf-m.jpg) center/cover no-repeat scroll #150d08}}
+html.lowpower.gf,html.lowpower.gf body{background:linear-gradient(rgba(14,8,4,.28),rgba(14,8,4,.5)),url(/bg/gf-m.jpg) center/cover no-repeat scroll #150d08}
 html.gf #top{background:linear-gradient(90deg,#1c120b,#26180e 50%,#1c120b);border-bottom:1px solid #8a6a30;box-shadow:0 1px 0 rgba(217,173,79,.3),0 4px 18px rgba(0,0,0,.55)}
 html.gf #top .title{font-family:var(--ser);letter-spacing:.3em;color:#e8c872;text-shadow:0 0 12px rgba(217,173,79,.45)}
 html.gf #tablewrap::before{border:3px double #b88a3a;background:repeating-linear-gradient(45deg,rgba(217,173,79,.045) 0 2px,transparent 2px 16px),repeating-linear-gradient(-45deg,rgba(217,173,79,.045) 0 2px,transparent 2px 16px),radial-gradient(ellipse at 50% 42%,rgba(74,51,34,.5) 0,rgba(38,24,15,.68) 58%,rgba(18,10,6,.86) 100%);box-shadow:0 0 0 5px #1a0f08,0 0 0 6px rgba(217,173,79,.55),0 0 40px rgba(217,173,79,.12),inset 0 0 80px rgba(0,0,0,.7)}
@@ -1262,6 +1264,8 @@ html.px .fx-ring::after{inset:-14%}html.px .fx-ice>.fxa{inset:-16%}html.px .fx-v
 /* 清單 (聊天室 / 成員 / 好友 / 排行榜) 裡一次出現很多頭像: 動畫先停住,滑鼠移上去那一列才動 (一個畫面只讓重點在動) */
 .cm .avw::before,.cm .avw::after,.mr .avw::before,.mr .avw::after,.frow .avw::before,.frow .avw::after,.lbrow .avw::before,.lbrow .avw::after{animation-play-state:paused}
 .cm:hover .avw::before,.cm:hover .avw::after,.mr:hover .avw::before,.mr:hover .avw::after,.frow:hover .avw::before,.frow:hover .avw::after,.lbrow:hover .avw::before,.lbrow:hover .avw::after{animation-play-state:running}/* 漩渦: 螺旋臂 (外淡內濃) 兩層反向轉;烈陽: 尖角光芒 + 外圈,慢轉 */
+html.lowpower .pl .avw::before,html.lowpower .pl .avw::after,html.lowpower .pl .avw .fxa,html.lowpower .pl .avw .fxb,html.lowpower .pl .avw .fxa::before,html.lowpower .pl .avw .fxb::before,html.lowpower .pl .bxfx,html.lowpower .pl .bxfx::before,html.lowpower .pl .bxfx::after{animation-play-state:paused!important}
+html.lowpower .avw::after,html.lowpower .avw .fxa,html.lowpower .avw .fxb{filter:none!important}
 .fx-vortex>.fxa{inset:-32%;background:${VORTEX_A} center/100% 100% no-repeat;-webkit-mask:none;mask:none;animation:frspin 3.2s linear infinite}
 .fx-vortex>.fxb{inset:-32%;border:0;background:${VORTEX_B} center/100% 100% no-repeat;-webkit-mask:none;mask:none;animation:frspin 5s linear infinite reverse}
 .fx-sun>.fxa{inset:-40%;background:${SUN_RAYS} center/100% 100% no-repeat;-webkit-mask:none;mask:none;animation:frspin 20s linear infinite}

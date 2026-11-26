@@ -361,7 +361,9 @@
     dead: [[0, [255, 170, 90]], [.3, [190, 60, 20]], [.6, [90, 30, 20]], [1, [40, 30, 30]]],
     heal: [[0, [255, 252, 220]], [.3, [255, 220, 120]], [.7, [255, 160, 60]], [1, [150, 70, 10]]],
   };
+  const isLP = () => document.documentElement.classList.contains("lowpower");
   const spCache = {};
+  let spTrimTimer = null;
   function lerpPal(p, f) { for (let i = 1; i < p.length; i++) if (f <= p[i][0]) { const a = p[i - 1], b = p[i], t = (f - a[0]) / (b[0] - a[0] || 1); return a[1].map((v, k) => Math.round(v + (b[1][k] - v) * t)).join(","); } return p[p.length - 1][1].join(","); }
   function sprites(name) {
     if (spCache[name]) return spCache[name];
@@ -385,7 +387,7 @@
   function startFire2d(cv, mode, T, el, done) {
     const cfg = FM[mode]; if (!cfg || !cv.getContext) return;
     const w = el.clientWidth, h = el.clientHeight; if (!w || !h) return;
-    const u = Math.min(w, h) / 100, dpr = Math.min(window.devicePixelRatio || 1, 1.5), full = el.dataset.full === "1";
+    const u = Math.min(w, h) / 100, dpr = isLP() ? 1 : Math.min(window.devicePixelRatio || 1, 1.5), full = el.dataset.full === "1";
     cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
     const g = cv.getContext("2d"); g.scale(dpr, dpr);
     const X0 = full ? cfg.x0 : +el.dataset.bx0, X1 = full ? cfg.x1 : +el.dataset.bx1, K = full ? cfg.kf : cfg.ks, y0 = h * (full ? 1.01 : +el.dataset.by), spr = sprites(cfg.pal), smk = sprites("dead");
@@ -394,6 +396,7 @@
     const gauss = () => (rnd() + rnd() + rnd() - 1.5) / 1.5;
     function frame(now) {
       if (!el.isConnected) { done && done(); return; }
+      if (isLP() && now - last < 32) { requestAnimationFrame(frame); return; }
       const t = (now - t0) / 1000, dt = Math.min(.05, (now - last) / 1000); last = now;
       if (t > T + .1) { done && done(); return; }
       const I = cfg.I(t), span = (X1 - X0) * w;
@@ -473,7 +476,7 @@ void main(){
   function startFireGL(cv, mode, T, el, done) {
     const cfg = FM[mode]; if (!cfg) return true;
     const w = el.clientWidth, h = el.clientHeight; if (!w || !h) return true;
-    const full = el.dataset.full === "1", sc = full ? .6 : 1;
+    const full = el.dataset.full === "1", lp = isLP(), sc = lp ? (full ? .35 : .6) : (full ? .6 : 1);
     cv.width = Math.max(2, Math.round(w * sc)); cv.height = Math.max(2, Math.round(h * sc));
     const gl = cv.getContext("webgl", { premultipliedAlpha: true, alpha: true, antialias: false });
     if (!gl) return false;
@@ -495,8 +498,11 @@ void main(){
     gl.uniform1f(U("yb"), full ? -.02 : 1 - (+el.dataset.by));
     const uT = U("t"), uI = U("I"), uH = U("hh"), seed = rnd() * 50;
     const t0 = performance.now();
+    let lastDraw = 0;
     function frame(now) {
       if (!el.isConnected || gl.isContextLost()) { done && done(); return; }
+      if (isLP() && now - lastDraw < 32) { requestAnimationFrame(frame); return; }
+      lastDraw = now;
       const t = (now - t0) / 1000; if (t > T + .1) { done && done(); return; }
       const I = cfg.I(t);
       gl.uniform1f(uT, t + seed); gl.uniform1f(uI, I);
@@ -513,6 +519,7 @@ void main(){
   let fireLive = 0;
   function startFire(cv, mode, T, el) {   // cv 可能被換成新畫布 (WebGL 失敗改用 2d)
     if (fireLive >= 3) { cv.remove(); return; }
+    if (spTrimTimer) { clearTimeout(spTrimTimer); spTrimTimer = null; }
     fireLive++;
     let freed = false;
     const done = () => {
@@ -520,6 +527,16 @@ void main(){
       cv.style.display = "none";   // 先藏起來: 畫布 CSS 是撐滿整個特效框,縮成 1x1 / 釋放 context 的那一瞬間會被拉成一整塊白底
       try { const gl = cv._gl; if (gl) { const x = gl.getExtension("WEBGL_lose_context"); if (x) x.loseContext(); } } catch (e) {}
       cv._gl = null; cv.width = cv.height = 1; cv.remove();
+      if (fireLive <= 0 && !spTrimTimer) {
+        spTrimTimer = setTimeout(() => {
+          spTrimTimer = null;
+          if (fireLive > 0) return;
+          for (const k of Object.keys(spCache)) {
+            try { (spCache[k] || []).forEach(c => { c.width = c.height = 1; }); } catch (e) {}
+            delete spCache[k];
+          }
+        }, 15000);
+      }
     };
     let ok = false;
     try { ok = startFireGL(cv, mode, T, el, done); } catch (e) { ok = false; }

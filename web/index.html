@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="zh-Hant">
-<head><script>try{var _t=localStorage.getItem("sgs_theme");if(!_t||JSON.parse(_t).a.toLowerCase()==="#d4a64a")document.documentElement.classList.add("gf")}catch(e){document.documentElement.classList.add("gf")}</script>
+<head><script>try{var _t=localStorage.getItem("sgs_theme");if(!_t||JSON.parse(_t).a.toLowerCase()==="#d4a64a")document.documentElement.classList.add("gf")}catch(e){document.documentElement.classList.add("gf")}</script><script>try{var _lp=localStorage.getItem("sgs_lowpower");if(_lp==="1"||(_lp===null&&matchMedia("(pointer:coarse)").matches))document.documentElement.classList.add("lowpower")}catch(e){}</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, viewport-fit=cover">
 <title>進化三國</title>
@@ -113,6 +113,7 @@ html body .pl.tm-lord:not(.waiting):not(.sel){outline:3px double #ffd24a;outline
 #tabs button.on{background:var(--panel2);color:var(--accent);box-shadow:inset 0 -3px 0 var(--accent);font-weight:700}
 .pane{flex:1;overflow:auto;padding:10px;min-height:0;display:none}
 .pane.on{display:block}
+#log>div{content-visibility:auto;contain-intrinsic-size:28px}
 #log div{padding:2px 0 2px 8px;font-size:13px;white-space:pre-wrap;word-break:break-all;border-left:2px solid transparent}
 #log .turn{color:var(--accent);margin-top:10px;font-weight:700;background:rgba(233,191,98,.08);border-left-color:var(--accent);padding:3px 8px;border-radius:0 6px 6px 0}
 #log .chain{color:var(--dim)}
@@ -343,6 +344,11 @@ button:not(:disabled):active{transform:scale(.96);transition-duration:60ms}   /*
 @media (max-width:820px){.dlg.setup .tgrid{gap:8px}.wtile{padding:8px 8px 8px;gap:4px}.wtile .tn{font-size:14px}.tstep{min-width:34px;min-height:34px!important}.tv.one{min-height:34px}.tval{font-size:14px}.dlg.setup .dh{padding:12px 16px 8px}.dlg.setup .wzs{margin-bottom:8px}}
 .tstep:disabled{opacity:.3;cursor:default}
 .tinfo{position:absolute;top:6px;right:6px;min-width:30px;min-height:30px!important;padding:0!important;border:0!important;border-radius:50%!important;background:rgba(0,0,0,.6)!important;box-shadow:none!important;color:#f6e9d4;font-size:15px}
+@media (pointer:coarse){#top,.modal{backdrop-filter:none;-webkit-backdrop-filter:none}}
+html.lowpower #top,html.lowpower .modal{backdrop-filter:none;-webkit-backdrop-filter:none}
+html.lowpower #table .pl.cur,html.lowpower #table .pl.waiting,html.lowpower .wfr,html.lowpower .card.ok,html.lowpower .card.picked,html.lowpower #table .pl.hit,html.lowpower #table .pl.heal,html.lowpower #table .pl.turn-in,html.lowpower #log .lg-in,html.lowpower .pane.on,html.lowpower .tholder .sec.cur,html.lowpower .tart img{animation:none!important}
+html.lowpower .card,html.lowpower #table .pl,html.lowpower .dlg{box-shadow:none}
+html.lowpower :where(button),html.lowpower .dlg button,html.lowpower .dlg .wtile,html.lowpower .wzs button{transition:none}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .tbackbar{margin:8px 0 0}.tback{min-height:38px;padding:0 18px;border-radius:99px;font-size:14px}
 #shtip{position:fixed;z-index:9999;display:none;max-width:340px;background:#16324a;color:#fff;border:1px solid #3fd2ff;border-radius:8px;padding:8px 12px;font-size:13px;line-height:1.5;box-shadow:0 4px 18px rgba(0,0,0,.5);pointer-events:none}
@@ -958,7 +964,7 @@ function bkEl(seat) {   // 手牌數旁邊顯示這位玩家選的卡背 (其他
 }
 function mySel() { return (S.prof && S.prof.sel) || {}; }   // 新 / 舊卡圖、武將圖只看自己的選擇 (全部的牌和武將都用自己選的,不看對方選什麼)
 function caOf() { return ""; }   // 舊的手繪向量圖已關閉
-function setRosterArt(v) { S.roster = (S.roster || []).map(c => c.img ? Object.assign({}, c, {img: c.img.replace(/&art=old/, "") + ""}) : c);  if (typeof renderChars === "function") { try { renderChars(); } catch (e) {} } if (typeof poll === "function") poll(true); }   // 選單 / 圖鑑裡的武將圖: 依自己選的新 / 舊版
+function setRosterArt(v) { S.roster = (S.roster || []).map(c => c.img ? Object.assign({}, c, {img: c.img.replace(/&art=old/, "") + ""}) : c);  if (typeof renderChars === "function") { if (document.querySelector("#ch.on")) { try { renderChars(); } catch (e) {} } else S.charsDirty = true; } if (typeof poll === "function") poll(true); }   // 選單 / 圖鑑裡的武將圖: 依自己選的新 / 舊版 (側欄沒開時延後重畫)
 function gi(u) {   // 圖片網址: 依自己選的新 / 舊卡圖、武將圖、卡面風格 (詳細資訊、戰報、選武將、圖鑑都走這裡)
   if (typeof u !== "string") return u;
   if (u.startsWith("/thumb/char/")) return u.replace(/&art=old/, "") + gaQ();
@@ -1178,7 +1184,7 @@ function rkEl(r, big) {   // 段位標籤 (例: 黃金2)
   const m = /^(★\d+) (.+)$/.exec(String(r)), base = m ? m[2] : String(r);   // Prestige: 「★2 青銅3」
   return h("span", {class: "rk rk-" + base.replace(/\d+$/, "") + (m ? " pres" : "") + (big ? " big" : ""), title: (m ? "轉生 " + m[1].slice(1) + " 次 · " : "") + "段位 " + base, text: base});   // 顯示不帶 ★N, 轉生次數由旁邊的「轉生 N」方框表示
 }
-document.addEventListener("visibilitychange", () => { if (!document.hidden) { window.__visAt = Date.now(); if (typeof poll === "function") poll(true); } });   // 剛切回分頁: 這一瞬間湧進來的一批紀錄不播特效
+document.addEventListener("visibilitychange", () => { if (!document.hidden) { window.__visAt = Date.now(); if (typeof poll === "function" && ROOM) poll(true); if (typeof loadProfile === "function") loadProfile(true); if ($("#rooms") && $("#rooms").classList.contains("on") && typeof refreshRooms === "function") refreshRooms(true); } });   // 剛切回分頁: 這一瞬間湧進來的一批紀錄不播特效,並立刻同步畫面
 function setRoundTag(snap) {   // 左上角: 第幾輪 + 牌堆張數
   if (window.SGS_ANIM) try { SGS_ANIM.onSnap(snap); } catch (e) {}   // 動畫特效 (進場 / 勝負): 所有人都看得到
   if (snap.over && !S.overSeen) { S.overSeen = true; [1500, 4000].forEach(t => setTimeout(loadProfile, t)); }   // 對局結束: 盡快讀檔案,有升降段就跳視窗
@@ -1234,8 +1240,17 @@ function tpText(tp) {
 function syncAnims(root) {   // 牌桌每次重畫都會重建元素,循環動畫 (頭貼特效等) 會從頭播;全部對齊到文件時間軸,重畫後就不會被重置
   try { for (const a of root.getAnimations({subtree: true})) if (a.effect && a.startTime !== 0 && a.effect.getComputedTiming().iterations === Infinity) a.startTime = 0; } catch (e) {}   // 已經對齊的不要再動 (重設時間軸會讓動畫卡頓)
 }
+function expireTableBubbles() {
+  const T = $("#table"); if (!T) return;
+  const now = Date.now();
+  for (const b of T.querySelectorAll(".bubble[data-ts]")) {
+    if (now - (+b.dataset.ts || 0) >= 3200) b.remove();
+  }
+}
 function renderTable(snap) {
-  renderTable0(snap); syncAnims($("#table"));
+  const rebuilt = renderTable0(snap);
+  if (!rebuilt) return;
+  syncAnims($("#table"));
   try {   // 動畫第二批: 和上一次比,體力變少 → 座位震一下;回血 → 綠光;換回合 → 發光淡入
     const pv = S.pvHp || {}, nx = {}, pm = S.pvMax || {}, nm = {};   // 體力上限變了 (開局身分重新分配: 主公 +1 血) 不算受傷 / 回血
     for (const p of snap.players) {
@@ -1256,9 +1271,8 @@ function renderTable(snap) {
 })();
 function renderTable0(snap) {
   bindHover();
-  const T = $("#table"); T.textContent = "";
+  const T = $("#table");
   const n = snap.players.length;
-  T.className = n >= 8 ? "dense" : n >= 6 ? "mid" : "";
   if (snap.viewer != null) S.baseSeat = snap.viewer;   // 自己陣亡變觀戰後,座位排列不要跟著轉動
   const base = snap.viewer != null ? snap.viewer : (S.baseSeat != null ? S.baseSeat : 0);
   const pend = snap.pending;
@@ -1274,7 +1288,27 @@ function renderTable0(snap) {
   const zsub = i => () => { S.tgtPick = null; submit(pend.id, [i]); };
   const zhPick = pend && S.tgtPick && S.tgtPick.pend === pend.id && S.tgtPick.zone ? new Map(S.tgtPick.opts.filter(o => o.target.kind === "zonehand").map(o => [o.target.idx, o.i])) : null;   // 對方的手牌: 點「手牌 N」
   const mvPick = pend && S.tgtPick && S.tgtPick.pend === pend.id && S.tgtPick.mv ? new Set(S.tgtPick.opts.map(o => String(o.target.cid))) : null;
-  snap.players.forEach(p => {
+  const nowTs = Date.now();
+  const tk = JSON.stringify([
+    n, base, snap.cur, snap.waiting, snap.over, snap.viewer, snap.winner, snap.solo_winner, snap.thoughts_visible, S.sel, S.lang,
+    T.clientWidth, T.clientHeight,
+    pickMode ? [pend.id, S.tgtPick.chosen, S.tgtPick.cid] : null,
+    targetIdx.size ? [...targetIdx] : null,
+    eqPick ? [...eqPick] : null, zPick ? [...zPick.keys()] : null, zhPick ? [...zhPick.keys()] : null, mvPick ? [...mvPick] : null,
+    snap.avstyles, snap.ai_lv,
+    (snap.online || []).map(o => [o.seat, o.acc]),
+    snap.players.map(p => {
+      const th = S.lastTh[p.idx];
+      const thShow = !!(th && th._ts && (nowTs - th._ts) < 3200 && !/不發動|不出|不響應|不使用|不用|放棄|跳過/.test(th.title) && snap.thoughts_visible && p.alive && snap.viewer !== p.idx);
+      return [p.idx, p.hp, p.maxhp, p.char, p.disguise, p.disguise_kind, p.dg_flip, p.flipped, p.chained, p.role, p.hand_n, p.stash_n, p.alive, p.is_viewer, p.human, p.nick, p.avatar, p.lv, p.host_seat, p.target, p.equip, p.judge, p.badges, snap.viewer == null ? p.hand : null, thShow ? [th._ts, th.title] : null];
+    })
+  ]);
+  const needBuild = S.tableKey !== tk;
+  if (needBuild) {
+    S.tableKey = tk;
+    T.textContent = "";
+    T.className = n >= 8 ? "dense" : n >= 6 ? "mid" : "";
+    snap.players.forEach(p => {
     const k = (p.idx - base + n) % n, ang = (90 + 360 / n * k) * Math.PI / 180;
     const x = 50 + 41 * Math.cos(ang), y = 50 + 38 * Math.sin(ang);
     const rp = n >= 7 ? perimPos(k / n, T.clientWidth, T.clientHeight, HW[T.className], HH[T.className]) : null;
@@ -1319,7 +1353,7 @@ function renderTable0(snap) {
     const t = S.lastTh[p.idx];
     const age = t && t._ts ? (Date.now() - t._ts) / 1000 : 99;
     if (t && age < 3.2 && !/不發動|不出|不響應|不使用|不用|放棄|跳過/.test(t.title) && snap.thoughts_visible && p.alive && snap.viewer !== p.idx)
-      el.append(h("div", {class: "bubble", text: t.title, style: {animationDelay: "-" + age.toFixed(2) + "s"}}));
+      el.append(h("div", {class: "bubble", text: t.title, "data-ts": String(t._ts), style: {animationDelay: "-" + age.toFixed(2) + "s"}}));
     T.append(el);
   });
   if (n >= 7) {   // 人多時有的玩家框會長高 (判定區 / 裝備多),照固定座位排會和鄰座重疊: 重疊的框互相推開
@@ -1352,11 +1386,14 @@ function renderTable0(snap) {
       el.classList.toggle("br", cx > tr.width * 0.72);
     });
   }
+  } else {
+    expireTableBubbles();
+  }
   showHandView();
   const c = $("#center");
   const ck = JSON.stringify([snap.round, snap.deck, snap.discard, snap.discard_top && snap.discard_top.id, (snap.discard_chain || []).map(x => x.id), snap.discard_chain_off, snap.last_judge && [snap.last_judge.who, snap.last_judge.card.id], snap.reveal && [snap.reveal.title, snap.reveal.cards.map(r => r.who + ":" + r.card.id)], S.lastAct, snap.winner, snap.over, snap.is_host, S.lang]);
   setRoundTag(snap);
-  if (S.centerKey === ck) return;   // 內容沒變就不重畫,滑鼠停在牌上才看得到說明
+  if (S.centerKey === ck) return needBuild;   // 內容沒變就不重畫,滑鼠停在牌上才看得到說明
   S.centerKey = ck; c.textContent = "";
   const piles = h("div", {class: "piles"}), piles2 = h("div", {class: "piles pchain"});
   if (snap.discard_top) piles.append(h("div", {class: "pile"}, h("div", {class: "meta", text: "棄牌堆 " + snap.discard}), cardEl(snap.discard_top, "", () => showCardInfo(snap.discard_top), null)));
@@ -1666,7 +1703,7 @@ function renderPrompt0(snap) {
 }
 
 /* ---------- 紀錄 / 思考 ---------- */
-document.addEventListener("sgs-lang", () => { for (const el of document.querySelectorAll("#log > [data-zh]")) { try { el.replaceChildren(...logNodes(el.dataset.zh)); } catch (e) {} } });   // 換語言: 戰報整行重畫
+document.addEventListener("sgs-lang", () => { S.tableKey = null; if (S.snap) renderTable(S.snap); for (const el of document.querySelectorAll("#log > [data-zh]")) { try { el.replaceChildren(...logNodes(el.dataset.zh)); } catch (e) {} } });   // 換語言: 戰報與牌桌重畫
 function addLogs(lines) {
   const L = $("#log"), follow = $("#follow").checked;
   const quiet = lines.length > 60 || document.hidden || (Date.now() - (window.__visAt || 0) < 800 && lines.length > 6);   // 中途加入 / 一次補大量紀錄時不播音效動畫
@@ -1696,7 +1733,43 @@ function addLogs(lines) {
     noteAction(s0);
     if (window.SGS_FX) SGS_FX.onLine(s0, quiet);
   }
+  while (L.children.length > 180) L.firstElementChild.remove();
   if (follow) L.scrollTop = L.scrollHeight;
+}
+const LOG_CARD_MAP = new WeakMap();
+function logCardImg(c) {
+  const im = h("img", {class: "lc" + (c.land ? " dl" : ""), src: gi(c.img), title: c.text, loading: "lazy", decoding: "async"});
+  if (c.desc) im.classList.add("hasprev");
+  LOG_CARD_MAP.set(im, c);
+  return im;
+}
+{
+  const L = $("#log");
+  if (L) {
+    let ht = null, hx = 0, hy = 0;
+    const stopHold = () => { if (ht) { clearTimeout(ht); ht = null; } };
+    L.addEventListener("click", e => { const im = e.target.closest("img.lc"), c = im && LOG_CARD_MAP.get(im); if (c) showCardInfo(c); });
+    L.addEventListener("pointerover", e => {
+      if (e.pointerType === "touch") return;
+      const im = e.target.closest("img.lc"), c = im && LOG_CARD_MAP.get(im); if (!c || !c.desc) return;
+      const P = $("#prev"); P.textContent = "";
+      if (c.img) P.append(bigImg(c));
+      P.append(h("h4", {text: c.text || c.color + c.name}), h("p", {text: c.desc}));
+      P.style.display = "block";
+    });
+    L.addEventListener("pointerout", e => {
+      const im = e.target.closest("img.lc"); if (!im || (e.relatedTarget && im.contains(e.relatedTarget))) return;
+      $("#prev").style.display = "none";
+    });
+    L.addEventListener("touchstart", e => {
+      const im = e.target.closest("img.lc"), c = im && LOG_CARD_MAP.get(im); if (!c || !c.desc || !e.touches[0]) return;
+      const q = e.touches[0]; hx = q.clientX; hy = q.clientY; stopHold();
+      ht = setTimeout(() => { ht = null; showCardInfo(c); const eat = k => { k.stopPropagation(); k.preventDefault(); }; window.addEventListener("click", eat, {capture: true, once: true}); setTimeout(() => window.removeEventListener("click", eat, true), 700); }, 450);
+    }, {passive: true});
+    L.addEventListener("touchmove", e => { const q = e.touches[0]; if (q && (Math.abs(q.clientX - hx) > 8 || Math.abs(q.clientY - hy) > 8)) stopHold(); }, {passive: true});
+    L.addEventListener("touchend", stopHold, {passive: true});
+    L.addEventListener("touchcancel", stopHold, {passive: true});
+  }
 }
 /* ---------- 戰報: 牌名換成圖片,「A 對 B 使用 牌」畫成 A —[牌]→ B ---------- */
 { const hd = document.getElementById("hand");   // 手牌太多時: 滾輪左右捲動
@@ -1728,7 +1801,7 @@ function fullTxt(t) {   // 箭頭文字: 簡稱 → 花色 + 全名
 function cardNodes(str) {
   if (!S.cat || !S.catRe) return [str];
   const t0 = str.trim();
-  if ((S.cat[t0] || (S.fullKey || {})[t0]) && !/^[火冰雷]殺$/.test(t0)) { const c = catCard("", "", t0); if (c && c.img) { const im = h("img", {class: "lc" + (c.land ? " dl" : ""), src: gi(c.img), title: c.text, onclick: () => showCardInfo(c)}); bindPrev(im, c); return [lcw(im, c)]; } }
+  if ((S.cat[t0] || (S.fullKey || {})[t0]) && !/^[火冰雷]殺$/.test(t0)) { const c = catCard("", "", t0); if (c && c.img) return [lcw(logCardImg(c), c)]; }
   const out = []; let last = 0; S.catRe.lastIndex = 0; let m;
   while ((m = S.catRe.exec(str))) {
     let c = null;
@@ -1739,8 +1812,7 @@ function cardNodes(str) {
     let start = m.index, end = m.index + m[0].length;
     if (m[5]) { start = end - m[5].length; }
     if (start > last) out.push(str.slice(last, start));
-    const im = h("img", {class: "lc" + (c.land ? " dl" : ""), src: gi(c.img), title: c.text, onclick: () => showCardInfo(c)}); bindPrev(im, c);
-    const cw = lcw(im, c); cw.dataset.zh = str.slice(start, end); out.push(cw); last = end;
+    const cw = lcw(logCardImg(c), c); cw.dataset.zh = str.slice(start, end); out.push(cw); last = end;
   }
   if (last < str.length) out.push(str.slice(last));
   return out.length ? out : [str];
@@ -1976,6 +2048,9 @@ function handleEvents(evs) {   // 斷線 / 重連 / 換房主 通知 (第一次�
 function showHostBar(snap) {
   S.hostless = snap.host_name == null;
   S.amHost = !!(snap.is_host && snap.host_name != null);   // 真的有房主才算 (沒有房主時任何人都顯示「你是房主」,但不能踢人)   // 上方標示房主;非房主只能等待
+  const hk = (snap.host_name == null ? "0" : snap.host_name) + "|" + (snap.is_host ? "1" : "0");
+  if (S.hostBarKey === hk) return;
+  S.hostBarKey = hk;
   const e = $("#hostbar");
   if (snap.host_name == null && snap.is_host) { e.textContent = "公共房間 · 沒有房主,任何人都可以操作"; e.className = "me"; return; }
   if (snap.host_name == null) { e.textContent = "等待房主建立遊戲…"; e.className = "wait"; return; }
@@ -2022,12 +2097,16 @@ function renderMembers() {   // 👥 房間成員: 每個人都看得到 (不只
   document.addEventListener("click", ev => { if (!pn.contains(ev.target)) pn.classList.remove("on"); });
 })();
 function showOnline() {
+  const o = S.online || [], onlEl = document.getElementById("onl"), hbEl = document.getElementById("handover"), listEl = document.getElementById("onlist");
+  const membersOn = !!($("#members") && $("#members").classList.contains("on"));
+  const ok = JSON.stringify([o, S.hostless, S.amHost, membersOn, !!onlEl, !!hbEl, !!listEl]);
+  if (S.onlineKey === ok) return;
+  S.onlineKey = ok;
   renderMembers();   // 新遊戲視窗: 目前有幾個人連著 (含自己)
-  const e = document.getElementById("onl"), o = S.online;
-  if (!e || !o) return;
-  const hb = document.getElementById("handover"); if (hb) renderHandover(hb);
-  e.textContent = "";
-  if (document.getElementById("onlist")) renderOnlineList();   // 列表開著時跟著更新
+  if (!onlEl || !S.online) return;
+  if (hbEl) renderHandover(hbEl);
+  onlEl.textContent = "";
+  if (listEl) renderOnlineList();   // 列表開著時跟著更新
 }
 function renderOnlineList() {
   const box = document.getElementById("onlist-body"); if (!box) return;
@@ -2132,7 +2211,9 @@ function openOnlineList() {
 }
 const diffLabels = () => { const L = (window.SGS_I18N && SGS_I18N.lang) || "zh"; return L === "en" ? ["Easy", "Medium", "Hard", "Expert", "Master"] : L === "ja" ? ["弱い", "普通", "強い", "最強", "極限"] : ["弱", "中", "強", "很強", "極強"]; };
 function openSetup() {
+  if (S.cleanupSetup) { S.cleanupSetup(); S.cleanupSetup = null; }
   const M = $("#modal"); M.textContent = ""; S.modalOpen = "setup";
+  const tileObs = [];
   const roster = S.roster;
   const CAS = ["hunt", "traitor", "team", "teamh"];   // 休閒玩法 (放在「遊戲模式」那排): 暗殺目標 / 抓叛徒 (4 人以上) / 雙國戰 (4 6 8 10 人)
   const casOk = (m, n) => (m === "team" || m === "teamh") ? [4, 6, 8, 10].includes(n) : n >= 4;
@@ -2390,7 +2471,8 @@ function openSetup() {
         el.classList.toggle("lk", lk);
         const off = sec.style.display === "none"; if (off !== t.off) { t.off = off; layout(); }
       };
-      new MutationObserver(t.refresh).observe(sec, {subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["class", "style"]});
+      const obs = new MutationObserver(t.refresh); obs.observe(sec, {subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["class", "style"]});
+      tileObs.push(obs);
       tiles.push(t); grid.append(el);
     });
     holder.append(...[...body.children]);   // 原本的區塊全部收進隱藏的容器 (仍在 DOM 裡,原本的邏輯照舊)
@@ -2399,11 +2481,13 @@ function openSetup() {
   })();
   M.append(h("div", {class: "modal"}, dlg, rkSide));
   const placeRk = () => {   // 左邊的段位卡貼著對話框左緣;聊天欄開著對話框被推向左邊時,放不下就不顯示 (下方仍有一行段位)
-    if (!rkSide.isConnected) return;
+    if (!rkSide.isConnected) { if (S.cleanupSetup === cleanup) { cleanup(); S.cleanupSetup = null; } return; }
     const r = dlg.getBoundingClientRect();
     rkSide.style.right = "auto"; rkSide.style.left = Math.max(0, r.left / UZ() - 202) + "px";
     rkSide.style.visibility = r.left / UZ() < 206 ? "hidden" : "";
   };
+  const cleanup = () => { window.removeEventListener("resize", placeRk); tileObs.forEach(o => o.disconnect()); tileObs.length = 0; };
+  S.cleanupSetup = cleanup;
   setTimeout(placeRk, 30); setTimeout(placeRk, 300); window.addEventListener("resize", placeRk);
 }
 
@@ -2620,6 +2704,7 @@ function renderLobby(snap) {
 
 let chFac = "";   // 側欄武將頁的勢力篩選 ("" = 全部)
 function renderChars() {
+  S.charsDirty = false;
   const L = $("#chl"); L.textContent = "";
   const q = ($("#chq").value || "").trim().toLowerCase();
   const order = ["魏", "蜀", "吳", "群"], fr = f => { const i = order.indexOf(f); return i < 0 ? order.length : i; };
@@ -2635,19 +2720,43 @@ function renderChars() {
 $("#chq").addEventListener("input", () => { if (S.roster) renderChars(); });
 
 /* ---------- 輪詢 ---------- */
-let busy = false;
+let busy = false, pollPending = false, pollTimer = null;
+function schedulePoll(snap) {
+  clearTimeout(pollTimer); pollTimer = null;
+  if (!ROOM) return;
+  let ms = 280;
+  if (document.hidden) ms = 4000;
+  else if (snap && snap.over) ms = 2000;
+  else if (snap && !snap.ready) ms = (S.sameStreak || 0) >= 2 ? 900 : 400;
+  else if (snap && snap.pending && snap.viewer != null) ms = 280;
+  else if ((S.sameStreak || 0) >= 6) ms = 900;
+  else if ((S.sameStreak || 0) >= 2) ms = 550;
+  pollTimer = setTimeout(() => poll(), ms);
+}
 async function poll(force) {
+  clearTimeout(pollTimer); pollTimer = null;
   if (!ROOM) return;   // 還在大廳 (房間列表)
-  if (busy && !force) return;
-  if (!force && ((document.hidden || (S.snap && S.snap.over)) && Date.now() - (S.lastPollAt || 0) < 2000)) return;   // 分頁在背景 / 這局已經結束: 輪詢放慢到 2 秒一次 (省伺服器與手機電量);操作後的強制刷新不受影響
+  if (busy) { if (force) pollPending = true; return; }
+  if (!force && ((document.hidden || (S.snap && S.snap.over)) && Date.now() - (S.lastPollAt || 0) < 2000)) { schedulePoll(S.snap); return; }   // 分頁在背景 / 這局已經結束: 輪詢放慢 (省伺服器與手機電量);操作後的強制刷新不受影響
   S.lastPollAt = Date.now(); busy = true;
+  let lastSnap = S.snap;
   try {
     if (!myNick()) { if (S.modalOpen !== "nick") showNickGate(); return; }   // 進入遊戲前先取暱稱
     const peek = $("#peek").checked ? 1 : 0;
     const reqLog = S.logN, reqTh = S.thN;   // 兩個同時送出的請求 (強制刷新 + 定時) 會拿到同一段紀錄: 回來時只收還沒顯示過的
     const room0 = ROOM;
-    const snap = await api(`/api/state?log=${reqLog}&th=${reqTh}&peek=${peek}&chat=${S.chatN || 0}`);
+    const svQ = S.pollSv ? `&sv=${encodeURIComponent(S.pollSv)}` : "";
+    const snap = await api(`/api/state?log=${reqLog}&th=${reqTh}&peek=${peek}&chat=${S.chatN || 0}${svQ}`);
     if (room0 !== ROOM) return;   // 換房間時還沒回來的舊房間狀態: 丟掉 (不然會把舊房間的模式 / 牌桌畫到新房間)
+    if (snap && snap.same) {
+      if (snap.sv) S.pollSv = snap.sv;
+      S.sameStreak = (S.sameStreak || 0) + 1;
+      expireTableBubbles();
+      return;
+    }
+    S.sameStreak = 0;
+    if (snap && snap._sv) S.pollSv = snap._sv;
+    lastSnap = snap;
     addChat(snap); S.canManage = !!snap.can_manage; S.roomLocked = !!snap.room_locked; S.roomUnlisted = !!snap.room_unlisted;
     S.roomNow = snap.room_name;
     if (window.SGS_LESSON) SGS_LESSON.sync(snap);   // 練習關卡的步驟列 (不是關卡就移除)
@@ -2682,6 +2791,7 @@ async function poll(force) {
     if (snap.thoughts_visible) {
       if (S.thN >= reqTh && snap.thoughts) snap.thoughts = snap.thoughts.slice(S.thN - reqTh);
       snap.thoughts.forEach(t => { t._ts = Date.now(); S.thoughts.push(t); S.lastTh[t.who] = t; });
+      if (S.thoughts.length > 250) S.thoughts = S.thoughts.slice(-250);
       S.thN = snap.thought_total;
       if (snap.thoughts.length) renderThoughts();
     } else if (S.thoughts.length === 0) renderThoughts();
@@ -2698,13 +2808,18 @@ async function poll(force) {
     $("#status").classList.remove("err"); $("#status").textContent = "";
     if (snap.error) { let e = $("#err"); if (!e) { e = h("div", {class: "err", id: "err"}); $("#app").prepend(e); } e.textContent = "引擎錯誤: " + snap.error; }
   } catch (e) { $("#status").classList.add("err"); $("#status").textContent = "連線中斷… " + e; }
-  finally { busy = false; }
+  finally {
+    busy = false;
+    if (pollPending) { pollPending = false; if (ROOM) poll(true); }
+    else schedulePoll(lastSnap);
+  }
 }
 
 /* ---------- 啟動 ---------- */
 document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => {
   document.querySelectorAll("#tabs button").forEach(x => x.classList.toggle("on", x === b));
   document.querySelectorAll(".pane").forEach(p => p.classList.toggle("on", p.id === b.dataset.t));
+  if (b.dataset.t === "ch" && S.charsDirty && S.roster) renderChars();
 });
 document.querySelectorAll("#mnav button").forEach(b => b.onclick = () => {
   document.querySelectorAll("#mnav button").forEach(x => x.classList.toggle("on", x === b));
@@ -2748,7 +2863,7 @@ function applySide(hide) {
   document.body.classList.toggle("hide-side", hide);
   $("#bSide").textContent = hide ? "◂ 側欄" : "側欄 ▸";
   try { localStorage.setItem("hideSide", hide ? "1" : ""); } catch (e) {}
-  setTimeout(() => { if (S.snap) renderTable(S.snap); }, 30);   // 牌桌寬度改變,座位要重新排
+  setTimeout(() => { S.tableKey = null; if (S.snap) renderTable(S.snap); }, 30);   // 牌桌寬度改變,座位要重新排
 }
 { const hb = $("#bHand"), pin = () => { hb.style.cssText = ""; }, setHand = off => { document.body.classList.toggle("hand-off", off); pin(); hb.textContent = off ? "顯示手牌" : "收起手牌"; hb.setAttribute("aria-pressed", off ? "true" : "false"); try { localStorage.setItem("handOff", off ? "1" : ""); } catch (e) {} };   // 手牌太擋時可以收起來
   try { if (localStorage.getItem("handOff")) setHand(true); } catch (e) {}
@@ -2766,7 +2881,7 @@ function applySide(hide) {
   mb.onclick = () => setMenu(!document.body.classList.contains("menu-open"));
   $("#top").addEventListener("click", e => { const b = e.target.closest("button"); if (b && b !== mb) setMenu(false); });
   document.addEventListener("click", e => { if (document.body.classList.contains("menu-open") && !e.target.closest("#top")) setMenu(false); }); }
-new MutationObserver(() => { if ($("#modal").childNodes.length) { const mp = $("#members"); if (mp) mp.classList.remove("on"); } const on = S.modalOpen === "setup" || S.modalOpen === "lobby" || S.modalOpen === "wait"; if (on) document.body.style.setProperty("--toph", Math.min(90, $("#top").offsetHeight || 48) + "px"); document.body.classList.toggle("setup-open", on); }).observe($("#modal"), {childList: true});   // 新遊戲設定: 上方那一排不被蓋住
+new MutationObserver(() => { if (!$("#modal").childNodes.length && S.cleanupSetup) { S.cleanupSetup(); S.cleanupSetup = null; } if ($("#modal").childNodes.length) { const mp = $("#members"); if (mp) mp.classList.remove("on"); } const on = S.modalOpen === "setup" || S.modalOpen === "lobby" || S.modalOpen === "wait"; if (on) document.body.style.setProperty("--toph", Math.min(90, $("#top").offsetHeight || 48) + "px"); document.body.classList.toggle("setup-open", on); }).observe($("#modal"), {childList: true});   // 新遊戲設定: 上方那一排不被蓋住
 { const gb = $("#bGset"), gs = $("#gset"), SRC = ["bPause", "bNew", "bForfeit", "bEnd"];   // 手機「遊戲設定」: 把頂端列這四顆按鈕的目前狀態搬進來,按下就等於按原本的按鈕
   const close = () => { gs.classList.remove("on"); gb.setAttribute("aria-expanded", "false"); };
   const open = () => {
@@ -2787,7 +2902,8 @@ new MutationObserver(() => { if ($("#modal").childNodes.length) { const mp = $("
   addEventListener("resize", close); }
 $("#bSide").onclick = () => applySide(!document.body.classList.contains("hide-side"));
 try { if (localStorage.getItem("hideSide")) applySide(true); } catch (e) {}
-window.addEventListener("resize", () => { if (S.snap) renderTable(S.snap); });
+let rszT = null;
+window.addEventListener("resize", () => { clearTimeout(rszT); rszT = setTimeout(() => { S.tableKey = null; if (S.snap) renderTable(S.snap); }, 100); });
 function profChips() {   // 右上角自己的資料: 轉生過 (1 次以上) 才在段位前面多一個「轉生 N」
   const c = []; if (S.presN > 0) { const x = presChip(S.presN); x.classList.add("sm"); c.push(x); }
   c.push(rkEl(String(S.lvTxt).replace(/^★\d+ /, ""))); return c;
@@ -2825,12 +2941,19 @@ $("#thf").onchange = () => { S.sel = $("#thf").value === "" ? null : +$("#thf").
 $("#peek").onchange = () => { S.thN = 0; S.thoughts = []; S.lastTh = {}; poll(true); };
 if (location.hash === "#th" || location.hash === "#ch") document.querySelector(`#tabs button[data-t="${location.hash.slice(1)}"]`).click();
 /* ---------- 玩家等級 / UID ---------- */
-async function loadProfile() {
+let lastProfAt = 0, profKey = "";
+async function loadProfile(force) {
+  if (!force && (document.hidden || Date.now() - lastProfAt < 14000)) return S.prof || null;
+  lastProfAt = Date.now();
   try {
     const p = await (await fetch("/api/profile?tok=" + encodeURIComponent(TOK))).json();
     if (!p.uuid) return null;
     S.prof = p;
+    if (window._syncDevBtn) window._syncDevBtn();
     if (p.rank_note) showRankNote(p.rank_note);
+    const pk = JSON.stringify([p.rank, p.pres, p.avatar, p.sel, p.rp, p.rp_next, p.games, p.wins, p.dev, myNick()]);
+    if (pk === profKey) return p;
+    profKey = pk;
     const b = $("#bProf"); S.lvTxt = p.rank; S.presN = p.pres || 0; b.textContent = ""; b.append(...profChips(), "  " + (myNick() || ""));
     b.prepend(avEl(p.avatar, {fr: p.sel && p.sel.frame, fx: p.sel && p.sel.fx}, {class: "av"}));
     if (window.SGS_COS) SGS_COS.onProfile(p);
@@ -3003,7 +3126,7 @@ async function showBoard() {
   draw();
 }
 $("#bBoard").onclick = showBoard;
-setInterval(loadProfile, 8000); loadProfile();
+setInterval(() => loadProfile(false), 15000); loadProfile(true);
 /* ---------- 登入 / 註冊 ---------- */
 let AUTH_MODE = "login";
 function setAuthMode(m) {
@@ -3030,7 +3153,9 @@ $("#asubmit").onclick = submitAuth;
 for (const id of ["#auser", "#apw"]) $(id).onkeydown = e => { if (e.key === "Enter" && !e.isComposing && e.keyCode !== 229) submitAuth(); };
 function logout() { try { localStorage.removeItem("sgs_tok"); localStorage.removeItem("nick"); localStorage.removeItem("sgs_theme"); sessionStorage.removeItem("sgs_room"); } catch (e) {} const u = new URL(location.href); u.search = ""; location.href = u.toString(); }
 function resetRoomState() {
-  Object.assign(S, {rlSnd: false, logN: 0, thN: 0, thoughts: [], lastTh: {}, sel: null, picked: null, pendId: 0, chatN: 0, chatUnread: 0, snap: null, modalOpen: null, lobbyKey: null, tgtPick: null, setupOff: null, evSeen: null});   // evSeen: 換房間後第一次只記下目前進度,不重播房裡已經發生的通知 { const b = $("#cbadge"); if (b) b.textContent = ""; }
+  if (S.cleanupSetup) { S.cleanupSetup(); S.cleanupSetup = null; }
+  clearTimeout(pollTimer); pollTimer = null; pollPending = false;
+  Object.assign(S, {rlSnd: false, logN: 0, thN: 0, thoughts: [], lastTh: {}, sel: null, picked: null, pendId: 0, chatN: 0, chatUnread: 0, snap: null, modalOpen: null, lobbyKey: null, tgtPick: null, setupOff: null, evSeen: null, tableKey: null, centerKey: null, handKey: null, sameStreak: 0, pollSv: null, hostBarKey: null, onlineKey: null});   // evSeen: 換房間後第一次只記下目前進度,不重播房裡已經發生的通知 { const b = $("#cbadge"); if (b) b.textContent = ""; }
   for (const id of ["#log", "#thl", "#cl", "#modal", "#table", "#hand", "#bar", "#center", "#roundtag"]) { const e = $(id); if (e) e.textContent = ""; }
 }
 function enterRoom(id, name) {
@@ -3050,7 +3175,8 @@ function leaveRoom(msg) {
 let roomTimer = null;
 let ROOMS_ALL = [], roomPage = 0;
 const ROOMS_PER = 8;
-async function refreshRooms() {
+async function refreshRooms(force) {
+  if (document.hidden && !force) return;
   let list = [];
   try { list = await (await fetch("/api/rooms?tok=" + TOK)).json(); } catch (e) { return; }
   ROOMS_ALL = list; renderRooms();
@@ -3111,7 +3237,7 @@ function showRooms(msg) {
   try { if (window.SGS_FX) SGS_FX.bgm("lobby"); } catch (e) {}
   $("#rooms").classList.add("on");
   if (msg) toast(msg);
-  refreshRooms(); clearInterval(roomTimer); roomTimer = setInterval(() => { if ($("#rooms").classList.contains("on")) refreshRooms(); else clearInterval(roomTimer); }, 2000);
+  refreshRooms(true); clearInterval(roomTimer); roomTimer = setInterval(() => { if ($("#rooms").classList.contains("on")) refreshRooms(); else clearInterval(roomTimer); }, 3000);
 }
 async function roomRename() {
   const nn = prompt("新的房間名稱", ($("#roomname").textContent || "").replace(/^「|」$/g, "")); if (nn == null) return;
@@ -3169,8 +3295,8 @@ $("#rname").onkeydown = e => { if (e.key === "Enter" && !e.isComposing && e.keyC
   else if (uidNote) toast(uidNote, "host");
   if (!ROOM) showRooms(); else $("#roomname").textContent = "";
   const r = await api("/api/roster");
-  S.roster = r.chars; S.roles = r.roles; setRosterArt(S.prof && S.prof.sel && S.prof.sel.genart); renderChars();
-  setInterval(poll, 250); poll();
+  S.roster = r.chars; S.roles = r.roles; setRosterArt(S.prof && S.prof.sel && S.prof.sel.genart);
+  poll();
 })();
 </script>
 <script src="/fx.js"></script>
@@ -3322,11 +3448,13 @@ $("#rname").onkeydown = e => { if (e.key === "Enter" && !e.isComposing && e.keyC
   }
   document.addEventListener("keydown", e => { if (e.ctrlKey && (e.key === "`" || e.code === "Backquote")) { e.preventDefault(); toggle(); } });
   window.SGS_DEVCON = toggle;
-  setInterval(() => {   // 開發者登入後,右下角出現 🛠 按鈕 (有些輸入法會吃掉 Ctrl+`)
+  function syncDevBtn() {   // 開發者登入後,右下角出現 🛠 按鈕 (有些輸入法會吃掉 Ctrl+`)
     let b = document.getElementById("devbtn");
     if (isDev() && !b) { ensureCss(); b = E("button", { id: "devbtn", title: "開發者管理 (Ctrl+`)", text: "🛠", onclick: toggle, style: "position:fixed;right:10px;bottom:10px;z-index:9980;box-sizing:border-box;width:38px;height:38px;min-width:0;min-height:0;padding:0;margin:0;display:flex;align-items:center;justify-content:center;line-height:1;border-radius:50%;border:1px solid #c3ccd8;background:#14161a;color:#fff;font-size:18px;cursor:pointer;opacity:.75" }); document.body.append(b); }
     else if (!isDev() && b) b.remove();
-  }, 1500);
+  }
+  window._syncDevBtn = syncDevBtn;
+  syncDevBtn();
 })();
 </script>
 <script>

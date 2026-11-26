@@ -1,14 +1,24 @@
 /* 音效 (WebAudio 即時合成,不需音檔) + 出牌動畫。由 index.html 的 addLogs 呼叫 SGS_FX.onLine。 */
 (function () {
-  let ctx = null, muted = false, vol = 0.5;
+  const touchOnly = /iPhone|iPad|iPod|Android|Mobile/i.test(navigator.userAgent) || (/Macintosh/i.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
+  let ctx = null, muted = false, vol = 0.5, lowPower = touchOnly;
   let tts = false, fs = 1;
-  try { muted = localStorage.getItem("sgs_snd") === "off"; const v = parseFloat(localStorage.getItem("sgs_vol")); if (v >= 0 && v <= 1) vol = v; tts = localStorage.getItem("sgs_tts") === "on"; const f = parseFloat(localStorage.getItem("sgs_fs")); if (f >= 0.8 && f <= 1.5) fs = f; } catch (e) {}
-  const store = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+  try {
+    muted = localStorage.getItem("sgs_snd") === "off";
+    const v = parseFloat(localStorage.getItem("sgs_vol")); if (v >= 0 && v <= 1) vol = v;
+    tts = localStorage.getItem("sgs_tts") === "on";
+    const f = parseFloat(localStorage.getItem("sgs_fs")); if (f >= 0.8 && f <= 1.5) fs = f;
+    const lp = localStorage.getItem("sgs_lowpower");
+    if (lp === "on") lowPower = true;
+    else if (lp === "off") lowPower = false;
+  } catch (e) { }
+  const store = (k, v) => { try { localStorage.setItem(k, v); } catch (e) { } };
   document.documentElement.style.setProperty("--fs", fs);
+  document.documentElement.classList.toggle("lowpower", lowPower);
   function ac() {
     if (muted) return null;
     if (!ctx) { try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; } }
-    if (ctx.state === "suspended") ctx.resume().catch(() => {});
+    if (ctx.state === "suspended") ctx.resume().catch(() => { });
     return ctx;
   }
   function tone(f0, dur, type, v, f1, delay) {
@@ -58,7 +68,7 @@
   const preloadSfx = () => loadMan().then(m => { Object.values(m.sfx || {}).forEach(l => (l || []).forEach(f => loadBuf(f))); });
 
   let bgmOn = true, bgmVol = 0.35, bgmWant = "", bgmCur = null, bgmGesture = false;
-  try { bgmOn = localStorage.getItem("sgs_bgm") !== "off"; const v = parseFloat(localStorage.getItem("sgs_bgmvol")); if (v >= 0 && v <= 1) bgmVol = v; } catch (e) {}
+  try { bgmOn = localStorage.getItem("sgs_bgm") !== "off"; const v = parseFloat(localStorage.getItem("sgs_bgmvol")); if (v >= 0 && v <= 1) bgmVol = v; } catch (e) { }
   const fade = (el, to, ms, done) => {   // 音量漸變 (淡入 / 淡出)
     if (el._ft) clearInterval(el._ft);
     const from = el.volume, steps = Math.max(1, Math.round(ms / 50)); let i = 0;
@@ -69,16 +79,34 @@
     const want = bgmOn && !document.hidden ? bgmWant : "";
     loadMan().then(m => {
       const list = want && m.bgm && m.bgm[want];
-      if (!list || !list.length) { if (bgmCur) { const o = bgmCur; bgmCur = null; fade(o.el, 0, 800, () => { o.el.pause(); }); } return; }
+      if (!list || !list.length) {
+        if (bgmCur) {
+          const o = bgmCur; bgmCur = null;
+          fade(o.el, 0, 800, () => {
+            o.el.pause();
+            if (!bgmOn) try { o.el.removeAttribute("src"); o.el.load(); } catch (e) { }
+          });
+        }
+        return;
+      }
       if (bgmCur && list.includes(bgmCur.f) && bgmCur.state === want) { fade(bgmCur.el, bgmVol, 300); return; }   // 同一類別已經在播: 只調音量
-      if (bgmCur) { const o = bgmCur; bgmCur = null; fade(o.el, 0, 800, () => { o.el.pause(); }); }
+      if (bgmCur) {
+        const o = bgmCur; bgmCur = null;
+        fade(o.el, 0, 800, () => {
+          o.el.pause();
+          if (!bgmOn) try { o.el.removeAttribute("src"); o.el.load(); } catch (e) { }
+        });
+      }
       const f = list[Math.floor(Math.random() * list.length)];
       const el = new Audio(fileUrl(f)); el.loop = true; el.volume = 0; el.preload = "auto";
       bgmCur = { el, f, state: want };
       el.play().then(() => fade(el, bgmVol, 1500)).catch(() => { if (bgmCur && bgmCur.el === el) bgmCur = null; });
     });
   }
-  document.addEventListener("visibilitychange", () => { try { bgmApply(); } catch (e) {} });   // 切到背景就停 (省電),回來再接著放
+  document.addEventListener("visibilitychange", () => {
+    try { bgmApply(); } catch (e) { }
+    if (document.hidden && ctx && ctx.state === "running") ctx.suspend().catch(() => { });
+  });   // 切到背景就停音樂與 AudioContext (省電),回來再接著放
 
   const SFX = {
     card() { noise(0.06, 0.5, 2200, 1200); tone(320, 0.07, "triangle", 0.18, 180); },
@@ -99,13 +127,13 @@
     draw() { noise(0.08, 0.45, 1400, 3000); tone(520, 0.07, "triangle", 0.16, 760); tone(660, 0.06, "triangle", 0.1, 900, 0.05); },   // 抽牌: 唰地滑進手裡
     discard() { noise(0.11, 0.55, 2400, 500); tone(260, 0.12, "triangle", 0.2, 120); tone(170, 0.1, "sine", 0.14, 90, 0.05); },   // 棄牌: 啪地丟掉
     flip() { noise(0.09, 0.5, 1800, 600); tone(520, 0.09, "triangle", 0.22, 240); tone(300, 0.12, "triangle", 0.18, 520, 0.09); },   // 武將牌翻面
-    disguise() { noise(0.3, 0.35, 700, 3200, 0, 0.7); [392, 523, 784].forEach((f, i) => tone(f, 0.16, "sine", 0.14, f * 0.8, i * 0.07)); },   // 偽裝: 變身
+    disguise() { noise(0.3, 0.35, 700, 3200, 0, 0.7);[392, 523, 784].forEach((f, i) => tone(f, 0.16, "sine", 0.14, f * 0.8, i * 0.07)); },   // 偽裝: 變身
     rankup() { [523, 659, 784, 1047, 1319].forEach((f, i) => tone(f, 0.3, "triangle", 0.26, 0, i * 0.11)); tone(2093, 0.6, "sine", 0.12, 0, 0.55); noise(0.4, 0.2, 5000, 9000, 0.5, 2); },   // 升段: 上行琶音 + 閃光
     rankdown() { [523, 440, 349, 262].forEach((f, i) => tone(f, 0.35, "sawtooth", 0.14, f * 0.97, i * 0.16)); tone(110, 0.7, "sine", 0.3, 55, 0.5); },   // 降段: 下行低沉
     pickOpen() { [392, 523, 659].forEach((f, i) => tone(f, 0.32, "sine", 0.16, 0, i * 0.1)); noise(0.35, 0.12, 3500, 7000, 0.15, 2); },   // 出現選武將: 三個輕柔上行音 + 一點閃光
     pickChoose() { noise(0.05, 0.45, 1800, 900); tone(196, 0.16, "triangle", 0.35, 130); tone(523, 0.22, "sine", 0.2, 0, 0.08); tone(784, 0.3, "sine", 0.16, 0, 0.14); },   // 選定武將: 蓋印 + 清脆確認
-    gameStart() { tone(98, 0.5, "sine", 0.55, 50); noise(0.25, 0.5, 300, 120); tone(98, 0.5, "sine", 0.5, 50, 0.32); noise(0.25, 0.45, 300, 120, 0.32); [392, 523, 659, 784].forEach((f, i) => tone(f, 0.55, "triangle", 0.16, 0, 0.7 + i * 0.07)); tone(1568, 0.7, "sine", 0.08, 0, 0.95); },   // 開局: 兩聲戰鼓 + 和弦
-    arena() { tone(110, 0.45, "sine", 0.4, 70); noise(0.18, 0.35, 400, 150); [330, 440, 554].forEach((f, i) => tone(f, 0.4, "triangle", 0.16, 0, 0.18 + i * 0.12)); tone(880, 0.5, "sine", 0.12, 0, 0.6); },   // 進入段位大廳: 低鼓 + 三個上行號角音
+    gameStart() { tone(98, 0.5, "sine", 0.55, 50); noise(0.25, 0.5, 300, 120); tone(98, 0.5, "sine", 0.5, 50, 0.32); noise(0.25, 0.45, 300, 120, 0.32);[392, 523, 659, 784].forEach((f, i) => tone(f, 0.55, "triangle", 0.16, 0, 0.7 + i * 0.07)); tone(1568, 0.7, "sine", 0.08, 0, 0.95); },   // 開局: 兩聲戰鼓 + 和弦
+    arena() { tone(110, 0.45, "sine", 0.4, 70); noise(0.18, 0.35, 400, 150);[330, 440, 554].forEach((f, i) => tone(f, 0.4, "triangle", 0.16, 0, 0.18 + i * 0.12)); tone(880, 0.5, "sine", 0.12, 0, 0.6); },   // 進入段位大廳: 低鼓 + 三個上行號角音
     win() { [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.35, "triangle", 0.28, 0, i * 0.14)); },
   };
   function sfx(k) { if (muted) return; if (playFile(k)) return; if (SFX[k]) SFX[k](); }
@@ -176,7 +204,7 @@
       if (ss.pending) ss.cancel();
       const u = new SpeechSynthesisUtterance(txt); u.lang = (window.SGS_I18N && SGS_I18N.lang === "en") ? "en-US" : (window.SGS_I18N && SGS_I18N.lang === "ja") ? "ja-JP" : "zh-TW"; u.rate = 1.15;
       ss.speak(u);
-    } catch (e) {}
+    } catch (e) { }
   }
   function onLine(s0, quiet) {
     if (!quiet && s0.charCodeAt(0) !== 1) speak(s0);
@@ -204,8 +232,10 @@
     let m;
     if (/^---/.test(s)) return playSfx("turn");
     if (/^===.*勝利/.test(s)) return (window.SGS_ANIM && SGS_ANIM.anyIn()) ? undefined : playSfx("win");   // 牌桌上有人用動畫特效: 勝負音效交給動畫
-    if (/\*\*\*.*陣亡/.test(s)) { m = s.match(/P(\d+)/); if (m && window.SGS_ANIM && SGS_ANIM.event(+m[1], "die")) return;   // 這個座位有「動畫特效」: 播動畫自己的死亡特效和音效
-      if (m) burst(pos(+m[1]), "die", "☠"); return playSfx("death"); }
+    if (/\*\*\*.*陣亡/.test(s)) {
+      m = s.match(/P(\d+)/); if (m && window.SGS_ANIM && SGS_ANIM.event(+m[1], "die")) return;   // 這個座位有「動畫特效」: 播動畫自己的死亡特效和音效
+      if (m) burst(pos(+m[1]), "die", "☠"); return playSfx("death");
+    }
     if ((m = s.match(/P(\d+)\([^)]*\) 受到 (\d+) 點(\S*?)傷害/))) {
       if (window.SGS_ANIM && SGS_ANIM.event(+m[1], "hurt", +m[2])) return;   // 這個座位有「動畫特效」: 用動畫自己的扣血特效和音效
       burst(pos(+m[1]), "hit");
@@ -245,8 +275,9 @@
     credits() { return loadMan().then(m => m.credits || []); },
     get tts() { return tts; }, setTts(on) { tts = !!on; store("sgs_tts", on ? "on" : "off"); if (!on && window.speechSynthesis) window.speechSynthesis.cancel(); },
     get fs() { return fs; }, setFs(v) { fs = v; store("sgs_fs", v); document.documentElement.style.setProperty("--fs", v); },
-    setMuted(m) { muted = !!m; store("sgs_snd", muted ? "off" : "on"); if (!muted) sfx("card"); },
-    toggle() { muted = !muted; try { localStorage.setItem("sgs_snd", muted ? "off" : "on"); } catch (e) {} if (!muted) sfx("card"); return !muted; },
+    get lowPower() { return lowPower; }, setLowPower(v) { lowPower = !!v; store("sgs_lowpower", lowPower ? "on" : "off"); document.documentElement.classList.toggle("lowpower", lowPower); document.dispatchEvent(new CustomEvent("sgs-lowpower", { detail: lowPower })); },
+    setMuted(m) { muted = !!m; store("sgs_snd", muted ? "off" : "on"); if (muted && ctx && ctx.state === "running") ctx.suspend().catch(() => { }); if (!muted) sfx("card"); },
+    toggle() { muted = !muted; try { localStorage.setItem("sgs_snd", muted ? "off" : "on"); } catch (e) { } if (muted && ctx && ctx.state === "running") ctx.suspend().catch(() => { }); if (!muted) sfx("card"); return !muted; },
   };
 
   const css = document.createElement("style");
@@ -276,11 +307,13 @@
       const bgvv = el("span", { className: "sv", textContent: Math.round(bgmVol * 100) + "%" });
       const bgv = el("input", { type: "range", min: 0, max: 100, value: Math.round(bgmVol * 100) }); bgv.oninput = () => { SGS_FX.setBgmVol(bgv.value / 100); bgvv.textContent = bgv.value + "%"; };
       const creditRow = () => {   // 音樂與音效的授權標示 (來源寫在 audio/manifest.json 的 credits)
-        const b2 = el("button", { type: "button", textContent: "查看", onclick: () => SGS_FX.credits().then(L => {
-          const box = el("div", { className: "meta", style: "margin-top:6px;line-height:1.6" });
-          (L.length ? L : [{ role: "", name: "沒有使用外部音檔", url: "" }]).forEach(c => box.append(el("div", {}, (c.role ? c.role + ": " : "") + c.name + (c.note ? " (" + c.note + ")" : "") + " ", c.url ? el("a", { href: c.url, target: "_blank", rel: "noopener noreferrer", textContent: c.url }) : "")));
-          const old = document.getElementById("credbox"); if (old) old.remove(); box.id = "credbox"; row2.after(box);
-        }) });
+        const b2 = el("button", {
+          type: "button", textContent: "查看", onclick: () => SGS_FX.credits().then(L => {
+            const box = el("div", { className: "meta", style: "margin-top:6px;line-height:1.6" });
+            (L.length ? L : [{ role: "", name: "沒有使用外部音檔", url: "" }]).forEach(c => box.append(el("div", {}, (c.role ? c.role + ": " : "") + c.name + (c.note ? " (" + c.note + ")" : "") + " ", c.url ? el("a", { href: c.url, target: "_blank", rel: "noopener noreferrer", textContent: c.url }) : "")));
+            const old = document.getElementById("credbox"); if (old) old.remove(); box.id = "credbox"; row2.after(box);
+          })
+        });
         const row2 = row("音樂與音效來源", b2); return row2;
       };
       const fv = el("span", { className: "sv", textContent: Math.round(fs * 100) + "%" });
@@ -290,7 +323,7 @@
         const d = window.sgsDesktop; if (!d || !d.presenceGet) return "";
         const i = el("input", { type: "checkbox" }), meta = el("span", { className: "meta", textContent: "在 Discord 顯示目前在大廳 / 對戰" });
         i.disabled = true; i.onchange = () => d.presenceSet(i.checked);
-        d.presenceGet().then(r => { i.checked = !!r.on; i.disabled = false; if (!r.available) meta.textContent = "尚未設定 Discord 應用程式,開了也不會顯示"; }).catch(() => {});
+        d.presenceGet().then(r => { i.checked = !!r.on; i.disabled = false; if (!r.available) meta.textContent = "尚未設定 Discord 應用程式,開了也不會顯示"; }).catch(() => { });
         return row("Discord 狀態", i, meta);
       };
       const aboutRow = () => {   // 版本列: 版本號 / GitHub / 更新日誌 排同一行;更新日誌按鈕開視窗,視窗裡有選版本的下拉選單
@@ -346,7 +379,7 @@
           if (!confirm("刪除帳號是永久的:帳號、戰績、遊戲幣、外觀和好友都會消失,沒辦法復原。\n確定要刪除嗎?")) return;
           const pw = prompt("請輸入密碼確認刪除:");
           if (pw == null || pw === "") return;
-          let r = null; try { r = await (await fetch("/api/delete_account", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ tok: TOK, pw }) })).json(); } catch (e) {}
+          let r = null; try { r = await (await fetch("/api/delete_account", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ tok: TOK, pw }) })).json(); } catch (e) { }
           if (r && r.ok) { alert("帳號已刪除"); try { logout(); } catch (e) { location.reload(); } } else alert((r && r.error) || "刪除失敗");
         };
         return el("div", { className: "setrow", style: "flex-wrap:nowrap;gap:8px" }, el("span", { className: "sl", textContent: "UID", style: "width:auto" }), el("span", { className: "meta", textContent: String(uid || "—"), style: "flex:1;min-width:0;white-space:nowrap" }), lo, del);   // 登出和刪除帳號固定同一行 (手機也一樣)
@@ -355,22 +388,21 @@
       const spv = el("span", { className: "sv", textContent: spTop ? (+spTop.value).toFixed(2) + "s" : "" });
       const spd = el("input", { type: "range", min: 0, max: 1.5, step: 0.05, value: spTop ? spTop.value : 0.35, disabled: !spTop || spTop.disabled, title: spTop && spTop.disabled ? "只有房主可以操作" : "" });
       spd.oninput = () => { spv.textContent = (+spd.value).toFixed(2) + "s"; if (spTop) { spTop.value = spd.value; spTop.dispatchEvent(new Event("input")); } };
-      let cm = "me"; try { cm = localStorage.getItem("sgs_chain") === "all" ? "all" : "me"; } catch (e) {}
+      let cm = "me"; try { cm = localStorage.getItem("sgs_chain") === "all" ? "all" : "me"; } catch (e) { }
       const cs = el("select", {}, el("option", { value: "me", textContent: "只有影響到我才問" }), el("option", { value: "all", textContent: "每個動作都問" }));
-      cs.value = cm; cs.onchange = () => { try { localStorage.setItem("sgs_chain", cs.value); } catch (e) {} };
+      cs.value = cm; cs.onchange = () => { try { localStorage.setItem("sgs_chain", cs.value); } catch (e) { } };
       const dlg = el("div", { className: "dlg", style: "max-width:420px" },
         el("div", { className: "dh" }, el("div", {}, el("h3", { textContent: "⚙ 設定" })), el("button", { className: "x", textContent: "✕", onclick: close })),
         el("div", { className: "dbody" },
           row("音效", cb(!muted, v => SGS_FX.setMuted(!v)), el("span", { className: "meta", textContent: "開 / 關" })),
           row("音量", vs, vv),
           row("背景音樂", cb(bgmOn, v => SGS_FX.setBgmOn(v)), el("span", { className: "meta", textContent: "開 / 關" })),
-          row("音樂音量", bgv, bgvv), creditRow(), row("字體大小", fsl, fv), row("每步延遲", spd, spv), window.SGS_LANGSEL ? row("語言", window.SGS_LANGSEL()) : "", ttsRow, discordRow(), row("⚡連鎖詢問", cs), aboutRow(), acctRow()));
+          row("音樂音量", bgv, bgvv), creditRow(), row("字體大小", fsl, fv), row("每步延遲", spd, spv), row("省電模式", cb(lowPower, v => SGS_FX.setLowPower(v)), el("span", { className: "meta", textContent: "減少特效與耗電 (推薦平板/手機)" })), window.SGS_LANGSEL ? row("語言", window.SGS_LANGSEL()) : "", ttsRow, discordRow(), row("⚡連鎖詢問", cs), aboutRow(), acctRow()));
       const m = el("div", { className: "modal", id: "setdlg", style: "z-index:7600" }, dlg);
       m.onclick = e => { if (e.target === m) close(); };
       document.body.append(m);
     };
     top.insertBefore(b, side || null);
-    const touchOnly = /iPhone|iPad|iPod|Android|Mobile/i.test(navigator.userAgent) || (/Macintosh/i.test(navigator.userAgent) && navigator.maxTouchPoints > 1);   // 手機 / iPad 裝不了 Windows / Mac 版,不顯示下載按鈕
     if (!/Electron/i.test(navigator.userAgent) && !touchOnly) {   // 網頁版: 引導下載桌面版 (在桌面版裡不顯示)
       const d = document.createElement("button"); d.id = "bDl"; d.textContent = "⬇ 下載桌面版"; d.title = "到 GitHub 下載 Windows / Mac 本地版";
       d.onclick = () => window.open("https://github.com/jkecodes/Three-Kingdoms-Evolution/releases/latest", "_blank", "noopener");

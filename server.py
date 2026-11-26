@@ -2178,13 +2178,23 @@ class Handler(BaseHTTPRequestHandler):
                 if nk is not None and M.nicks.get(tok, "") != nk[:10]:
                     M.set_nick(tok, nk)   # 伺服器重啟後暱稱會遺失,每次輪詢順便帶上
                 M.set_chain_pref(tok, q.get("cm", [""])[0] == "all")   # 連鎖提示: 全部都問 / 只有影響到我才問
+                sv_cli = q.get("sv", [""])[0]
+
+                def _send_state(payload):
+                    raw = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+                    sv = hashlib.md5(raw).hexdigest()[:16]
+                    if sv_cli and sv_cli == sv:
+                        return self._send(200, {"same": True, "sv": sv})
+                    payload["_sv"] = sv
+                    return self._send(200, payload)
+
                 if M.lobby:
-                    return self._send(200, apply_remarks({"ready": True, "lobby": True, "n": M.cfg["n"],
-                                            "humans": sorted(M.humans),
-                                            "ranked": bool(M.cfg.get("ranked")), "claims": sorted(M.claims), "mine": viewer, "names": M.seat_names(), "levels": M.seat_levels(), "avatars": M.seat_avatars(), "avstyles": M.seat_styles(),
-                                            "host": bool(tok) and tok == M.host, "is_host": M.is_host(tok),
-                                            "online": M.online(), "host_name": M.host_name(), "events": M.events, "locked": M.game_active(), "room_name": M.room_name, "can_manage": tok_can_manage(M, tok),
-                                            **M.pick_view(tok), **M.chat_since(int(q.get("chat", ["0"])[0]), tok)}, M, tok))
+                    return _send_state(apply_remarks({"ready": True, "lobby": True, "n": M.cfg["n"],
+                                                      "humans": sorted(M.humans),
+                                                      "ranked": bool(M.cfg.get("ranked")), "claims": sorted(M.claims), "mine": viewer, "names": M.seat_names(), "levels": M.seat_levels(), "avatars": M.seat_avatars(), "avstyles": M.seat_styles(),
+                                                      "host": bool(tok) and tok == M.host, "is_host": M.is_host(tok),
+                                                      "online": M.online(), "host_name": M.host_name(), "events": M.events, "locked": M.game_active(), "room_name": M.room_name, "can_manage": tok_can_manage(M, tok),
+                                                      **M.pick_view(tok), **M.chat_since(int(q.get("chat", ["0"])[0]), tok)}, M, tok))
                 snap = snapshot(M, viewer, int(q.get("log", ["0"])[0]),
                                 int(q.get("th", ["0"])[0]),
                                 q.get("peek", ["0"])[0] == "1" and not (M.cfg or {}).get("ranked") and (len(M.humans) <= 1 or M.is_host(tok)))   # 多人遊戲只有房主能偷看
@@ -2201,7 +2211,7 @@ class Handler(BaseHTTPRequestHandler):
                 if M.cfg and "players" in snap:   # 每個電腦座位的難度 (1~4)
                     snap["ai_lv"] = [M._level(M.cfg, i) for i in range(len(snap["players"]))]
                 snap.update(M.chat_since(int(q.get("chat", ["0"])[0]), tok))
-                return self._send(200, apply_remarks(snap, M, tok))
+                return _send_state(apply_remarks(snap, M, tok))
             if path.startswith("/bg/"):   # 主題背景圖 (水墨山水)
                 return self._file(os.path.join(WEB, "bg", os.path.basename(path)), "max-age=86400")
             if path.startswith("/icons/") or path == "/favicon.ico":   # 分頁圖示 / 手機加到主畫面的圖示

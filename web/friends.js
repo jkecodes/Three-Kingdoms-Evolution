@@ -72,8 +72,10 @@
   }
 
   // ---------- 輪詢 ----------
+  let lastPubAt = 0, lastSocAt = 0;
   async function poll() {
-    if (!S.user) return;
+    if (!S.user || document.hidden) return;
+    lastSocAt = Date.now();
     let d;
     try { d = await (await fetch("/api/social?tok=" + encodeURIComponent(TOK))).json(); } catch (e) { return; }
     if (!d || !d.ok) return;
@@ -313,7 +315,8 @@
     if (atEnd) box.scrollTop = box.scrollHeight;
   }
   async function pollPub() {
-    if (!S.user) return;
+    if (!S.user || document.hidden) return;
+    lastPubAt = Date.now();
     let r;
     try { r = await (await fetch("/api/gchat?tok=" + encodeURIComponent(TOK) + "&since=" + CH.pub.last)).json(); } catch (e) { return; }
     if (!r || !r.ok) return;
@@ -365,10 +368,25 @@
       setTimeout(() => { const i = document.getElementById("ctext"); if (i) i.focus(); }, 100);
     },
   };
-  setInterval(() => { pollPub(); if (CH.cur.startsWith("dm:") && ccOpen()) renderDM(false); }, 3000);
+  setInterval(() => {
+    if (document.hidden) return;
+    const now = Date.now();
+    const activePub = CH.cur === "pub" && ccOpen();
+    if (activePub || now - lastPubAt >= 12000) pollPub();
+    if (CH.cur.startsWith("dm:") && ccOpen()) renderDM(false);
+  }, 3000);
   setTimeout(pollPub, 1800);
 
   window.SGS_FRIENDS = { fmtSeen, open: openDlg, data: () => F.data, add: async acc => { const r = await post("/api/friend_add", {name: acc}); if (r.ok) poll(); return r; } };
-  setInterval(poll, 4000);
+  setInterval(() => {
+    if (document.hidden) return;
+    const now = Date.now();
+    if (F.dlg || now - lastSocAt >= 10000) poll();
+  }, 4000);
   setTimeout(poll, 1500);
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) return;
+    poll(); pollPub();
+    if (CH.cur.startsWith("dm:") && ccOpen()) renderDM(false);
+  });
 })();

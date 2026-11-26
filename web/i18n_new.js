@@ -241,6 +241,8 @@ window.SGS_LOG_TPL = (window.SGS_LOG_TPL || []).concat([
 ["開 / 關", "On / Off", "オン / オフ"],
 ["音量", "Volume", "音量"],
 ["字體大小", "Font size", "文字サイズ"],
+["省電模式", "Power saver", "省電力モード"],
+["減少特效與耗電 (推薦平板/手機)", "Reduce effects & battery use (recommended on tablet/mobile)", "演出と消費電力を抑える(タブレット・スマホ推奨)"],
 ["朗讀", "Read aloud", "読み上げ"],
 ["⚡連鎖詢問", "⚡ Chain prompts", "⚡ チェーン確認"],
 ["只有影響到我才問", "Ask only if it affects me", "自分に影響する時だけ確認"],
