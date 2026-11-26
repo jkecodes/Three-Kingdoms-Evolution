@@ -65,7 +65,7 @@ async function backToLocal() {
 }
 
 // ---------- 檢查更新: 對 GitHub 問最新版本,有新版就提示 (不會自動安裝,按「前往下載」開啟下載頁) ----------
-const REPO = "jkemusic/Three-Kingdoms-Evolution";
+const REPO = "jkecodes/Three-Kingdoms-Evolution";
 function getJson(url) {
   return new Promise(resolve => {
     const req = require("https").get(url, { headers: { "User-Agent": "sgs-sim", Accept: "application/vnd.github+json" }, timeout: 8000 }, res => {

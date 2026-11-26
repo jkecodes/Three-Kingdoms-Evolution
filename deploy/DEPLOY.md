@@ -26,7 +26,7 @@ Networking → Virtual Cloud Networks → 你的 VCN → Subnet → Security Lis
 
 在主機裡執行:
 
-    git clone https://github.com/jkemusic/Three-Kingdoms-Evolution.git
+    git clone https://github.com/jkecodes/tkebackup.git
     bash Three-Kingdoms-Evolution/deploy/setup.sh
 
 完成後用瀏覽器開 `http://<Public IP>:8765/` 就能玩。
