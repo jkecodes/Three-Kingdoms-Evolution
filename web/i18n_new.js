@@ -893,4 +893,13 @@ window.SGS_LOG_TPL = (window.SGS_LOG_TPL || []).concat([
 ["全員棄牌 (可用)", "Everyone discards (ready)", "全員捨て札(使用可)"],
 ["獲得錦囊 (已用)", "Take trick (used)", "錦嚢を得る(使用済)"],
 ["獲得錦囊 (可用)", "Take trick (ready)", "錦嚢を得る(使用可)"],
+["= 連鎖回應", "= chain response", "= チェーン応答"],
+["選自己 (P{})", "Select self (P{1})", "自分を選択 (P{1})"],
+["自己 (P{})", "Self (P{1})", "自分 (P{1})"],
+["強化傷害來源: {}", "Empower damage source: {1}", "ダメージ元を強化: {1}"],
+["弱化傷害來源: {}", "Weaken damage source: {1}", "ダメージ元を弱体化: {1}"],
+["{} (傷害來源: {})", "{1} (damage source: {2})", "{1} (ダメージ元: {2})"],
+["(強化/弱化請選傷害來源 {})", "(For Empower/Weaken, target damage source {1})", "(強化/弱化はダメージ元 {1} を選択)"],
+["請點擊一位玩家 — {}", "Click a player — {1}", "プレイヤーをクリック — {1}"],
+["注意：強化／弱化只影響「目標造成的傷害」，不會改變「受傷者受到的傷害」。\n這名玩家是這次傷害的「受傷者」而不是傷害來源，確定要對他使用嗎？", "Note: Empower/Weaken only modifies damage dealt BY the target, not damage taken.\nThis player is the victim rather than the damage source. Use it on them anyway?", "注意：強化／弱化は「対象が与えるダメージ」のみを増減し、「受けるダメージ」は変わりません。\nこのプレイヤーは被害者でありダメージ元ではありません。本当に使用しますか？"],
 ]);

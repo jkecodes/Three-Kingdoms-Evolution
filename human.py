@@ -263,6 +263,11 @@ class HumanAgent:
                 return None
         else:
             vis = list(enumerate(options))
+        dmg_ctx = getattr(g, "_dmg_ctx", None) if when.startswith("即將受到") else None
+        dmg_src, dmg_tgt = dmg_ctx if (isinstance(dmg_ctx, tuple) and len(dmg_ctx) == 2) else (None, None)
+        has_dmg_mod = bool(dmg_src is not None and any(
+            not isinstance(o[0], SkillAct) and getattr(o[0], "name", None) in ("強", "弱", "強化", "弱化") for _, o in vis
+        ))
         opts = []
         for idx_vis, (_orig_i, o) in enumerate(vis):
             card, t = o
@@ -270,6 +275,13 @@ class HumanAgent:
             d = self._copt(idx_vis, verb + opt_label(o), card, card_dict(card)["id"])
             d["gl"] = verb + (card.name if isinstance(card, SkillAct) else ctext(card))   # 第一步只問「要不要發動這個」
             d["target"] = {"kind": "player", "idx": t.idx, "label": pname(t)} if isinstance(t, Player) else None
+            if dmg_src is not None and dmg_tgt is not None and not isinstance(card, SkillAct) and getattr(card, "name", None) in ("強", "弱", "強化", "弱化"):
+                src_lbl = f"自己 (P{dmg_src.idx})" if dmg_src.idx == p.idx else pname(dmg_src)
+                d["dmg_src"] = dmg_src.idx
+                d["dmg_tgt"] = dmg_tgt.idx
+                d["dmg_card"] = card.name
+                d["dmg_src_label"] = src_lbl
+                d["gl"] = f"{verb}{ctext(card)} (傷害來源: {src_lbl})"
             if self._is_move(t):   # 出奇不意: 同一張牌依「移動哪張判定牌」分組,再點目標玩家
                 d["group"] = f"{d['group']}|{t[1].id}"
                 d["gl"] += f": 移動 {pname(t[0])} 的 {ctext(t[1])}"
@@ -279,7 +291,11 @@ class HumanAgent:
         opts.append(self._copt(len(vis), "不出" if merged else "不發動"))
         if not merged:
             opts.append(self._copt(len(vis) + 1, "不發動,這類選項本回合不再詢問"))
-        r = self._ask("skill", (f"{pname(cur)} {when}: 要打出牌嗎?" if merged else f"{pname(cur)} {when}: 要接連鎖使用 ⚡ 嗎?" if when.startswith(("對你使用", "使用了", "即將受到")) else f"{pname(cur)} 的{when}: 要發動技能嗎?"), opts,
+        src_hint = ""
+        if has_dmg_mod:
+            src_lbl = f"自己 (P{dmg_src.idx})" if dmg_src.idx == p.idx else pname(dmg_src)
+            src_hint = f" (強化/弱化請選傷害來源 {src_lbl})"
+        r = self._ask("skill", (f"{pname(cur)} {when}: 要打出牌嗎?" if merged else f"{pname(cur)} {when}{src_hint}: 要接連鎖使用 ⚡ 嗎?" if when.startswith(("對你使用", "使用了", "即將受到")) else f"{pname(cur)} 的{when}: 要發動技能嗎?"), opts,
                       timeout=None if merged else 20, default=[len(vis)])   # 20 秒沒回答 = 不發動 (出閃的合併詢問不設時限,跟原本的出閃詢問一樣)
         if r[0] == len(vis) + 1:
             self.muted[sig] = ("turn", g.turn_id)
