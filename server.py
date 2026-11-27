@@ -1937,7 +1937,7 @@ def reap_rooms():
         present = [t for t, x in m.seen.items() if now - x < m.OFFLINE_AFTER]
         idle_over = (m.over_at is not None and not m.game_active() and len(present) <= 1
                      and now - max(m.over_at, m.act) > IDLE_AFTER_OVER)   # 遊戲結束後只剩一個人掛機 5 分鐘: 請回大廳並刪除房間
-        if idle_over or now - last > (180 if m.game_active() else 60):
+        if idle_over or now - last > (300 if m.game_active() else 60):
             m.abort = True; m._ans_ev.set(); m._step_ev.set()
             m.chat = []   # 房間被回收: 聊天紀錄一起清掉
             with ROOMS_LOCK:

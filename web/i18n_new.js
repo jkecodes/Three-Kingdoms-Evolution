@@ -902,4 +902,5 @@ window.SGS_LOG_TPL = (window.SGS_LOG_TPL || []).concat([
 ["(強化/弱化請選傷害來源 {})", "(For Empower/Weaken, target damage source {1})", "(強化/弱化はダメージ元 {1} を選択)"],
 ["請點擊一位玩家 — {}", "Click a player — {1}", "プレイヤーをクリック — {1}"],
 ["注意：強化／弱化只影響「目標造成的傷害」，不會改變「受傷者受到的傷害」。\n這名玩家是這次傷害的「受傷者」而不是傷害來源，確定要對他使用嗎？", "Note: Empower/Weaken only modifies damage dealt BY the target, not damage taken.\nThis player is the victim rather than the damage source. Use it on them anyway?", "注意：強化／弱化は「対象が与えるダメージ」のみを増減し、「受けるダメージ」は変わりません。\nこのプレイヤーは被害者でありダメージ元ではありません。本当に使用しますか？"],
+["{} 發動技能: {} 放置了 {}", "{1} triggers skill: {2} equipped {3}", "{1} スキル発動: {2} が {3} を装備"],
 ]);

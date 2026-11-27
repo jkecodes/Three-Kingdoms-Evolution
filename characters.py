@@ -1674,7 +1674,7 @@ class 郭嘉(Char):
     def on_equipped(self, g, p, owner, c):   # 別人放置裝備時: 抽 2 張牌或回 1 血
         if not g.trigger_ok(p, "郭嘉-裝備"):
             return
-        g.link(f"{p.name}[郭嘉] {owner.name} 放置了 {c}")
+        g.link(f"{p.name}[郭嘉] 發動技能: {owner.name} 放置了 {c}")
         if p.hp < p.maxhp and p.agent.choose_option(g, p, "郭嘉-裝備", ["抽 2 張牌", "回 1 點血"]) == 1:
             g.heal(p)
         else:

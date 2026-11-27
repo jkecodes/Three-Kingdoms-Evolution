@@ -1109,11 +1109,11 @@
 
     #modal2 {
       position: relative;
-      z-index: 7600
+      z-index: 8200
     }
 
     #modal2 .modal {
-      z-index: 7600 !important;
+      z-index: 8200 !important;
       background: rgba(2, 6, 14, .86) !important
     }
 
@@ -1155,9 +1155,29 @@
     .modal.soft .dlg {
       max-height: calc(calc(100vh / var(--uz)) - 320px);
       max-height: calc(calc(100dvh / var(--uz)) - 320px);
-      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
       pointer-events: auto;
       overscroll-behavior: contain
+    }
+
+    .modal.soft .dlg h3 {
+      flex: none
+    }
+
+    .modal.soft .dlg .opts {
+      overflow-y: auto;
+      flex: 1 1 auto;
+      min-height: 0;
+      overscroll-behavior: contain
+    }
+
+    .modal.soft .dlg .row {
+      flex: none;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255, 255, 255, .1)
     }
 
     .row {
@@ -1606,11 +1626,11 @@
       position: fixed;
       left: 14px;
       top: 66px;
-      width: 210px;
+      width: 192px;
       background: linear-gradient(160deg, rgba(19, 38, 74, .97), rgba(8, 18, 36, .97));
       border: 1px solid #2f6f9c;
       box-shadow: var(--glow), 0 12px 30px rgba(0, 0, 0, .6);
-      padding: 10px;
+      padding: 8px;
       z-index: 22;
       display: none;
       pointer-events: none;
@@ -1619,7 +1639,10 @@
     }
 
     #prev img {
-      width: 100%;
+      width: auto;
+      max-width: 100%;
+      max-height: 210px;
+      margin: 0 auto;
       border-radius: 4px;
       display: block
     }
@@ -4073,6 +4096,10 @@
         z-index: 30
       }
 
+      #bottom.open #bar {
+        bottom: 204px
+      }
+
       /* 確定 / 使用等按鈕永遠在手牌 (含滑過放大的牌) 上面 */
       .modal.soft {
         right: 390px;
@@ -4101,6 +4128,7 @@
         pointer-events: none
       }
 
+      body.picking-me #bottom.open #bar,
       body.picking-me #bar,
       body.picking-me .pickbar {
         bottom: 12px
@@ -4120,7 +4148,13 @@
     }
 
     .modal.soft .dlg h3 {
-      cursor: pointer
+      cursor: pointer;
+      min-height: 30px;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 4px;
+      user-select: none
     }
 
     .modal.soft .dlg h3::after {
@@ -6977,8 +7011,17 @@
       if ((path === "/api/new" || path === "/api/rematch") && !(body && body.practice) && window.SGS_HINT_OFF) SGS_HINT_OFF();   // 開新局: 練習提示橫幅消失
       if (body !== undefined && body && typeof body === "object") body = Object.assign({ tok: TOK, room: ROOM || "main" }, body);
       if (body === undefined && path.startsWith("/api/state")) path += "&tok=" + TOK + "&room=" + encodeURIComponent(ROOM || "main") + "&nick=" + encodeURIComponent(myNick()) + "&cm=" + (localStorage.getItem("sgs_chain") || "me");
-      const r = await fetch(path, body === undefined ? {} : { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-      const j = await r.json();
+      const ac = typeof AbortController !== "undefined" ? new AbortController() : null;
+      const tid = ac ? setTimeout(() => ac.abort(), path.startsWith("/api/state") ? 12000 : 25000) : null;
+      let j;
+      try {
+        const opts = body === undefined ? {} : { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) };
+        if (ac) opts.signal = ac.signal;
+        const r = await fetch(path, opts);
+        j = await r.json();
+      } finally {
+        if (tid) clearTimeout(tid);
+      }
       if (j && j.gone && ROOM) leaveRoom("房間已不存在 (太久沒有人,已被刪除)");
       if (j && j.need_pw && ROOM) {   // 直接用房間連結進有密碼的房間: 跳出密碼輸入框,輸入對了就重送這次請求,取消就回大廳
         if (await askRoomPw()) return api(path0, body0);
@@ -7351,8 +7394,6 @@
       const pend = snap.pending;
       const winners = winnerSet(snap);
       const targetIdx = new Set();
-      if (pend && pend.kind === "act" && S.picked != null)
-        for (const o of pend.options) if (String(o.group) === String(S.picked) && o.target && o.target.kind === "player") targetIdx.add(o.target.idx);
       const pickMode = !!(pend && S.tgtPick && S.tgtPick.pend === pend.id && !S.tgtPick.list);
       const eqPick = pend && S.tgtPick && S.tgtPick.pend === pend.id && S.tgtPick.eq ? new Set(S.tgtPick.opts.map(o => String(o.target.cid))) : null;
       if (pickMode) tpCands(S.tgtPick).forEach(i => targetIdx.add(i));
@@ -7389,7 +7430,7 @@
           const k = (p.idx - base + n) % n, ang = (90 + 360 / n * k) * Math.PI / 180;
           const x = 50 + 41 * Math.cos(ang), y = 50 + 38 * Math.sin(ang);
           const rp = n >= 7 ? perimPos(k / n, T.clientWidth, T.clientHeight, HW[T.className], HH[T.className]) : null;
-          const ph = h("div", { class: "ph", title: passClick ? "點擊選擇這位玩家" : "點擊查看武將詳細資訊", onclick: passClick ? null : ev => { ev.stopPropagation(); showCharInfo(p); } });
+          const ph = h("div", { class: "ph", title: passClick ? "點擊選擇這位玩家" : "點擊查看武將詳細資訊", onclick: (passClick || zPick) ? null : ev => { ev.stopPropagation(); showCharInfo(p); } });
           bindCharPrev(ph, p);
           ph.style.backgroundImage = `url("/thumb/char/${encodeURIComponent(p.char || "無名")}?v=ink2${gaQ(p.idx)}")`;   // 沒有武將: 用「無名」的斗笠圖
           const dgFlip = !!p.dg_flip && p.disguise_kind === "disguise";   // 偽裝的那張翻面 → 牌背;本尊翻面看 p.flipped
@@ -7622,7 +7663,7 @@
           const w = snap.waiting != null ? snap.players[snap.waiting] : null;
           t = w ? `⏳ 等待 P${w.idx} ${w.char || ""}${w.nick ? "(" + w.nick + ")" : ""} 操作…` : `⏳ 等待 P${snap.cur} ${(snap.players[snap.cur] || {}).char || ""} 行動…`;
         }
-        if (snap.over) B.append(h("span", { class: "pr", text: t })); else { WB.textContent = t; WB.style.display = "block"; }
+        if (!snap.over) { WB.textContent = t; WB.style.display = "block"; }
         return;
       }
       if (pend.kind === "act") {
@@ -9028,7 +9069,7 @@
     document.addEventListener("mousemove", e => { const P = $("#prev"); if (P.style.display === "block" && !(e.target.closest && e.target.closest(".hasprev"))) P.style.display = "none"; });
     /* 桌面滑鼠單擊保護: 避免滑鼠按下時取得 focus 外框或浮窗關閉吃掉第一次 click */
     (() => {
-      const ACT_SEL = "#modal .dlg button, #modal .pickbar button, #modal .card.ok, #modal2 .dlg button, #bar button, #hand .card.ok, #center .rematch, #center .ngb button, .seatask button, .pk button, #top button, #tabs button, #mnav button, #gset button";
+      const ACT_SEL = "#modal .dlg button, #modal .pickbar button, #modal .card.ok, #modal2 .dlg button, #bar button, #hand .card.ok, #center .rematch, #center .ngb button, .seatask button, .pk button, #top button, #tabs button, #mnav button, #gset button, #table .pl.target, .modal.soft .dlg h3";
       const hideTips = () => {
         const p = $("#prev"); if (p) p.style.display = "none";
         const s = $("#shtip"); if (s) s.style.display = "none";
@@ -9049,7 +9090,7 @@
         const el = e.target && e.target.closest && e.target.closest(ACT_SEL);
         if (!el || el.disabled) { arm = null; return; }
         hideTips();
-        arm = { el, txt: (el.textContent || "").trim(), x: e.clientX, y: e.clientY, t: performance.now(), clicked: false };
+        arm = { el, txt: (el.textContent || "").trim(), idx: el.dataset ? el.dataset.idx : null, x: e.clientX, y: e.clientY, t: performance.now(), clicked: false };
       }, true);
       document.addEventListener("click", e => {
         if (synthEl && (e.target === synthEl || synthEl.contains(e.target)) && performance.now() - synthAt < 80) {
@@ -9068,7 +9109,8 @@
         if (!tgt.isConnected) {
           const hit = document.elementFromPoint(e.clientX, e.clientY);
           const cand = hit && hit.closest && hit.closest(ACT_SEL);
-          if (!cand || cand.disabled || (cand.textContent || "").trim() !== a.txt) return;
+          const sameIdx = a.idx != null && cand && cand.dataset && cand.dataset.idx === a.idx;
+          if (!cand || cand.disabled || (!sameIdx && (cand.textContent || "").trim() !== a.txt)) return;
           tgt = cand;
         }
         if (tgt.disabled) return;
