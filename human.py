@@ -114,6 +114,10 @@ class HumanAgent:
                 elif ctx.get("group"):
                     dn = g.dmg_preview(who, 1, tgt=p)
                     prompt = f"{wuxie_hint.label(g, p, who)} 使用 {full_name(ctx['group'])},要打出{need}嗎? (不出 −{dn} 體力)"
+                elif ctx.get("skill"):
+                    nat = ctx.get("nature") or ""
+                    dn = g.dmg_preview(who, 1, tgt=p, nature=nat or None, bonus=True)
+                    prompt = f"{pname(who)} 發動 {ctx['skill']},要打出{need}嗎? (不出會受到 {dn} 點{nat}傷害)"
                 elif cc is not None and g.cur_user is who and cc.name == "殺":
                     dn = g.dmg_preview(who, 1, tgt=p, bonus=True)
                     prompt = f"{wuxie_hint.label(g, p, who)} 對你使用殺,要打出{need}嗎? (不出會受到 {dn} 點傷害)"
@@ -241,7 +245,10 @@ class HumanAgent:
         return pile[r[0]]
 
     def choose_skill(self, g, p, skill):
-        r = self._ask("skill", f"{skill}: 要發動嗎?", [self._copt(0, "發動"), self._copt(1, "不發動")])
+        note = getattr(g, "_skill_note", None)
+        prompt = f"{skill} ({note}): 要發動嗎?" if note else f"{skill}: 要發動嗎?"
+        yes_lbl = f"發動 ({note})" if note else "發動"
+        r = self._ask("skill", prompt, [self._copt(0, yes_lbl), self._copt(1, "不發動")])
         return r[0] == 0
 
     def choose_count(self, g, p, skill, maxn):

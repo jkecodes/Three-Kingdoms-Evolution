@@ -903,4 +903,12 @@ window.SGS_LOG_TPL = (window.SGS_LOG_TPL || []).concat([
 ["請點擊一位玩家 — {}", "Click a player — {1}", "プレイヤーをクリック — {1}"],
 ["注意：強化／弱化只影響「目標造成的傷害」，不會改變「受傷者受到的傷害」。\n這名玩家是這次傷害的「受傷者」而不是傷害來源，確定要對他使用嗎？", "Note: Empower/Weaken only modifies damage dealt BY the target, not damage taken.\nThis player is the victim rather than the damage source. Use it on them anyway?", "注意：強化／弱化は「対象が与えるダメージ」のみを増減し、「受けるダメージ」は変わりません。\nこのプレイヤーは被害者でありダメージ元ではありません。本当に使用しますか？"],
 ["{} 發動技能: {} 放置了 {}", "{1} triggers skill: {2} equipped {3}", "{1} スキル発動: {2} が {3} を装備"],
+["此詢問已逾時或結束", "This prompt has timed out or ended", "この確認は時間切れか終了しました"],
+["與 {} 交換", "swap with {1}", "{1} と交換"],
+["發動 ({})", "Activate ({1})", "発動 ({1})"],
+["{} ({}): 要發動嗎?", "{1} ({2}): activate?", "{1} ({2}): 発動しますか?"],
+["{} 發動 {},要打出{}嗎? (不出會受到 {} 點{}傷害)", "{1} activates {2}. Play {3}? (Declining deals {4} {5} damage)", "{1} が {2} を発動。{3} を出しますか? (出さないと {4} 点の{5}ダメージ)"],
+["{} 發動 {},要打出{}嗎? (不出會受到 {} 點傷害)", "{1} activates {2}. Play {3}? (Declining deals {4} damage)", "{1} が {2} を発動。{3} を出しますか? (出さないと {4} ダメージ)"],
+["{} 這回合第 {} 張錦囊 (曹沖效果: 超過 1 張),扣 1 點體力 (可閃)", "{1} used trick #{2} this turn (Cao Chong effect: over 1): loses 1 HP (dodgeable)", "{1} は今ターン{2}枚目の錦囊(曹沖効果: 1枚超過): 体力-1(閃で防げる)"],
+["{}[曹沖] 效果: {} 這回合第 {} 張錦囊,超過 1 張,扣 1 點體力 (可閃)", "{1}[Cao Chong] effect: {2} used trick #{3} this turn (over 1): loses 1 HP (dodgeable)", "{1}[曹沖] 効果: {2} は今ターン{3}枚目の錦囊(1枚超過): 体力-1(閃で防げる)"],
 ]);

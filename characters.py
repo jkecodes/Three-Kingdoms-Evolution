@@ -1551,7 +1551,13 @@ class 曹沖(Char):
     def on_other_trick(self, g, p, user, real):  # 和使用錦囊的人永遠交換武將 (不可閃;可閃的是「超過一張錦囊扣血」那條)
         if not user.alive or not g.trigger_ok(p, "曹沖-交換"):
             return
-        if not p.agent.choose_skill(g, p, "曹沖-交換武將"):
+        prev_note = getattr(g, "_skill_note", None)
+        g._skill_note = f"與 {user.name} 交換"
+        try:
+            ok = p.agent.choose_skill(g, p, "曹沖-交換武將")
+        finally:
+            g._skill_note = prev_note
+        if not ok:
             return
         g.new_dmg_chain()  # 結算完才發動: 另開一條新連鎖
         g.link(f"{p.name}[曹沖] 要和 {user.name} 永遠交換武將")
@@ -2006,7 +2012,7 @@ class 李儒(Char):
     def _run(self, g, p, t):
         p.turn_flags["lr"] = True
         g.log(f"  {p.name}[李儒] 令 {t.name} 出一張閃,否則受到 1 點火焰傷害")
-        if not g.need_response(t, "閃", {"attacker": p}):
+        if not g.need_response(t, "閃", {"attacker": p, "skill": "李儒-逼出閃", "nature": "火"}):
             g.damage(p, t, 1, nature="火")
 
     def ai_choose(self, g, p, options):

@@ -317,7 +317,25 @@
       text-align: center;
       color: #a9c4b8;
       text-shadow: 0 1px 4px rgba(0, 0, 0, .6);
-      z-index: 5
+      z-index: 5;
+      pointer-events: none
+    }
+
+    #center .card,
+    #center button,
+    #center .rematch,
+    #center .ngb button,
+    #center .pstack {
+      pointer-events: auto
+    }
+
+    body.picking #table {
+      z-index: 10
+    }
+
+    body.picking #center,
+    body.picking #center * {
+      pointer-events: none
     }
 
     #roundtag {
@@ -4048,7 +4066,7 @@
       }
 
       #hand {
-        transform: translateY(152px);
+        transform: translateY(138px);
         transition: transform .25s ease
       }
 
@@ -4059,9 +4077,9 @@
       }
 
       #hand {
-        height: 200px;
+        height: 184px;
         min-height: 0;
-        padding: 14px 12px 0;
+        padding: 10px 12px 0;
         background: none;
         border: 0;
         box-shadow: none;
@@ -4097,7 +4115,19 @@
       }
 
       #bottom.open #bar {
-        bottom: 204px
+        bottom: 188px
+      }
+
+      body:has(#bottom:not(.spec)) #table {
+        bottom: 50px
+      }
+
+      body:has(#bottom.open:not(.spec)):not(.picking-me) #table {
+        bottom: 224px
+      }
+
+      body:has(#bottom.open:not(.spec)):not(.picking-me) #center {
+        top: calc(50% - 112px)
       }
 
       /* 確定 / 使用等按鈕永遠在手牌 (含滑過放大的牌) 上面 */
@@ -7466,7 +7496,7 @@
           if (p.hand && p.hand.length && snap.viewer == null) inf.append(h("div", { class: "mini" }, p.hand.map(miniEl)));
           const el = h("div", {
             "data-idx": p.idx, class: "pl" + (snap.cur === p.idx && !snap.over ? " cur" : "") + (winners.has(p.idx) ? " win" : "") + (p.is_viewer ? " me" : "") + (snap.waiting === p.idx && !snap.over ? " waiting" : "") + (p.alive ? "" : " dead") + (S.sel === p.idx ? " sel" : "") + (targetIdx.has(p.idx) ? " target" : "") + (pickMode && S.tgtPick.chosen && S.tgtPick.chosen.includes(p.idx) ? " tp1" : "") + (pickMode && !targetIdx.has(p.idx) && !(S.tgtPick.mv && !S.tgtPick.cid) ? " dimmed" : ""),
-            style: rp ? { left: rp[0] + "px", top: rp[1] + "px", order: k } : { left: `clamp(var(--hw),${x}%,calc(100% - var(--hw)))`, top: `clamp(var(--hh),${y}%,calc(100% - var(--hh)))`, order: k }, onclick: () => { if (pickMode) { tpClick(S.tgtPick, p.idx, pend); return; } S.sel = S.sel === p.idx ? null : p.idx; $("#thf").value = S.sel == null ? "" : String(S.sel); renderThoughts(); renderTable(S.snap); }
+            style: rp ? { left: rp[0] + "px", top: rp[1] + "px", order: k } : { left: `clamp(calc(var(--hw) + var(--exn, 0) * 21px),${x}%,calc(100% - var(--hw) - var(--exn, 0) * 21px))`, top: `clamp(var(--hh),${y}%,calc(100% - var(--hh)))`, order: k }, onclick: () => { if (pickMode) { tpClick(S.tgtPick, p.idx, pend); return; } S.sel = S.sel === p.idx ? null : p.idx; $("#thf").value = S.sel == null ? "" : String(S.sel); renderThoughts(); renderTable(S.snap); }
           }, ph, inf);
           if (p.role && p.role.length > 1 && (p.role[0] === "紅" || p.role[0] === "藍")) el.classList.add(p.role[0] === "紅" ? "tm-r" : "tm-b", ...(p.role.endsWith("主公") ? ["tm-lord"] : []));   // 雙國戰: 紅 / 藍兩邊的底色,主公另外有金色雙線框
           if (snap.waiting === p.idx && !snap.over) el.append(h("i", { class: "wfr" }));   // 等待操作的虛線框: 用獨立圖層畫 (手機瀏覽器的虛線 outline 會漏掉其中一邊)
@@ -7498,7 +7528,10 @@
           const tr = T.getBoundingClientRect();
           T.querySelectorAll(".pl").forEach(el => {
             const r = el.getBoundingClientRect();
-            let dy = 0;
+            let dx = 0, dy = 0;
+            if (r.left < tr.left + 4) dx = tr.left + 4 - r.left;
+            else if (r.right > tr.right - 4) dx = tr.right - 4 - r.right;
+            if (dx) el.style.left = `calc(${el.style.left} + ${dx / UZ()}px)`;
             if (r.top < tr.top + 44) dy = tr.top + 44 - r.top;
             else if (r.bottom > tr.bottom - 4) dy = tr.bottom - 4 - r.bottom;
             if (dy) el.style.top = `calc(${el.style.top} + ${dy / UZ()}px)`;
@@ -7586,15 +7619,28 @@
     }
     async function submit(id, choice) {
       if (S.snap && S.snap.paused) { toast("遊戲暫停中,不能操作"); return; }
+      if (S.submittingId === id) return;
       const pd = S.snap && S.snap.pending;   // 酒殺: 開著「🍶 酒殺」時,出殺會先喝酒再自動接著出同一張殺
       if (S.jiuOn && pd && pd.id === id && pd.kind === "act" && choice.length === 1) {
         const o = pd.options.find(x => x.i === choice[0]), j = pd.options.find(x => x.card && x.card.name === "酒" && !x.target);
         if (o && j && o.card && o.card.name === "殺" && o.target) { S.afterJiu = { group: String(o.group), tgt: JSON.stringify(o.target), old: id, t: Date.now() }; S.jiuOn = false; choice = [j.i]; }
       }
+      S.submittingId = id;
+      if (S.pendId === id) {
+        document.querySelectorAll("#modal .dlg button, #modal .pickbar button").forEach(b => { b.disabled = true; });
+        document.querySelectorAll("#modal .card.ok").forEach(c => { c.style.pointerEvents = "none"; c.dataset.submitting = "1"; });
+      }
       S.picked = null; S.multi = new Set(); S.tgtPick = null;
-      const r = await api("/api/answer", { id, choice });
-      if (r && r.ok === false && r.error !== "no such request") toast("操作失敗: " + r.error);
-      poll(true);
+      try {
+        const r = await api("/api/answer", { id, choice });
+        if (r && r.ok === false) {
+          if (r.error === "no such request") toast("此詢問已逾時或結束");
+          else toast("操作失敗: " + r.error);
+        }
+        poll(true);
+      } finally {
+        if (S.submittingId === id) S.submittingId = null;
+      }
     }
     function renderHand(snap) {
       const me = snap.viewer == null ? null : snap.players[snap.viewer];
@@ -7612,10 +7658,12 @@
       snap.pending && [snap.pending.id, snap.pending.kind, snap.pending.prompt, snap.pending.options.map(o => o.label + o.group)], S.tgtPick && [S.tgtPick.label, S.tgtPick.chosen && S.tgtPick.chosen.join(), S.tgtPick.cid]]);
       if (S.handKey === hk) return;
       S.handKey = hk;
-      const H = $("#hand"), B = $("#bar"), WB = $("#waitbar"); H.textContent = ""; B.textContent = ""; WB.style.display = "none";
-      $("#bottom").classList.toggle("spec", !me);
+      const H = $("#hand"), B = $("#bar"), WB = $("#waitbar"), bot = $("#bottom"), wasOpen = bot.classList.contains("open"); H.textContent = ""; B.textContent = ""; WB.style.display = "none";
+      bot.classList.toggle("spec", !me);
       const keepHandOpen = !S.tgtPick || (S.tgtPick.opts && S.tgtPick.opts[0] && S.tgtPick.opts[0].card && S.tgtPick.opts[0].card.name === "丈八蛇矛-雙牌當殺");
-      $("#bottom").classList.toggle("open", !!(me && snap.pending && snap.pending.kind === "act" && keepHandOpen));
+      const nowOpen = !!(me && snap.pending && snap.pending.kind === "act" && keepHandOpen);
+      bot.classList.toggle("open", nowOpen);
+      if (wasOpen !== nowOpen && S.snap === snap) { S.tableKey = null; renderTable(snap); }
       if (!me) { B.append(h("span", { class: "meta", text: "觀戰模式: 可在左上調整速度、暫停、單步;右側 AI 思考可看每個決定的理由。" })); return; }
       const pend = snap.pending;
       const prevHand = S.pvHand; S.pvHand = new Set((me.hand || []).map(c => c.id));
@@ -7674,9 +7722,18 @@
           B.append(jiuBtn(tp.opts));
           B.append(h("span", { class: "pr", text: tp.eq ? tp.label + " — 請點擊發光的裝備 (或下方按鈕)" : tp.list ? tp.label + " — 請選擇" : tpText(tp) }));
           if (tp.list) tp.opts.forEach(o => B.append(h("button", { class: "primary", text: o.label, onclick: () => submit(pend.id, [o.i]) })));
-          if (snap.viewer != null && !tp.list && !tp.eq && !tp.mv && !tp.chain && tpCands(tp).includes(snap.viewer)) {
-            const meIdx = snap.viewer;
-            B.append(h("button", { class: "primary", text: `選自己 (P${meIdx})`, onclick: () => tpClick(tp, meIdx, pend) }));
+          if (!tp.list && !tp.eq && !tp.mv && !tp.chain) {
+            const cands = tpCands(tp);
+            if (cands.length <= 6) {
+              cands.forEach(idx => {
+                const q = snap.players[idx];
+                const nm = idx === snap.viewer ? `選自己 (P${idx})` : `P${idx} ${((q && q.disguise_kind === "disguise" && !q.dg_flip && q.disguise) || (q && q.char) || "")}`.trim();
+                B.append(h("button", { class: "primary", text: nm, onclick: () => tpClick(tp, idx, pend) }));
+              });
+            } else if (snap.viewer != null && cands.includes(snap.viewer)) {
+              const meIdx = snap.viewer;
+              B.append(h("button", { class: "primary", text: `選自己 (P${meIdx})`, onclick: () => tpClick(tp, meIdx, pend) }));
+            }
           }
           B.append(h("button", { text: "取消", onclick: () => { S.tgtPick = null; S.picked = null; S.handKey = null; redraw(); } }));
           syncActCountdown(snap);
@@ -7808,7 +7865,13 @@
       if (pend.kind === "target" && pend.options.length && pend.options.every(o => o.target && o.target.kind === "player")) {   // 選目標: 直接點場上的玩家 (可選的外框發光)
         S.tgtPick = { pend: pend.id, opts: pend.options, label: pend.prompt, chosen: [] };
         const pb = h("div", { class: "pickbar" }, h("b", { text: `請點擊一位玩家 — ${pend.prompt}` }));
-        if (snap.viewer != null && pend.options.some(o => o.target && o.target.idx === snap.viewer)) {
+        if (pend.options.length <= 6) {
+          pend.options.forEach(o => {
+            const idx = o.target.idx, q = snap.players[idx];
+            const nm = idx === snap.viewer ? `選自己 (P${idx})` : `P${idx} ${((q && q.disguise_kind === "disguise" && !q.dg_flip && q.disguise) || (q && q.char) || "")}`.trim();
+            pb.append(h("button", { class: "primary", text: nm, onclick: () => { S.tgtPick = null; submit(pend.id, [o.i]); } }));
+          });
+        } else if (snap.viewer != null && pend.options.some(o => o.target && o.target.idx === snap.viewer)) {
           const meIdx = snap.viewer;
           pb.append(h("button", { class: "primary", text: `選自己 (P${meIdx})`, onclick: () => { const o = pend.options.find(x => x.target && x.target.idx === meIdx); S.tgtPick = null; if (o) submit(pend.id, [o.i]); } }));
         }
@@ -9119,7 +9182,7 @@
         a.tgt = tgt; rel = a;
         setTimeout(() => {
           if (rel === a) rel = null;
-          if (a.clicked || !a.tgt.isConnected || a.tgt.disabled) return;
+          if (a.clicked || !a.tgt.isConnected || a.tgt.disabled || (a.tgt.dataset && a.tgt.dataset.submitting) || (S.submittingId && a.tgt.closest("#modal"))) return;
           synthEl = a.tgt; synthAt = performance.now();
           a.tgt.click();
         }, 0);
@@ -9132,7 +9195,7 @@
       showHandView(); renderThoughts(); if (S.snap) renderTable(S.snap);
     }
     (function () {   // 拖曳牌桌: 按住空白處移動整個場地 (避免被底部手牌擋住),雙擊還原
-      const W = $("#tablewrap"), DY = 28; let st = null, px = 0, py = DY;   // 預設檢視往下移一點點
+      const W = $("#tablewrap"), DY = 0; let st = null, px = 0, py = DY;   // 預設檢視置中,避免將下方玩家推入底欄
       const apply = () => { W.style.setProperty("--px", px + "px"); W.style.setProperty("--py", py + "px"); };
       W.classList.add("pannable"); apply();
       W.addEventListener("pointerdown", e => {   // 滑鼠 / 手指 (iPad) 都能拖
