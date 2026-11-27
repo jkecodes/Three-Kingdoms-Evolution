@@ -3812,6 +3812,11 @@
       animation: tgpulse 1.4s ease-in-out infinite
     }
 
+    html body #table .pl.target {
+      border-color: var(--green) !important;
+      box-shadow: inset 0 0 0 2px var(--green), 0 0 0 3px rgba(70, 224, 160, .65), 0 0 22px rgba(70, 224, 160, .85) !important
+    }
+
     /* 可選的對象: 玩家框外圍發光 (用 filter,不會被各主題的 box-shadow 蓋掉) */
     @keyframes tgpulse {
       50% {
@@ -4087,17 +4092,17 @@
         width: min(640px, calc(100% - 32px))
       }
 
-      body.picking #hand,
-      body.picking #bHand,
-      body.picking #bottom.open #hand,
-      body.picking #bottom:has(#bar:hover) #hand {
+      body.picking-me #hand,
+      body.picking-me #bHand,
+      body.picking-me #bottom.open #hand,
+      body.picking-me #bottom:has(#bar:hover) #hand {
         transform: translateY(188px);
         opacity: .18;
         pointer-events: none
       }
 
-      body.picking #bar,
-      body.picking .pickbar {
+      body.picking-me #bar,
+      body.picking-me .pickbar {
         bottom: 12px
       }
 
@@ -4108,7 +4113,7 @@
         max-width: calc(92vw / var(--uz))
       }
 
-      body.picking #table .pl.me.target {
+      body.picking-me #table .pl.me.target {
         translate: 0 -84px;
         z-index: 25
       }
@@ -5642,7 +5647,8 @@
       font-size: 15px;
       font-weight: 800;
       color: #ffd24a;
-      white-space: nowrap
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums
     }
 
     .cd.urgent {
@@ -7372,7 +7378,9 @@
       ]);
       const needBuild = S.tableKey !== tk;
       const passClick = pickMode && !eqPick && !zPick && !mvPick;
+      const pickMe = passClick && snap.viewer != null && targetIdx.has(snap.viewer);
       document.body.classList.toggle("picking", passClick);
+      document.body.classList.toggle("picking-me", pickMe);
       if (needBuild) {
         S.tableKey = tk;
         T.textContent = "";
@@ -7565,7 +7573,8 @@
       S.handKey = hk;
       const H = $("#hand"), B = $("#bar"), WB = $("#waitbar"); H.textContent = ""; B.textContent = ""; WB.style.display = "none";
       $("#bottom").classList.toggle("spec", !me);
-      $("#bottom").classList.toggle("open", !!(me && snap.pending && snap.pending.kind === "act" && !S.tgtPick));
+      const keepHandOpen = !S.tgtPick || (S.tgtPick.opts && S.tgtPick.opts[0] && S.tgtPick.opts[0].card && S.tgtPick.opts[0].card.name === "丈八蛇矛-雙牌當殺");
+      $("#bottom").classList.toggle("open", !!(me && snap.pending && snap.pending.kind === "act" && keepHandOpen));
       if (!me) { B.append(h("span", { class: "meta", text: "觀戰模式: 可在左上調整速度、暫停、單步;右側 AI 思考可看每個決定的理由。" })); return; }
       const pend = snap.pending;
       const prevHand = S.pvHand; S.pvHand = new Set((me.hand || []).map(c => c.id));
@@ -7813,6 +7822,7 @@
 
     /* ---------- 紀錄 / 思考 ---------- */
     document.addEventListener("sgs-lang", () => { S.tableKey = null; if (S.snap) renderTable(S.snap); for (const el of document.querySelectorAll("#log > [data-zh]")) { try { el.replaceChildren(...logNodes(el.dataset.zh)); } catch (e) { } } });   // 換語言: 戰報與牌桌重畫
+    let logProgScroll = 0;
     function addLogs(lines) {
       const L = $("#log"), follow = $("#follow").checked;
       const quiet = lines.length > 60 || document.hidden || (Date.now() - (window.__visAt || 0) < 800 && lines.length > 6);   // 中途加入 / 一次補大量紀錄時不播音效動畫
@@ -7844,7 +7854,7 @@
         if (window.SGS_FX) SGS_FX.onLine(s0, quiet);
       }
       while (L.children.length > 180) L.firstElementChild.remove();
-      if (follow) L.scrollTop = L.scrollHeight;
+      if (follow) { logProgScroll = performance.now(); L.scrollTop = L.scrollHeight; }
     }
     const LOG_CARD_MAP = new WeakMap();
     function logCardImg(c) {
@@ -7854,8 +7864,16 @@
       return im;
     }
     {
-      const L = $("#log");
+      const L = $("#log"), fb = $("#follow");
+      if (fb) fb.addEventListener("change", () => {
+        if (fb.checked && L) { logProgScroll = performance.now(); L.scrollTop = L.scrollHeight; }
+      });
       if (L) {
+        L.addEventListener("scroll", () => {
+          if (!fb || performance.now() - logProgScroll < 120) return;
+          const atBottom = L.scrollHeight - L.scrollTop - L.clientHeight <= 28;
+          if (fb.checked !== atBottom) fb.checked = atBottom;
+        }, { passive: true });
         let ht = null, hx = 0, hy = 0;
         const stopHold = () => { if (ht) { clearTimeout(ht); ht = null; } };
         L.addEventListener("click", e => { const im = e.target.closest("img.lc"), c = im && LOG_CARD_MAP.get(im); if (c) showCardInfo(c); });
@@ -9010,7 +9028,7 @@
     document.addEventListener("mousemove", e => { const P = $("#prev"); if (P.style.display === "block" && !(e.target.closest && e.target.closest(".hasprev"))) P.style.display = "none"; });
     /* 桌面滑鼠單擊保護: 避免滑鼠按下時取得 focus 外框或浮窗關閉吃掉第一次 click */
     (() => {
-      const ACT_SEL = "#modal .dlg button, #modal .pickbar button, #modal .card.ok, #bar button, #hand .card.ok, #center .rematch, #center .ngb button, .seatask button";
+      const ACT_SEL = "#modal .dlg button, #modal .pickbar button, #modal .card.ok, #modal2 .dlg button, #bar button, #hand .card.ok, #center .rematch, #center .ngb button, .seatask button, .pk button, #top button, #tabs button, #mnav button, #gset button";
       const hideTips = () => {
         const p = $("#prev"); if (p) p.style.display = "none";
         const s = $("#shtip"); if (s) s.style.display = "none";
@@ -9027,11 +9045,11 @@
       }, true);
       document.addEventListener("pointerdown", e => {
         rel = null;
-        if (e.pointerType !== "mouse" || e.button !== 0) { arm = null; return; }
+        if (e.pointerType === "touch" || e.button !== 0) { arm = null; return; }
         const el = e.target && e.target.closest && e.target.closest(ACT_SEL);
         if (!el || el.disabled) { arm = null; return; }
         hideTips();
-        arm = { el, x: e.clientX, y: e.clientY, t: performance.now(), clicked: false };
+        arm = { el, txt: (el.textContent || "").trim(), x: e.clientX, y: e.clientY, t: performance.now(), clicked: false };
       }, true);
       document.addEventListener("click", e => {
         if (synthEl && (e.target === synthEl || synthEl.contains(e.target)) && performance.now() - synthAt < 80) {
@@ -9039,21 +9057,29 @@
           return;
         }
         if (arm && (e.target === arm.el || arm.el.contains(e.target))) arm.clicked = true;
-        if (rel && (e.target === rel.el || rel.el.contains(e.target))) rel.clicked = true;
+        const rt = rel && (rel.tgt || rel.el);
+        if (rt && (e.target === rt || rt.contains(e.target))) rel.clicked = true;
       }, true);
       document.addEventListener("pointerup", e => {
-        if (e.pointerType !== "mouse" || e.button !== 0) return;
+        if (e.pointerType === "touch" || e.button !== 0) return;
         const a = arm; arm = null;
-        if (!a || !a.el.isConnected || a.el.disabled) return;
-        if (performance.now() - a.t > 1500 || Math.hypot(e.clientX - a.x, e.clientY - a.y) > 18) return;
-        const r = a.el.getBoundingClientRect();
+        if (!a || performance.now() - a.t > 1500 || Math.hypot(e.clientX - a.x, e.clientY - a.y) > 18) return;
+        let tgt = a.el;
+        if (!tgt.isConnected) {
+          const hit = document.elementFromPoint(e.clientX, e.clientY);
+          const cand = hit && hit.closest && hit.closest(ACT_SEL);
+          if (!cand || cand.disabled || (cand.textContent || "").trim() !== a.txt) return;
+          tgt = cand;
+        }
+        if (tgt.disabled) return;
+        const r = tgt.getBoundingClientRect();
         if (e.clientX < r.left - 14 || e.clientX > r.right + 14 || e.clientY < r.top - 14 || e.clientY > r.bottom + 14) return;
-        rel = a;
+        a.tgt = tgt; rel = a;
         setTimeout(() => {
           if (rel === a) rel = null;
-          if (a.clicked || !a.el.isConnected || a.el.disabled) return;
-          synthEl = a.el; synthAt = performance.now();
-          a.el.click();
+          if (a.clicked || !a.tgt.isConnected || a.tgt.disabled) return;
+          synthEl = a.tgt; synthAt = performance.now();
+          a.tgt.click();
         }, 0);
       }, true);
       document.addEventListener("pointercancel", () => { arm = null; rel = null; }, true);
@@ -9404,7 +9430,7 @@
     for (const id of ["#auser", "#apw"]) $(id).onkeydown = e => { if (e.key === "Enter" && !e.isComposing && e.keyCode !== 229) submitAuth(); };
     function logout() { try { localStorage.removeItem("sgs_tok"); localStorage.removeItem("nick"); localStorage.removeItem("sgs_theme"); sessionStorage.removeItem("sgs_room"); } catch (e) { } const u = new URL(location.href); u.search = ""; location.href = u.toString(); }
     function clearGameViewState() {
-      document.body.classList.remove("picking");
+      document.body.classList.remove("picking", "picking-me");
       Object.assign(S, { lastAct: "", roundKey: null, centerKey: null, tableKey: null, handKey: null, lobbyKey: null, pickKey: null, overSeen: false, pvHp: null, pvMax: null, pvCur: null, pfx: null, pfd: null, baseSeat: null, logN: 0, thN: 0, thoughts: [], lastTh: {}, sel: null, picked: null, pendId: 0, tgtPick: null, pollSv: null, sameStreak: 0, autoPick: null, pingId: null });
       for (const id of ["#log", "#thl", "#center", "#hand", "#bar"]) { const e = $(id); if (e) e.textContent = ""; }
     }
