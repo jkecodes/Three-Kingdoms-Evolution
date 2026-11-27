@@ -8602,7 +8602,7 @@
       };
       drawMode();
       rebuild();
-      lockRanked();
+      if (st.ranked === "newbie" && st.diff > 2) st.diff = 1;
       showOnline();
       const doStart = async () => {
         saveSetup(st);
@@ -8657,6 +8657,7 @@
             h("label", { class: "fld" }, h("span", { text: "每步長度 (秒,0.05 = 最快)" }), h("div", { class: "rng" }, speed, speedV)))),
           sect("座位與武將", "留「隨機武將」會從 " + roster.length + " 位武將中抽,不重複;勾「開放玩家」讓玩家入座。段位模式: 武將全部隨機,座位全部開放,按下開始後想打的人按「參戰」,沒按的自動觀戰,沒人坐的座位由電腦擔任", h("div", {}, openAll, seatBox))),
         h("div", { class: "df" }, h("button", { text: "取消", onclick: close }), h("button", { class: "primary big", text: "開始遊戲", onclick: start })));
+      lockRanked();
       /* ---- 卡片式設定 (兩頁): 每個項目一張卡片 (圖 + 名稱 + 目前的值)。選項少的在卡片上用 ‹ › 切換,選項多的點進去編輯。
        *  不重寫原本的按鈕邏輯: ‹ › 只是去點該區塊裡原本那排按鈕,區塊本身仍在 DOM 裡 (隱藏),所以鎖定 / 重畫 / 隱藏的邏輯都照舊。 */
       (() => {
