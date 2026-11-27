@@ -911,4 +911,5 @@ window.SGS_LOG_TPL = (window.SGS_LOG_TPL || []).concat([
 ["{} 發動 {},要打出{}嗎? (不出會受到 {} 點傷害)", "{1} activates {2}. Play {3}? (Declining deals {4} damage)", "{1} が {2} を発動。{3} を出しますか? (出さないと {4} ダメージ)"],
 ["{} 這回合第 {} 張錦囊 (曹沖效果: 超過 1 張),扣 1 點體力 (可閃)", "{1} used trick #{2} this turn (Cao Chong effect: over 1): loses 1 HP (dodgeable)", "{1} は今ターン{2}枚目の錦囊(曹沖効果: 1枚超過): 体力-1(閃で防げる)"],
 ["{}[曹沖] 效果: {} 這回合第 {} 張錦囊,超過 1 張,扣 1 點體力 (可閃)", "{1}[Cao Chong] effect: {2} used trick #{3} this turn (over 1): loses 1 HP (dodgeable)", "{1}[曹沖] 効果: {2} は今ターン{3}枚目の錦囊(1枚超過): 体力-1(閃で防げる)"],
+["{}[張松] 指定的 {} 死亡,{} 抽 4 張", "{1}[Zhang Song]'s designated target {2} died; {3} draws 4", "{1}[張松] 指定した {2} が死亡、{3} が4枚引く"],
 ]);

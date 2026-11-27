@@ -1830,7 +1830,7 @@ class 張松(Char):
     mark = None
 
     def skill_options(self, g, p):
-        if p.turn_flags.get("zs") or self.mark:
+        if p.turn_flags.get("zs") or self.mark is not None:
             return []
         return [(SkillAct("張松-指定", self._run), t) for t in g.others(p)]
 
@@ -1853,9 +1853,12 @@ class 張松(Char):
             return
         self.mark = None
         if killer and killer.alive and killer is not victim:
-            g.link(f"{p.name}[張松] 指定的 {victim.name} 死亡,{p.name} 和 {killer.name} 各抽 4 張")
-            g.draw(p, 4)
-            if killer is not p:
+            if killer is p:
+                g.link(f"{p.name}[張松] 指定的 {victim.name} 死亡,{p.name} 抽 4 張")
+                g.draw(p, 4)
+            else:
+                g.link(f"{p.name}[張松] 指定的 {victim.name} 死亡,{p.name} 和 {killer.name} 各抽 4 張")
+                g.draw(p, 4)
                 g.draw(killer, 4)
         else:
             g.link(f"{p.name}[張松] 指定的 {victim.name} 死亡 (沒有擊殺者),{p.name} 抽 4 張")

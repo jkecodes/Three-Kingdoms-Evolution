@@ -338,6 +338,10 @@
       pointer-events: none
     }
 
+    body.picking #table .pl.target * {
+      pointer-events: none
+    }
+
     #roundtag {
       position: absolute;
       left: 12px;
@@ -4127,7 +4131,8 @@
       }
 
       body:has(#bottom.open:not(.spec)):not(.picking-me) #center {
-        top: calc(50% - 112px)
+        top: calc(50% - 130px);
+        scale: .75
       }
 
       /* 確定 / 使用等按鈕永遠在手牌 (含滑過放大的牌) 上面 */
@@ -5712,7 +5717,11 @@
       font-weight: 800;
       color: #ffd24a;
       white-space: nowrap;
-      font-variant-numeric: tabular-nums
+      font-variant-numeric: tabular-nums;
+      display: inline-block;
+      min-width: 6.2em;
+      text-align: center;
+      flex: none
     }
 
     .cd.urgent {
@@ -7764,7 +7773,7 @@
             opts.forEach(o => B.append(h("button", { class: "primary", text: o.label || ("使用 " + nm), onclick: () => use([o], o.label || ("使用 " + nm)) })));
           else if (!(opts.every(tpPl) || opts.every(tpMulti) || opts.every(tpMv))) { const k1 = [...ks.keys()][0], asN = k1 ? "當作 " + (c0.as_full || c0.as) + " 使用" : "使用 " + nm; B.append(h("button", { class: "primary", text: asN, onclick: () => use(opts, asN) })); }   // 只有技能轉換能用 (例如關羽的閃 / 桃): 明講是當作什麼牌
         }
-        B.append(h("button", { text: "結束出牌", onclick: () => submit(pend.id, []) }));
+        B.append(h("button", { text: "結束出牌", style: { marginLeft: "10px" }, onclick: () => submit(pend.id, []) }));
         syncActCountdown(snap);
       }
     }
@@ -7838,7 +7847,7 @@
       if (!pend || pend.kind !== "act" || pend.left == null) return;
       const B = $("#bar"); if (!B) return;
       let c = B.querySelector("#cdact");
-      if (!c) { c = h("span", { id: "cdact", class: "cd" }); B.prepend(c); }
+      if (!c) { c = h("span", { id: "cdact", class: "cd" }); B.append(c); }
       const n = Math.ceil(pend.left);
       c.textContent = "⏱ " + n + " 秒"; c.classList.toggle("urgent", n <= 5);
     }
