@@ -329,8 +329,8 @@
       const aboutRow = () => {   // 版本列: 版本號 / GitHub / 更新日誌 排同一行;更新日誌按鈕開視窗,視窗裡有選版本的下拉選單
         const v = el("span", { className: "meta", textContent: "…", style: "display:flex;align-items:center;gap:6px;flex:1;min-width:0" });   // flex:1 + 按鈕靠右: 跟下一列 (登出 / 刪除帳號) 的右邊對齊
         const box = el("div", { className: "setrow" }, el("span", { className: "sl", textContent: "版本" }), v);
-        fetch("/api/about").then(r => r.json()).then(a => {
-          v.textContent = (a.beta ? "beta version" : "v" + a.version) + " ";
+        const renderAbout = a => {
+          v.textContent = "v" + (a.version || "?") + (a.beta ? " (beta)" : "") + " ";
           const gh = el("button", { textContent: "GitHub", title: a.repo, style: "margin:0 0 0 auto;padding:4px 8px;font-size:13px" });
           gh.onclick = () => window.open(a.repo, "_blank", "noopener");
           const mdBox = md => {   // 更新日誌 (Markdown): 只處理 # / ## 標題與 - 清單,全部用 textContent,不吃 HTML;上方選單選要看哪個版本
@@ -366,7 +366,11 @@
             document.body.append(m2);
           };
           v.append(gh, lg);
-        }).catch(() => { v.textContent = ""; });
+        };
+        if (window.SGS_ABOUT) renderAbout(window.SGS_ABOUT);
+        else (window.SGS_ABOUT_P || fetch("/api/about").then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }))
+          .then(a => { window.SGS_ABOUT = a; renderAbout(a); })
+          .catch(() => { v.textContent = "無法取得"; });
         return box;
       };
       const acctRow = () => {   // UID / 登出 / 刪除帳號: 跟設定裡其他按鈕同樣大小,只有字是紅色

@@ -158,6 +158,7 @@ html.px #bar .pr{color:var(--pxacc);text-shadow:2px 2px 0 #000}
 html.px button{background:var(--pxbtn);color:var(--pxfg);border:0;box-shadow:inset 0 0 0 3px var(--pxfg),0 0 0 2px #000,3px 3px 0 2px #000}
 html.px button:hover{background:var(--pxbtnh);box-shadow:inset 0 0 0 3px var(--pxacc),0 0 0 2px #000,3px 3px 0 2px #000}
 html.px button:not(:disabled):active{transform:translate(3px,3px);box-shadow:inset 0 0 0 3px var(--pxacc),0 0 0 2px #000}
+html.px #bar button:not(:disabled):active,html.px .dlg button:not(:disabled):active,html.px .pk button:not(:disabled):active,html.px .pickbar button:not(:disabled):active{transform:none;filter:brightness(.92)}
 html.px button.primary{background:var(--pxok);color:#000;box-shadow:inset 0 0 0 3px var(--pxfg),0 0 0 2px #000,3px 3px 0 2px #000}
 html.px input,html.px select,html.px textarea{background:#000;color:var(--pxfg);border:3px solid var(--pxfg)}
 html.px #status{background:#000;color:var(--pxacc);border:2px solid var(--pxfg)}
@@ -1145,7 +1146,7 @@ ${S} input[type=range]::-moz-range-thumb{width:${round ? 18 : 12}px;height:${rou
           h("span", { class: "tn", text: (ok ? "" : "🔒 ") + x.n }), ok ? null : h("span", { class: "rq", text: rq(x) }), ok ? null : lockProg(x));
         })), h("div", { class: "meta", style: { marginTop: "10px" }, text: "頭像框和特效會顯示在座位、聊天室、排行榜上,所有玩家都看得到。" }));
       }
-      M.append(h("div", { class: "modal", onclick: e => { if (e.target.classList.contains("modal")) close(); } },
+      M.append(h("div", { class: "modal", style: { zIndex: 7600 }, onclick: e => { if (e.target.classList.contains("modal")) close(); } },
         h("div", { class: "dlg", id: "cosdlg", style: { maxWidth: "520px" } },
           h("div", { class: "dh" }, h("div", {}, h("div", { style: { display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" } }, h("h3", { style: { margin: 0 }, text: achMode ? "🏅 成就" : shopMode ? "🛒 外觀商店" : "🎨 外觀" }),
             achMode ? null : h("div", { style: { display: "flex", gap: "8px", flexWrap: "nowrap", flexBasis: "100%" } }, ...[["💰 ", p.coins || 0, " 遊戲幣"], ["🏵 ", p.renown || 0, " 聲望"]].map(([ic, n, lb]) => h("span", { style: { display: "inline-flex", alignItems: "center", gap: "4px", padding: "3px 9px", border: "1px solid #ffd24a", borderRadius: "6px", background: "rgba(255,210,74,.1)", fontSize: "13px", fontWeight: "700", whiteSpace: "nowrap" } }, ic, h("b", { style: { color: "#ffd24a", fontVariantNumeric: "tabular-nums" }, text: String(n) }), lb)))),
@@ -1232,6 +1233,7 @@ button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-vis
 /* 按下回饋 (只用 transform,不改版面) + 去掉觸控 300ms 延遲 */
 button,select,.tile{touch-action:manipulation}
 button:not(:disabled):active{transform:scale(.97)}
+#bar button:not(:disabled):active,.dlg button:not(:disabled):active,.pk button:not(:disabled):active,.pickbar button:not(:disabled):active{transform:none;filter:brightness(.92)}
 button:disabled{cursor:not-allowed}
 /* 觸控螢幕 (iPad 等): 視窗裡的按鈕 / 輸入框至少 40px 高,避免點錯 */
 @media (pointer:coarse){.dlg button,.dlg select,.dlg input:not([type=checkbox]):not([type=radio]),#members .mr button{min-height:40px}}

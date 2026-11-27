@@ -698,8 +698,8 @@ class 張遼(Char):
                 continue
             fire = p.has_weapon("孔雀羽扇") and not q.has_armor("火盾")
             nat = "火" if fire else sn
-            if not ignore and not g.equip_off() and not nat:
-                if q.has_armor("藤甲") or (sha.color == "黑" and (q.has_armor("仁王盾") or (not q.armor_names() and q.char.virtual_renwang(g, q)))):
+            if not ignore and not g.equip_off():
+                if (not nat and q.has_armor("藤甲")) or (not fire and sha.color == "黑" and (q.has_armor("仁王盾") or (not q.armor_names() and q.char.virtual_renwang(g, q)))):
                     continue
             if g.dmg_preview(p, base, tgt=q, nature=nat, bonus=True, via_sha=True) > 0:
                 foes += 1
@@ -1156,7 +1156,11 @@ class 張嶷(Char):
         if not cands or not g.trigger_ok(p, "張嶷-同時亮牌") or not _may(g, p, "張嶷-同時亮牌"):
             return
         t = p.agent.choose_target(g, p, "張嶷-同時亮牌", cands)
-        a, b = p.agent.show_card(g, p, list(p.hand)), t.agent.show_card(g, t, list(t.hand))
+        g._show_msg = "張嶷: 選一張手牌與對方同時亮牌 (亮牌後仍留在手牌)"
+        try:
+            a, b = p.agent.show_card(g, p, list(p.hand)), t.agent.show_card(g, t, list(t.hand))
+        finally:
+            g._show_msg = None
         g.link(f"{p.name}[張嶷] 與 {t.name} 同時亮牌: {a} / {b}")
         g.last_reveal = ("張嶷 同時亮牌", [(p.idx, a), (t.idx, b)])   # 桌面中央讓大家看到
         if a.color == b.color:

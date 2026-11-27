@@ -480,10 +480,11 @@ class Profiles:
             p["streak"] = p.get("streak", 0) + 1 if won else 0
             p["best_streak"] = max(p.get("best_streak", 0), p["streak"])
             after = self.rank_label(p.get("rp", 0))
-            _, _, _, nxt = self.rank(p.get("rp", 0))
+            _, _, lo, nxt = self.rank(p.get("rp", 0))
             # 每場結束都留一則結果通知 (積分變化 / 升降段 / 離下一段還差多少),玩家的瀏覽器讀到就跳出視窗
-            p["rank_note"] = {"from": before, "to": after, "delta": delta, "rp": p.get("rp", 0), "up": delta > 0, "changed": after != before,
+            p["rank_note"] = {"from": before, "to": after, "delta": delta, "rp": p.get("rp", 0), "rp_lo": lo, "rp_next": nxt, "rank": self.rank_tag(p), "up": delta > 0, "changed": after != before,
                               "ranked": bool(ranked), "coins": gold, "total_coins": p.get("coins", 0), "won": bool(won), "draw": bool(draw), "partial": bool(partial and not won), "streak": p.get("rstreak", 0) if ranked else 0, "bonus": bonus if ranked else 0, "next": self.rank_label(nxt) if nxt is not None else None,
+                              "next_rank": self.rank_label(nxt) if nxt is not None else None,
                               "need": (nxt - p.get("rp", 0)) if nxt is not None else 0, "id": int(time.time() * 1000)}
             if char:
                 c = p.setdefault("chars", {}).setdefault(char, [0, 0]); c[0] += 1; c[1] += 1 if won else 0
@@ -784,6 +785,8 @@ class Manager:
         self._ans_ev = threading.Event()
         self._step_ev = threading.Event()
         self._req = 0
+        self._pre_logs = []
+        self.results = {}
 
     # ---------- 建立新對局 ----------
     def is_host(self, tok):
@@ -812,6 +815,7 @@ class Manager:
             self.cfg, self.paused, self.error, self.pending, self.lobby = {}, False, None, None, False
             self.multi, self.multi_res, self.multi_win = {}, {}, None
             self.over_at, self._ans, self.les = None, None, None
+            self._pre_logs, self.results = [], {}
             if not force:
                 self._event(f"⛔ {self._name_of(tok)} 強制結束了這一局", "bad", tok)
         return {"ok": True}
@@ -871,6 +875,8 @@ class Manager:
         rng.shuffle(pool)   # 隨機武將: 每人抽 3 張 (彼此不重複) 再選 1 張,見 start()
         self.picking, self.offers, self.picks = False, {}, {}
         self.rec = Recorder()
+        self._pre_logs = []
+        self.results = {}
         humans = {int(x) for x in (cfg.get("humans") or []) if 0 <= int(x) < n}
         if human is not None and human < n:
             humans.add(human)
@@ -1295,7 +1301,9 @@ class Manager:
             for seat, offer in self.offers.items():
                 if seat not in self.picks:
                     self.picks[seat] = random.choice(offer)
-                    self._event(f"⏰ 座位 {seat} 選武將超時,已隨機選擇", "warn")
+                    msg = f"⏰ 座位 {seat} 選武將超時,已隨機選擇"
+                    self._event(msg, "warn")
+                    self._pre_logs.append(msg)
             self._advance()
 
     def pick_view(self, tok):
@@ -1345,6 +1353,10 @@ class Manager:
         g = Game(agents, max_rounds=100, seed=cfg["seed"], chars=cfg["chars_"], role_variant=int(cfg.get("variant", 0)), lord_seat=self.lord_seat,
                  mode="shuffle" if cfg.get("mode") == "shuffle" else "normal", role_mode=cfg.get("role_mode") or "normal", base_hp=int(cfg.get("base_hp") or 4), newbie=bool(cfg.get("newbie")))
         g.on_log = self.on_log
+        self.results = {}
+        if getattr(self, "_pre_logs", None):
+            g.logs.extend(self._pre_logs)
+            self._pre_logs.clear()
         if lesson:
             g.scn = lambda gg, L=lesson: lessons.apply(gg, L)
         self.game, self.lobby = g, False
@@ -1399,6 +1411,9 @@ class Manager:
                 r = PROFILES.award(tok, won, pl._char.name, pl.role, wx, ranked, wrp, {"practice": bool(self.cfg.get("practice")), "hp": pl.hp, "alive": pl.alive, "rounds": g.round, "n": len(g.players), "noroles": noroles, "dmg": pl.dmg_total, "heal": pl.healed, "sha": pl.sha_n,
                                                                                                                   "maxhand": pl.max_hand, "chain11": pl.chain11, "wei": pl.wei_n, "same": len(g.players) >= 2 and len({q._char.name for q in g.players}) == 1}, lrp, secs=time.time() - getattr(self, "game_t0", time.time()), draw=draw, partial=0 if multi else partial, no_gain=multi)
                 if r:
+                    rn = (PROFILES.get(tok, create=False) or {}).get("rank_note")
+                    if rn:
+                        self.results[tok] = dict(rn)
                     d, b, a = r
                     who = self.nicks.get(tok) or '未命名'
                     if not ranked:
@@ -1633,12 +1648,18 @@ class Manager:
                 raise AbortGame()
             if timeout and self.paused and self.pending and self.pending.get("deadline"):
                 self.pending["deadline"] += 0.2   # 暫停時不倒數
+            timed_out_msg = None
             if timeout and default is not None and not self.paused and time.time() > self.pending["deadline"]:
                 with self.lock:
                     if self.pending and self.pending["id"] == rid:
                         self._ans = list(default)
                         self._ans_ev.set()
-                        self._event(f"⏰ 座位 {seat} 操作逾時 ({prompt[:14]}…),已自動選擇", "warn")
+                        timed_out_msg = f"⏰ 座位 {seat} 操作逾時 ({prompt[:14]}…),已自動選擇"
+                        self._event(timed_out_msg, "warn")
+                        if self.game is not None:
+                            self.game.logs.append(timed_out_msg)
+            if timed_out_msg and self.game is not None and self.game.verbose:
+                print(timed_out_msg)
         if self.abort:
             raise AbortGame()
         with self.lock:
@@ -2181,7 +2202,12 @@ class Handler(BaseHTTPRequestHandler):
                 sv_cli = q.get("sv", [""])[0]
 
                 def _send_state(payload):
-                    raw = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+                    norm = dict(payload)
+                    if isinstance(norm.get("pick_left"), (int, float)):
+                        norm["pick_left"] = math.ceil(norm["pick_left"])
+                    if isinstance(norm.get("pending"), dict) and isinstance(norm["pending"].get("left"), (int, float)):
+                        norm["pending"] = dict(norm["pending"], left=math.ceil(norm["pending"]["left"]))
+                    raw = json.dumps(norm, ensure_ascii=False).encode("utf-8")
                     sv = hashlib.md5(raw).hexdigest()[:16]
                     if sv_cli and sv_cli == sv:
                         return self._send(200, {"same": True, "sv": sv})
@@ -2205,11 +2231,17 @@ class Handler(BaseHTTPRequestHandler):
                 snap["online"] = M.online()
                 snap["ranked_abandoned"] = M.ranked_abandoned()
                 snap["host_name"] = M.host_name()
-                snap["events"] = M.events
+                try:   # 通知文字 (例如操作逾時) 帶的玩家名稱也要遮蔽身分
+                    from view import fog_any
+                    snap["events"] = fog_any(M.events, M.game, -1 if snap.get("viewer") is None else snap["viewer"], bool(snap.get("over")))
+                except Exception:
+                    snap["events"] = M.events
                 snap["avstyles"] = M.seat_styles(); snap["locked"] = M.game_active(); snap["ranked"] = bool((M.cfg or {}).get("ranked")); snap["gmode"] = (M.cfg or {}).get("mode") or "normal"; snap["rmode"] = (M.cfg or {}).get("role_mode") or "normal"
                 snap["lesson"] = M.lesson_view()
                 if M.cfg and "players" in snap:   # 每個電腦座位的難度 (1~4)
                     snap["ai_lv"] = [M._level(M.cfg, i) for i in range(len(snap["players"]))]
+                if snap.get("over") and tok in getattr(M, "results", {}):
+                    snap["my_result"] = M.results[tok]
                 snap.update(M.chat_since(int(q.get("chat", ["0"])[0]), tok))
                 return _send_state(apply_remarks(snap, M, tok))
             if path.startswith("/bg/"):   # 主題背景圖 (水墨山水)

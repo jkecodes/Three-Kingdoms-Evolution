@@ -32,6 +32,8 @@ class HumanAgent:
     def __init__(self, mgr, seat):
         self.mgr, self.seat = mgr, seat
         self.muted = {}   # 玩家選了「本輪不再詢問」的連鎖/別人回合發動選項: 簽名 -> 輪數
+        self.muted_turn = {}   # 玩家選了「這類選項本回合不再詢問」: turn_id -> set(牌/技能名稱)
+        self._wx_turn = (-1, 0)
 
     def _ask(self, kind, prompt, options, mn=1, mx=1, timeout=None, default=None):
         try:   # 選項裡的牌如果其實在自己的裝備區 (技能把裝備當別的牌用): 卡面標「裝備區」
@@ -91,6 +93,13 @@ class HumanAgent:
             prompt = (f"{pname(ctx['source'])}{on} 使用 {full_name(ctx['trick'])}" +
                       f"{' (已被無懈)' if ctx.get('negated') else ''},要使用無懈嗎?")
             prompt = wuxie_hint.hint(g, p, ctx) or prompt   # 利害摘要 (敵方【反賊】即將抽 3 張牌…);不認得的牌用上面的原句
+            tid = getattr(g, "turn_id", 0)
+            prev_tid, cnt = getattr(self, "_wx_turn", (-1, 0))
+            cnt = (cnt + 1) if prev_tid == tid else 1
+            self._wx_turn = (tid, cnt)
+            wx_n = ctx.get("wuxie_n", 1)
+            prefix = f"[第 {cnt} 次詢問 · 無懈連鎖第 {wx_n} 層] " if wx_n > 1 else f"[第 {cnt} 次詢問] "
+            prompt = prefix + prompt
         if need == "受傷響應":
             prompt = f"你即將受到 {ctx['n']} 點傷害,要使用 ⚡ 牌嗎?"
             if ctx.get("fan_n") not in (None, ctx["n"]):
@@ -187,7 +196,7 @@ class HumanAgent:
 
     def show_card(self, g, p, hand):
         opts = [self._copt(i, ctext(c), c) for i, c in enumerate(hand)]
-        r = self._ask("show", "火攻: 選一張手牌展示 (展示後仍留在手牌)", opts)
+        r = self._ask("show", getattr(g, "_show_msg", None) or "火攻: 選一張手牌展示 (展示後仍留在手牌)", opts)
         return hand[r[0]]
 
     def choose_target(self, g, p, kind, cands):
@@ -246,11 +255,19 @@ class HumanAgent:
         m = self.muted.get(sig)
         if m and ((m[0] == "round" and m[1] == g.round) or (m[0] == "turn" and m[1] == g.turn_id)):
             return None
+        merged = bool(getattr(g, "_offturn_merged", False))   # 被殺的合併詢問: 選項有連鎖 ⚡ / 閃 / 受傷前 ⚡,不能「本回合不再詢問」
+        muted_names = set() if merged else self.muted_turn.get(g.turn_id, set())
+        if muted_names:
+            vis = [(idx_o, o) for idx_o, o in enumerate(options) if getattr(o[0], "name", str(o[0])) not in muted_names]
+            if not vis:
+                return None
+        else:
+            vis = list(enumerate(options))
         opts = []
-        for i, o in enumerate(options):
+        for idx_vis, (_orig_i, o) in enumerate(vis):
             card, t = o
             verb = "發動 " if isinstance(card, SkillAct) else "使用 "
-            d = self._copt(i, verb + opt_label(o), card, card_dict(card)["id"])
+            d = self._copt(idx_vis, verb + opt_label(o), card, card_dict(card)["id"])
             d["gl"] = verb + (card.name if isinstance(card, SkillAct) else ctext(card))   # 第一步只問「要不要發動這個」
             d["target"] = {"kind": "player", "idx": t.idx, "label": pname(t)} if isinstance(t, Player) else None
             if self._is_move(t):   # 出奇不意: 同一張牌依「移動哪張判定牌」分組,再點目標玩家
@@ -259,16 +276,18 @@ class HumanAgent:
                 d["label"] += f": {ctext(t[1])} {pname(t[0])} → {pname(t[2])}"
                 d["target"] = {"kind": "player", "idx": t[2].idx, "label": pname(t[2])}
             opts.append(d)
-        merged = bool(getattr(g, "_offturn_merged", False))   # 被殺的合併詢問: 選項有連鎖 ⚡ / 閃 / 受傷前 ⚡,不能「本回合不再詢問」
-        opts.append(self._copt(len(options), "不出" if merged else "不發動"))
+        opts.append(self._copt(len(vis), "不出" if merged else "不發動"))
         if not merged:
-            opts.append(self._copt(len(options) + 1, "不發動,這類選項本回合不再詢問"))
+            opts.append(self._copt(len(vis) + 1, "不發動,這類選項本回合不再詢問"))
         r = self._ask("skill", (f"{pname(cur)} {when}: 要打出牌嗎?" if merged else f"{pname(cur)} {when}: 要接連鎖使用 ⚡ 嗎?" if when.startswith(("對你使用", "使用了", "即將受到")) else f"{pname(cur)} 的{when}: 要發動技能嗎?"), opts,
-                      timeout=None if merged else 20, default=[len(options)])   # 20 秒沒回答 = 不發動 (出閃的合併詢問不設時限,跟原本的出閃詢問一樣)
-        if r[0] == len(options) + 1:
+                      timeout=None if merged else 20, default=[len(vis)])   # 20 秒沒回答 = 不發動 (出閃的合併詢問不設時限,跟原本的出閃詢問一樣)
+        if r[0] == len(vis) + 1:
             self.muted[sig] = ("turn", g.turn_id)
+            names = {getattr(o[0], "name", str(o[0])) for _, o in vis}
+            self.muted_turn = {k: v for k, v in self.muted_turn.items() if k >= g.turn_id}
+            self.muted_turn.setdefault(g.turn_id, set()).update(names)
             return None
-        return r[0] if r[0] < len(options) else None
+        return vis[r[0]][0] if r[0] < len(vis) else None
 
     def choose_option(self, g, p, skill, labels):
         opts = [self._copt(i, x) for i, x in enumerate(labels)]

@@ -990,6 +990,7 @@ class Game:
         """回傳 True 代表此錦囊對 tgt 被無效。"""
         negated = False
         last_by = None
+        wx_round = 1
         while True:
             played = False
             for q in self.order_from(self.cur):
@@ -997,13 +998,14 @@ class Game:
                 if not cands or self.trick_locked(q):
                     continue
                 ctx = {"trick": trick_name, "source": src, "target": tgt, "targets": targets, "harmful": harmful,
-                       "negated": negated, "last_wuxie_by": last_by}
+                       "negated": negated, "last_wuxie_by": last_by, "wuxie_n": wx_round}
                 c = q.agent.respond(self, q, "無懈", cands, ctx)
                 if c:
                     self.discard_card(q, c, played=True)
                     self.chain_view.append((c if c.name == "無懈" else ("as無懈", c), q.idx))   # 魯肅: 基本牌當無懈
                     negated = not negated
                     last_by = q
+                    wx_round += 1
                     self.link(f"{q.name} 使用 無懈 ({_fn(trick_name)})")
                     if tgt is not q and isinstance(tgt, Player):
                         # 擋下有害錦囊 = 幫助 tgt;擋下有益錦囊 = 針對 tgt (再翻回來則相反)
@@ -1256,13 +1258,13 @@ class Game:
             self.jiu = False
         if fire:
             self.log("  孔雀羽扇: 這張殺造成火焰傷害")
-        if not ignore and not fire and not sn and tgt.has_armor("仁王盾") and card.color == "黑":
+        if not ignore and not fire and tgt.has_armor("仁王盾") and card.color == "黑":
             self.log("  仁王盾: 黑色殺無效")
             return
         if not ignore and not fire and not sn and tgt.has_armor("藤甲"):
             self.log("  藤甲: 殺無效")
             return
-        if not ignore and not fire and not sn and card.color == "黑" and not tgt.armor_names() and tgt.char.virtual_renwang(self, tgt):
+        if not ignore and not fire and card.color == "黑" and not tgt.armor_names() and tgt.char.virtual_renwang(self, tgt):
             self.log("  仁王盾 (臨時): 黑色殺無效")
             return
         dodged = True

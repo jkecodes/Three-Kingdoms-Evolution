@@ -395,10 +395,10 @@ class ProAgent(LeveledAgent):
             fire = p.has_weapon("孔雀羽扇") and not t.has_armor("火盾")
             sn = getattr(card, "nature", None) or getattr(c, "nature", None)
             nature = "火" if fire else sn
-            if not ignore and not g.equip_off() and not nature:
-                if t.has_armor("藤甲"):
+            if not ignore and not g.equip_off():
+                if not nature and t.has_armor("藤甲"):
                     return -999
-                if card.color == "黑" and (t.has_armor("仁王盾") or (not t.armor_names() and t.char.virtual_renwang(g, t))):
+                if not fire and card.color == "黑" and (t.has_armor("仁王盾") or (not t.armor_names() and t.char.virtual_renwang(g, t))):
                     return -999
             base = 1 + (1 if (g.jiu or extra_jiu) else 0)
             dmg = self.expected_dmg(g, p, t, base=base, via_sha=True, nature=nature, bonus=True, mods=True, extra_x2=extra_x2)
