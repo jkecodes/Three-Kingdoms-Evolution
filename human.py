@@ -76,7 +76,7 @@ class HumanAgent:
             d = self._copt(i, opt_label(o), card, group)
             d["target"] = tgt
             opts.append(d)
-        r = self._ask("act", f"你的出牌階段 (體力 {p.hp}/{p.maxhp})  選一張牌與目標,或結束出牌", opts, 0, 1)
+        r = self._ask("act", "你的出牌階段  選一張牌與目標,或結束出牌", opts, 0, 1)
         return r[0] if r else None
 
     # ---- 響應 ----

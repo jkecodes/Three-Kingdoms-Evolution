@@ -26,6 +26,7 @@ window.SGS_LOG_TPL = (window.SGS_LOG_TPL || []).concat([
 ["你即將受到 {} 點傷害,要使用 ⚡ 牌嗎? (用反擊轉給別人會是 {} 點,已含強化/弱化)", "You are about to take {1} damage. Use a ⚡ card? (Counter sends {2} to someone else, strengthen/weaken included)", "{1}ダメージを受けようとしています。⚡カードを使いますか?(反撃で相手に与えるのは {2} 、強化/弱化込み)"],
 ["你即將受到傷害,要使用 ⚡ 牌嗎?", "You are about to take damage. Use a ⚡ card?", "ダメージを受けようとしています。⚡カードを使いますか?"],
 ["你瀕死了,要使用桃/酒救自己嗎?", "You are dying. Save yourself with Peach / Wine?", "あなたは瀕死です。桃/酒で自分を救いますか?"],
+["你的出牌階段  選一張牌與目標,或結束出牌", "Your play phase  pick a card and target, or end your turn", "あなたの出牌フェイズ  カードと対象を選ぶか、出牌を終了"],
 ["你的出牌階段 (體力 {}/{})  選一張牌與目標,或結束出牌", "Your play phase (HP {1}/{2})  pick a card and target, or end your turn", "あなたの出牌フェイズ(体力 {1}/{2})  カードと対象を選ぶか、出牌を終了"],
 ["你被攻擊了,要打出閃嗎?", "You are being attacked. Play a Dodge?", "攻撃されています。閃を出しますか?"],
 ["和 {} 決鬥: 要打出殺嗎? (不出就扣 {} 點體力)", "Duel with {1}: play a Slash? (otherwise lose {2} HP)", "{1} と決闘: 殺を出しますか?(出さないと体力-{2})"],
