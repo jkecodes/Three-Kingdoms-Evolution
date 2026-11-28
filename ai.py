@@ -235,8 +235,13 @@ class HeuristicAgent(RandomAgent):
         a = self._att(g, me, other)
         if other is not me and a < 2.5:
             a -= self.THREAT.get(other._char.name, 0.0)
-            if other._char.name == "龐統":   # 瀕死會滿血復活,正面朝上時打他是白費力氣;翻面期間 (技能失效) 才是殺他的機會
-                a += -1.5 if other.flipped else 0.7
+            if other._char.name == "龐統":   # 瀕死會滿血復活,正面朝上時優先度降低,但不把敵人當成隊友;翻面期間 (技能失效) 才是殺他的機會
+                if other.flipped:
+                    a -= 1.5
+                elif a < 0:
+                    a = min(-0.1, a + 0.7)
+                else:
+                    a += 0.7
         return a
 
     # --- 雙國戰 (忠臣不公開): 只知道自己這一邊和兩位主公,其他人要看行為推理 (sus 越高越像對面的人)

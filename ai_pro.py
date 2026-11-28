@@ -92,7 +92,9 @@ class ProAgent(LeveledAgent):
             return self.team_observe(g, me, kind, src, tgt)
         if getattr(g, "hunt", False) or getattr(g, "traitor", False):
             return self.mode_observe(g, me, kind, src, tgt)
-        if self.adv("infer"):   # 2 級以下不從公開行為推理身分 (態度只剩「主公公開 / 已翻開的身分」這些明擺著的資訊)
+        if self.adv("infer"):   # 2 級以下不從公開行為推理一般身分,但誰直接打/救主公或擊殺亮身分角色仍記下來
+            super().observe(g, me, kind, src, tgt)
+        elif not getattr(g, "hidden_lord", False) and (tgt is g.lord or kind == "kill"):
             super().observe(g, me, kind, src, tgt)
 
     # ------------------------------------------------------------ 休閒模式專用 (暗殺目標 / 抓叛徒)

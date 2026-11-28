@@ -170,13 +170,14 @@
     }
 
     html input[type=checkbox]:not([hidden]):not(.sw input):checked {
-      background: color-mix(in srgb, var(--accent) 30%, #0e1620) !important;
+      background: color-mix(in srgb, var(--accent) 55%, #0e1620) !important;
       border-color: var(--accent) !important
     }
 
     html input[type=checkbox]:not([hidden]):not(.sw input):checked::before {
       transform: translateX(18px);
-      background: var(--accent)
+      background: #fff !important;
+      box-shadow: 0 0 6px var(--accent)
     }
 
     html input[type=checkbox]:not([hidden]):not(.sw input):disabled {
@@ -1134,13 +1135,20 @@
     }
 
     #modal2 {
-      position: relative;
-      z-index: 8200
+      position: fixed;
+      inset: 0;
+      z-index: 8200;
+      pointer-events: none
+    }
+
+    #modal2:empty {
+      display: none
     }
 
     #modal2 .modal {
       z-index: 8200 !important;
-      background: rgba(2, 6, 14, .86) !important
+      pointer-events: auto;
+      background: rgba(2, 6, 14, .92) !important
     }
 
     .modal {
@@ -2695,6 +2703,13 @@
       pointer-events: auto;
       text-align: center;
       box-shadow: 0 8px 24px rgba(0, 0, 0, .5)
+    }
+
+    .settle-rk .rkdelta {
+      font-size: 16px;
+      white-space: normal;
+      overflow: visible;
+      line-height: 1.35
     }
 
     #table .pl.target .eq:not(.pk),
@@ -7601,9 +7616,11 @@
         if (snap.is_host !== false) c.append(h("button", {
           type: "button", class: "rematch", style: { marginTop: "12px", pointerEvents: "auto" }, text: "🔁 再來一局 (同樣設定)", onclick: async () => {
             S.restarting = true; S.epoch = (S.epoch || 0) + 1;
-            clearGameViewState();
             try {
-              const r = await api("/api/rematch", {}); if (r && r.ok === false) toast(r.error || "失敗");
+              const r = await api("/api/rematch", {});
+              if (r && r.ok === false) { toast(r.error || "失敗"); return; }
+              clearGameViewState();
+              S.modalOpen = null; $("#modal").textContent = "";
             } finally {
               S.epoch = (S.epoch || 0) + 1; S.restarting = false; S.pollSv = null;
               poll(true);
@@ -7896,7 +7913,12 @@
       }
       if (!pend || pend.left == null || S.modalOpen !== "prompt") return;   // 有時限的詢問 (是否接連鎖): 標題旁顯示倒數
       let cd = M.querySelector("#cd");
-      if (!cd) { const t = M.querySelector(".dlg h3") || M.querySelector(".pickbar b"); if (!t) return; cd = h("span", { id: "cd", class: "cd" }); t.append(cd); }
+      if (!cd) {
+        const pb = M.querySelector(".pickbar"), t = pb || M.querySelector(".dlg h3");
+        if (!t) return;
+        cd = h("span", { id: "cd", class: "cd" });
+        t.append(cd);
+      }
       const n = Math.ceil(pend.left);
       cd.textContent = " ⏱ " + n + " 秒"; cd.classList.toggle("urgent", n <= 5);
     }
@@ -9184,7 +9206,7 @@
     document.addEventListener("mousemove", e => { const P = $("#prev"); if (P.style.display === "block" && !(e.target.closest && e.target.closest(".hasprev"))) P.style.display = "none"; });
     /* 桌面滑鼠單擊保護: 避免滑鼠按下時取得 focus 外框或浮窗關閉吃掉第一次 click */
     (() => {
-      const ACT_SEL = "#modal .dlg button, #modal .pickbar button, #modal .card.ok, #modal2 .dlg button, #bar button, #hand .card.ok, #center .rematch, #center .ngb button, .seatask button, .pk button, #top button, #tabs button, #mnav button, #gset button, #table .pl.target, .modal.soft .dlg h3";
+      const ACT_SEL = ".modal button, #cardinfo button, #rooms button, #modal .dlg button, #modal .pickbar button, #modal .card.ok, #modal2 .dlg button, #bar button, #hand .card.ok, #center .rematch, #center .ngb button, .seatask button, .pk button, #top button, #tabs button, #mnav button, #gset button, #table .pl.target, .modal.soft .dlg h3";
       const hideTips = () => {
         const p = $("#prev"); if (p) p.style.display = "none";
         const s = $("#shtip"); if (s) s.style.display = "none";
@@ -9386,7 +9408,7 @@
         : "休閒模式 · 積分不變";
       const box = h("div", { class: "settle-rk" },
         n.changed ? h("div", { class: "rkflow" }, rkBig(n.from), h("span", { class: "rkarr", text: "→" }), rkBig(n.to)) : h("div", { class: "rkflow" }, rkBig(n.to)),
-        h("div", { class: "rkdelta " + (!n.ranked ? "" : n.delta > 0 ? "plus" : n.delta < 0 || (!n.won && !n.draw && !n.partial) ? "minus" : ""), style: { fontSize: "20px", marginTop: "6px" }, text: deltaTxt }),
+        h("div", { class: "rkdelta " + (!n.ranked ? "" : n.delta > 0 ? "plus" : n.delta < 0 || (!n.won && !n.draw && !n.partial) ? "minus" : ""), style: { marginTop: "6px" }, text: deltaTxt }),
         n.coins ? h("div", { class: "rkcoin", text: `💰 +${n.coins} 遊戲幣 (共 ${n.total_coins})` }) : null,
         ...(n.rp != null && n.rp_lo != null ? rkProgress({ rp: n.rp, rp_lo: n.rp_lo, rp_next: n.rp_next, rank: n.rank || n.to, next_rank: n.next_rank || n.next }) : [h("div", { class: "meta", text: `目前 ${n.rp} 分` + (n.next ? ` · 距離 ${n.next} 還差 ${n.need} 分` : "") })]));
       return box;
