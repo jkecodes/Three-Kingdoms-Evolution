@@ -374,6 +374,10 @@
       letter-spacing: .2em
     }
 
+    #center:has(#winner) {
+      z-index: 22
+    }
+
     #winner {
       margin-top: 10px;
       font-size: 24px;
@@ -4910,7 +4914,7 @@
         margin-right: 8px
       }
 
-      #winner {
+    #winner {
         display: inline;
         margin-left: 8px;
         font-size: 16px
@@ -5530,7 +5534,11 @@
     }
 
     #bProf {
-      flex: 0 0 auto
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap
     }
 
     #top button,
@@ -6709,11 +6717,14 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 12px
+      flex-wrap: wrap;
+      gap: 8px 10px
     }
 
     .rkarr {
       font-size: 22px;
+      font-family: system-ui, "Segoe UI", Arial, sans-serif;
+      font-weight: 800;
       color: var(--accent)
     }
 
@@ -7331,7 +7342,12 @@
     document.addEventListener("visibilitychange", () => { if (!document.hidden) { window.__visAt = Date.now(); if (typeof poll === "function" && ROOM) poll(true); if (typeof loadProfile === "function") loadProfile(true); if ($("#rooms") && $("#rooms").classList.contains("on") && typeof refreshRooms === "function") refreshRooms(true); } });   // 剛切回分頁: 這一瞬間湧進來的一批紀錄不播特效,並立刻同步畫面
     function setRoundTag(snap) {   // 左上角: 第幾輪 + 牌堆張數
       if (window.SGS_ANIM) try { SGS_ANIM.onSnap(snap); } catch (e) { }   // 動畫特效 (進場 / 勝負): 所有人都看得到
-      if (snap.over && !S.overSeen) { S.overSeen = true;[400, 1500, 3500].forEach(t => setTimeout(() => loadProfile(true), t)); }   // 對局結束: 盡快強制讀檔案,有升降段就跳視窗
+      if (snap.over && !S.overSeen) {
+        S.overSeen = true;
+        const ar = $("#arrows"); if (ar) ar.querySelectorAll(".arr, .arrl").forEach(e => e.remove());
+        const fl = $("#fxlayer"); if (fl) fl.textContent = "";
+        [400, 1500, 3500].forEach(t => setTimeout(() => loadProfile(true), t));
+      }   // 對局結束: 盡快強制讀檔案,有升降段就跳視窗
       if (!snap.over) S.overSeen = false;
       const rk = snap.round + "|" + snap.deck + "|" + (snap.ranked ? 1 : 0);
       if (S.roundKey === rk) return;
@@ -7652,6 +7668,7 @@
       }
     }
     function renderHand(snap) {
+      if (S.tgtPick && (!snap.pending || S.tgtPick.pend !== snap.pending.id)) S.tgtPick = null;
       const me = snap.viewer == null ? null : snap.players[snap.viewer];
       if (S.afterJiu) {   // 酒喝完、輪到再次出牌: 自動出剛才那張殺
         const a = S.afterJiu, pd = snap.pending;
@@ -7724,7 +7741,6 @@
         return;
       }
       if (pend.kind === "act") {
-        if (S.tgtPick && S.tgtPick.pend !== pend.id) S.tgtPick = null;
         const tp = S.tgtPick;
         const redraw = () => { renderHand(S.snap); renderTable(S.snap); };
         if (tp) {   // 第二步: 選對象 (場上玩家外框發光,直接點;其他選項則列成按鈕)
@@ -7818,11 +7834,20 @@
         if (dmgOpt) {
           const verb = (dmgOpt.dmg_card === "弱" || dmgOpt.dmg_card === "弱化") ? "弱化傷害來源: " : "強化傷害來源: ";
           pb.append(h("button", { class: "primary", text: verb + (dmgOpt.dmg_src_label || dmgOpt.target.label), onclick: () => { S.tgtPick = null; submit(pend.id, [dmgOpt.i]); } }));
-        } else if (S.snap && S.snap.viewer != null && opts.some(x => x.target && x.target.kind === "player" && x.target.idx === S.snap.viewer)) {
+        }
+        const snapPlayers = (S.snap && S.snap.players) || [];
+        if (opts.length <= 6) {
+          opts.forEach(o => {
+            if (dmgOpt && o.i === dmgOpt.i) return;
+            const idx = o.target.idx, q = snapPlayers[idx];
+            const nm = S.snap && idx === S.snap.viewer ? `選自己 (P${idx})` : `P${idx} ${((q && q.disguise_kind === "disguise" && !q.dg_flip && q.disguise) || (q && q.char) || "")}`.trim();
+            pb.append(h("button", { class: "primary", text: nm, onclick: () => { S.tgtPick = null; submit(pend.id, [o.i]); } }));
+          });
+        } else if (!dmgOpt && S.snap && S.snap.viewer != null && opts.some(x => x.target && x.target.kind === "player" && x.target.idx === S.snap.viewer)) {
           const meIdx = S.snap.viewer;
           pb.append(h("button", { class: "primary", text: `選自己 (P${meIdx})`, onclick: () => { const o = opts.find(x => x.target && x.target.idx === meIdx); S.tgtPick = null; if (o) submit(pend.id, [o.i]); } }));
         }
-        pb.append(h("button", { text: "取消", onclick: () => { S.tgtPick = null; S.pendId = 0; S.modalOpen = null; renderPrompt(S.snap); renderTable(S.snap); } }));
+        pb.append(h("button", { text: "取消", style: { marginLeft: "12px" }, onclick: () => { S.tgtPick = null; S.pendId = 0; S.modalOpen = null; renderPrompt(S.snap); renderTable(S.snap); } }));
         M.append(pb);
         renderTable(S.snap);
       };
@@ -7833,13 +7858,24 @@
           M.textContent = "";   // 同一張牌有多種用法: 第二步先選用法,第三步再點玩家
           const sb = h("div", { class: "opts" });
           subs.forEach(opts => sb.append(h("button", { text: opts[0].gl, onclick: () => pickTarget(opts, opts[0]) })));
-          sb.append(h("button", { text: "取消", onclick: () => { S.tgtPick = null; S.pendId = 0; S.modalOpen = null; renderPrompt(S.snap); } }));
+          sb.append(h("button", { text: "取消", style: { marginLeft: "12px" }, onclick: () => { S.tgtPick = null; S.pendId = 0; S.modalOpen = null; renderPrompt(S.snap); } }));
           M.append(h("div", { class: "modal soft" }, h("div", { class: "dlg" }, h("h3", { text: o0.card ? (o0.card.text || o0.card.name) + ": 選擇用法" : "選擇用法" }), sb)));
         };
         const el = o0.card ? cardEl(o0.card, "ok", act) : h("button", { text: o0.gl, onclick: act });
         box.append(h("div", { class: "ts" }, el, h("div", { class: "meta", text: subs.length > 1 ? o0.gl.split(":")[0] : o0.gl })));
       });
-      plain.forEach(o => box.append(o.card ? h("div", { class: "ts" }, cardEl(o.card, "ok", () => submit(pend.id, [o.i])), h("div", { class: "meta", text: o.label })) : h("button", { text: o.label, onclick: () => submit(pend.id, [o.i]) })));   /* 不需要選目標的牌 (孤注一擲等) 和武將技能 (卡面放武將卡) 也顯示牌圖 */
+      plain.forEach(o => {
+        if (o.card) {
+          const ce = cardEl(o.card, "ok", () => submit(pend.id, [o.i]));
+          ce.dataset.i = o.i;
+          box.append(h("div", { class: "ts" }, ce, h("div", { class: "meta", text: o.label })));
+        } else {
+          const isNeg = /^(不出|不發動|取消|跳過)$/.test(o.label);
+          const btn = h("button", { text: o.label, style: isNeg ? { marginLeft: "10px" } : undefined, onclick: () => submit(pend.id, [o.i]) });
+          btn.dataset.i = o.i;
+          box.append(btn);
+        }
+      });   /* 不需要選目標的牌 (孤注一擲等) 和武將技能 (卡面放武將卡) 也顯示牌圖 */
       M.append(h("div", { class: "modal soft" }, h("div", { class: "dlg" }, h("h3", { text: pend.prompt }), box)));
     }
     function syncActCountdown(snap) {
@@ -7922,7 +7958,7 @@
           box.querySelectorAll("[data-i]").forEach(x => x.classList.toggle("picked", S.multi.has(+x.dataset.i)));
           upd();
         };
-        const el = o.card ? cardEl(o.card, "ok", toggle) : h("button", { type: "button", text: o.label, onclick: toggle });
+        const el = o.card ? cardEl(o.card, "ok", toggle) : h("button", { type: "button", text: o.label, style: /^(不出|不發動|取消|跳過)$/.test(o.label) ? { marginLeft: "10px" } : undefined, onclick: toggle });
         el.dataset.i = o.i;
         if (o.card) el.title = o.label;
         box.append(el);
@@ -7967,7 +8003,7 @@
         if (window.SGS_FX) SGS_FX.onLine(s0, quiet);
       }
       while (L.children.length > 180) L.firstElementChild.remove();
-      if (follow) { logProgScroll = performance.now(); L.scrollTop = L.scrollHeight; }
+      if (follow) { logProgScroll = performance.now(); L.scrollTop = L.scrollHeight; if (window._syncLogTop) window._syncLogTop(L.scrollTop); }
     }
     const LOG_CARD_MAP = new WeakMap();
     function logCardImg(c) {
@@ -7978,14 +8014,19 @@
     }
     {
       const L = $("#log"), fb = $("#follow");
+      let lastLogTop = 0;
+      window._syncLogTop = t => { lastLogTop = t; };
       if (fb) fb.addEventListener("change", () => {
-        if (fb.checked && L) { logProgScroll = performance.now(); L.scrollTop = L.scrollHeight; }
+        if (fb.checked && L) { logProgScroll = performance.now(); L.scrollTop = L.scrollHeight; lastLogTop = L.scrollTop; }
       });
       if (L) {
         L.addEventListener("scroll", () => {
-          if (!fb || performance.now() - logProgScroll < 120) return;
-          const atBottom = L.scrollHeight - L.scrollTop - L.clientHeight <= 28;
-          if (fb.checked !== atBottom) fb.checked = atBottom;
+          const top = L.scrollTop;
+          if (!fb || performance.now() - logProgScroll < 120) { lastLogTop = top; return; }
+          const atBottom = L.scrollHeight - top - L.clientHeight <= 28;
+          if (atBottom) fb.checked = true;
+          else if (top < lastLogTop - 4) fb.checked = false;
+          lastLogTop = top;
         }, { passive: true });
         let ht = null, hx = 0, hy = 0;
         const stopHold = () => { if (ht) { clearTimeout(ht); ht = null; } };
@@ -8189,6 +8230,7 @@
         h("span", { class: "meta", text: on ? "下一場勝利多 +" + p.streak_bonus + " 分 (最高 +" + cap + ")" : "贏一場就開始累積連勝加分" }));
     }
     function drawArrow(a, b, harm, label) {
+      if (S.snap && S.snap.over) return;
       const A = playerPos(a), B = playerPos(b), svg = $("#arrows");
       if (!A || !B || !svg) return;
       const pw = $("#tablewrap").style;   // 箭頭畫在隨場地平移的圖層上,座標要先扣掉目前的平移量
@@ -9163,14 +9205,14 @@
         const el = e.target && e.target.closest && e.target.closest(ACT_SEL);
         if (!el || el.disabled) { arm = null; return; }
         hideTips();
-        arm = { el, txt: (el.textContent || "").trim(), idx: el.dataset ? el.dataset.idx : null, x: e.clientX, y: e.clientY, t: performance.now(), clicked: false };
+        arm = { el, txt: (el.textContent || "").trim(), idx: el.dataset ? el.dataset.idx : null, opt: el.dataset ? el.dataset.i : null, x: e.clientX, y: e.clientY, t: performance.now(), clicked: false };
       }, true);
       document.addEventListener("click", e => {
         if (synthEl && (e.target === synthEl || synthEl.contains(e.target)) && performance.now() - synthAt < 80) {
           if (e.isTrusted) { e.stopImmediatePropagation(); e.preventDefault(); }
           return;
         }
-        if (arm && (e.target === arm.el || arm.el.contains(e.target))) arm.clicked = true;
+        if (arm && (e.target === arm.el || arm.el.contains(e.target) || (arm.el.closest("#modal") && e.target.closest && e.target.closest("#modal")))) arm.clicked = true;
         const rt = rel && (rel.tgt || rel.el);
         if (rt && (e.target === rt || rt.contains(e.target))) rel.clicked = true;
       }, true);
@@ -9183,7 +9225,8 @@
           const hit = document.elementFromPoint(e.clientX, e.clientY);
           const cand = hit && hit.closest && hit.closest(ACT_SEL);
           const sameIdx = a.idx != null && cand && cand.dataset && cand.dataset.idx === a.idx;
-          if (!cand || cand.disabled || (!sameIdx && (cand.textContent || "").trim() !== a.txt)) return;
+          const sameOpt = a.opt != null && cand && cand.dataset && cand.dataset.i === a.opt;
+          if (!cand || cand.disabled || (a.opt != null && !sameOpt) || (!sameIdx && !sameOpt && (cand.textContent || "").trim() !== a.txt)) return;
           tgt = cand;
         }
         if (tgt.disabled) return;
@@ -9342,7 +9385,7 @@
           + (n.bonus ? ` (含連勝獎勵 +${n.bonus})` : "") + (n.won && n.streak > 1 ? ` · ${n.streak} 連勝` : ""))
         : "休閒模式 · 積分不變";
       const box = h("div", { class: "settle-rk" },
-        n.changed ? h("div", { class: "rkflow" }, rkBig(n.from), h("span", { class: "rkarr", text: "➜" }), rkBig(n.to)) : h("div", { class: "rkflow" }, rkBig(n.to)),
+        n.changed ? h("div", { class: "rkflow" }, rkBig(n.from), h("span", { class: "rkarr", text: "→" }), rkBig(n.to)) : h("div", { class: "rkflow" }, rkBig(n.to)),
         h("div", { class: "rkdelta " + (!n.ranked ? "" : n.delta > 0 ? "plus" : n.delta < 0 || (!n.won && !n.draw && !n.partial) ? "minus" : ""), style: { fontSize: "20px", marginTop: "6px" }, text: deltaTxt }),
         n.coins ? h("div", { class: "rkcoin", text: `💰 +${n.coins} 遊戲幣 (共 ${n.total_coins})` }) : null,
         ...(n.rp != null && n.rp_lo != null ? rkProgress({ rp: n.rp, rp_lo: n.rp_lo, rp_next: n.rp_next, rank: n.rank || n.to, next_rank: n.next_rank || n.next }) : [h("div", { class: "meta", text: `目前 ${n.rp} 分` + (n.next ? ` · 距離 ${n.next} 還差 ${n.need} 分` : "") })]));
@@ -9357,7 +9400,7 @@
         h("div", { class: "dlg rankup" + ((n.changed ? n.up : n.won) ? " up" : " down"), style: { maxWidth: "380px", textAlign: "center" } },
           h("div", { class: "rkicon", text: n.changed ? (n.up ? "🎉" : "📉") : n.draw ? "🤝" : n.partial ? "🥈" : n.won ? "🏆" : "🏳" }),
           h("h3", { text: n.changed ? (n.up ? "段位提升!" : "段位下降") : n.draw ? "平手" : n.partial ? "次級勝利" : n.won ? "勝利" : "落敗" }),
-          n.changed ? h("div", { class: "rkflow" }, rkBig(n.from), h("span", { class: "rkarr", text: "➜" }), rkBig(n.to)) : h("div", { class: "rkflow" }, rkBig(n.to)),
+          n.changed ? h("div", { class: "rkflow" }, rkBig(n.from), h("span", { class: "rkarr", text: "→" }), rkBig(n.to)) : h("div", { class: "rkflow" }, rkBig(n.to)),
           n.ranked ? h("div", { class: "rkdelta " + (n.delta > 0 ? "plus" : n.delta < 0 || (!n.won && !n.draw && !n.partial) ? "minus" : ""), text: `段位積分 ${n.draw ? (n.delta > 0 ? "+" + n.delta : "±0") : n.delta === 0 && !n.won && !n.partial ? "-0" : (n.delta > 0 ? "+" : "") + n.delta}` + (n.bonus ? ` (含連勝獎勵 +${n.bonus})` : "") + (n.won && n.streak > 1 ? ` · ${n.streak} 連勝` : "") })
             : h("div", { class: "rkdelta", text: "休閒模式 · 積分不變" }),
           n.coins ? h("div", { class: "rkcoin", text: `💰 +${n.coins} 遊戲幣 (共 ${n.total_coins})` }) : null,
@@ -9548,6 +9591,7 @@
       document.body.classList.remove("picking", "picking-me");
       Object.assign(S, { lastAct: "", roundKey: null, centerKey: null, tableKey: null, handKey: null, lobbyKey: null, pickKey: null, overSeen: false, pvHp: null, pvMax: null, pvCur: null, pfx: null, pfd: null, baseSeat: null, logN: 0, thN: 0, thoughts: [], lastTh: {}, sel: null, picked: null, pendId: 0, tgtPick: null, pollSv: null, sameStreak: 0, autoPick: null, pingId: null });
       for (const id of ["#log", "#thl", "#center", "#hand", "#bar"]) { const e = $(id); if (e) e.textContent = ""; }
+      const fb = $("#follow"); if (fb) fb.checked = true;
     }
     function resetRoomState() {
       if (S.cleanupSetup) { S.cleanupSetup(); S.cleanupSetup = null; }

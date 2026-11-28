@@ -156,6 +156,7 @@
     return null;
   }
   function fly(A, B, c) {
+    if (typeof S !== "undefined" && S.snap && S.snap.over) return;
     const w = layer(); if (!w || !A || !B || !c) return;
     const e = document.createElement("div"); e.className = "fxcard";
     const im = document.createElement("img"); im.src = c.img; e.append(im); w.append(e);
@@ -169,6 +170,7 @@
     an.onfinish = () => e.remove();
   }
   function burst(P, cls, txt) {
+    if (typeof S !== "undefined" && S.snap && S.snap.over) return;
     const w = layer(); if (!w || !P) return;
     const e = document.createElement("div"); e.className = "fxburst " + cls; e.style.left = P[0] + "px"; e.style.top = P[1] + "px"; if (txt) e.textContent = txt;
     w.append(e); setTimeout(() => e.remove(), 900);
